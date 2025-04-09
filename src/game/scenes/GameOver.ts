@@ -1,5 +1,6 @@
 // src/game/scenes/GameOver.ts
 import { Scene } from "phaser";
+import gsap from "gsap"; // Import GSAP
 
 export class GameOver extends Scene {
     private score: number = 0;
@@ -16,15 +17,19 @@ export class GameOver extends Scene {
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
 
-        this.add.image(centerX, centerY, "background_generated").setAlpha(0.6);
+        // Dimmed Background - Fade in alpha
+        const bg = this.add
+            .image(centerX, centerY, "background_generated")
+            .setAlpha(0);
+        gsap.to(bg, { alpha: 0.6, duration: 0.7, ease: "power1.inOut" });
 
-        // Game Over Title - Use Luckiest Guy variable
-        this.add
+        // --- Animate Elements In ---
+        const title = this.add
             .text(centerX, centerY - 110, "Pollination Complete!", {
-                fontFamily: "var(--font-luckiest-guy)", // Use CSS variable
-                fontSize: "54px", // Adjusted size
+                fontFamily: "var(--font-luckiest-guy)",
+                fontSize: "54px",
                 color: "#ffdd00",
-                stroke: "#8B4513", // SaddleBrown
+                stroke: "#8B4513",
                 strokeThickness: 9,
                 align: "center",
                 shadow: {
@@ -36,17 +41,18 @@ export class GameOver extends Scene {
                     fill: true,
                 },
             })
-            .setOrigin(0.5);
+            .setOrigin(0.5)
+            .setAlpha(0)
+            .setScale(0.5); // Start hidden/small
 
-        // Display Final Score - Use Poppins variable
-        this.add
+        const scoreText = this.add
             .text(centerX, centerY + 10, `Final Score: ${this.score}`, {
-                fontFamily: "var(--font-poppins)", // Use CSS variable
-                fontSize: "40px", // Larger score
-                font: "bold 34px var(--font-poppins)", // Use bold Poppins
+                fontFamily: "var(--font-poppins)",
+                fontSize: "40px",
+                font: "bold",
                 color: "#ffffff",
                 stroke: "#000000",
-                strokeThickness: 6, // Thicker stroke for visibility
+                strokeThickness: 6,
                 align: "center",
                 shadow: {
                     offsetX: 3,
@@ -56,18 +62,18 @@ export class GameOver extends Scene {
                     fill: true,
                 },
             })
-            .setOrigin(0.5);
+            .setOrigin(0.5)
+            .setAlpha(0)
+            .setScale(0.8); // Start hidden/smaller
 
-        // Play Again Button - Use Poppins variable
         const playAgainButton = this.add
             .text(centerX, centerY + 110, "Play Again?", {
-                fontFamily: "var(--font-poppins)", // Use CSS variable
+                fontFamily: "var(--font-poppins)",
                 fontSize: "30px",
-                // fontWeight: "bold",
-                font: "bold 34px var(--font-poppins)", // Use bold Poppins
+                font: "bold",
                 color: "#ffffff",
-                backgroundColor: "#2E8B57", // SeaGreen
-                padding: { x: 25, y: 12 }, // Adjusted padding
+                backgroundColor: "#2E8B57",
+                padding: { x: 25, y: 12 },
                 shadow: {
                     offsetX: 2,
                     offsetY: 2,
@@ -77,11 +83,36 @@ export class GameOver extends Scene {
                 },
             })
             .setOrigin(0.5)
-            .setInteractive({ useHandCursor: true });
+            .setAlpha(0)
+            .setScale(0.8); // Start hidden/smaller
 
-        // Button Hover Effects
-        const originalScale = playAgainButton.scale;
+        // GSAP Timeline for staggered entrance
+        const tl = gsap.timeline({ delay: 0.3 }); // Start after background fade
+
+        tl.to(title, {
+            alpha: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: "back.out(1.7)",
+        })
+            .to(
+                scoreText,
+                { alpha: 1, scale: 1, duration: 0.5, ease: "power2.out" },
+                "-=0.3"
+            )
+            .to(
+                playAgainButton,
+                { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
+                "-=0.2"
+            );
+
+        // --- End Entrance Animation ---
+
+        // Button Interactions (Phaser Tweens remain suitable)
+        playAgainButton.setInteractive({ useHandCursor: true });
+        const originalScale = 1;
         playAgainButton.on("pointerover", () => {
+            this.tweens.killTweensOf(playAgainButton);
             this.tweens.add({
                 targets: playAgainButton,
                 scale: originalScale * 1.08,
@@ -91,6 +122,7 @@ export class GameOver extends Scene {
             playAgainButton.setBackgroundColor("#3CB371");
         });
         playAgainButton.on("pointerout", () => {
+            this.tweens.killTweensOf(playAgainButton);
             this.tweens.add({
                 targets: playAgainButton,
                 scale: originalScale,
@@ -99,9 +131,8 @@ export class GameOver extends Scene {
             });
             playAgainButton.setBackgroundColor("#2E8B57");
         });
-
-        // Button Click Action
         playAgainButton.on("pointerdown", () => {
+            this.tweens.killTweensOf(playAgainButton);
             this.tweens.add({
                 targets: playAgainButton,
                 scale: originalScale * 0.95,
@@ -109,10 +140,20 @@ export class GameOver extends Scene {
                 ease: "Sine.easeInOut",
                 yoyo: true,
             });
-            this.time.delayedCall(100, () => {
-                this.scene.start("MainMenu");
+            // Transition Out (Optional)
+            gsap.to([title, scoreText, playAgainButton], {
+                alpha: 0,
+                y: "-=30",
+                duration: 0.3,
+                stagger: 0.1,
+                ease: "power1.in",
+                onComplete: () => {
+                    this.scene.start("MainMenu");
+                },
             });
         });
+
+        // Emit scene readiness
+        this.events.emit("scene-ready", this);
     }
 }
-

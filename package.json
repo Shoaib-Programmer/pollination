@@ -28,6 +28,8 @@
         "build-nolog": "next build"
     },
     "dependencies": {
+        "@gsap/react": "^2.1.2",
+        "gsap": "^3.12.7",
         "next": "^15.2.5",
         "phaser": "^3.88.2",
         "react": "^19.1.0",

@@ -1,5 +1,6 @@
 // src/game/scenes/MainMenu.ts
 import { Scene } from "phaser";
+import gsap from "gsap"; // Import GSAP
 
 export class MainMenu extends Scene {
     constructor() {
@@ -10,16 +11,20 @@ export class MainMenu extends Scene {
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
 
-        this.add.image(centerX, centerY, "background_generated");
+        // Background - Fade in
+        const bg = this.add
+            .image(centerX, centerY, "background_generated")
+            .setAlpha(0);
+        gsap.to(bg, { alpha: 1, duration: 0.7, ease: "power1.inOut" });
 
-        // Title - Use Luckiest Guy variable
-        this.add
+        // --- Animate UI Elements In ---
+        const title = this.add
             .text(centerX, centerY - 150, "Pollination Fun!", {
-                fontFamily: "var(--font-luckiest-guy)", // Use CSS variable
-                fontSize: "60px", // Even larger title
+                fontFamily: "var(--font-luckiest-guy)",
+                fontSize: "60px",
                 color: "#ffff00",
-                stroke: "#8B4513", // SaddleBrown stroke
-                strokeThickness: 10, // Thicker stroke
+                stroke: "#8B4513",
+                strokeThickness: 10,
                 shadow: {
                     offsetX: 4,
                     offsetY: 4,
@@ -29,37 +34,40 @@ export class MainMenu extends Scene {
                     fill: true,
                 },
             })
-            .setOrigin(0.5);
+            .setOrigin(0.5)
+            .setAlpha(0)
+            .setScale(0.5); // Start invisible and small
 
-        // Instructions - Use Poppins variable
         const instructionBg = this.add
             .rectangle(centerX, centerY - 15, 550, 110, 0x000000, 0.65)
-            .setOrigin(0.5);
-        this.add
+            .setOrigin(0.5)
+            .setAlpha(0)
+            .setScale(0.8); // Start invisible and smaller
+        const instructions = this.add
             .text(
                 centerX,
                 centerY - 15,
                 "Use Arrow Keys (or D-Pad on mobile)\nto move the Bee. Collect pollen from a\nglowing flower & deliver it to another\nof the SAME color!",
                 {
-                    fontFamily: "var(--font-poppins)", // Use CSS variable
-                    fontSize: "20px", // Slightly smaller for more text
+                    fontFamily: "var(--font-poppins)",
+                    fontSize: "20px",
                     color: "#ffffff",
                     align: "center",
                     lineSpacing: 8,
                     wordWrap: { width: instructionBg.width - 30 },
                 }
             )
-            .setOrigin(0.5);
+            .setOrigin(0.5)
+            .setAlpha(0); // Start invisible
 
-        // Start Button - Use Poppins variable
         const startButton = this.add
             .text(centerX, centerY + 95, "Start Game", {
-                fontFamily: "var(--font-poppins)", // Use CSS variable
+                font: "bold",
+                fontFamily: "var(--font-poppins)",
                 fontSize: "34px",
-                font: "bold 34px var(--font-poppins)", // Use bold Poppins
                 color: "#ffffff",
-                backgroundColor: "#2E8B57", // SeaGreen
-                padding: { x: 30, y: 15 }, // Bigger padding
+                backgroundColor: "#2E8B57",
+                padding: { x: 30, y: 15 },
                 shadow: {
                     offsetX: 2,
                     offsetY: 2,
@@ -69,31 +77,61 @@ export class MainMenu extends Scene {
                 },
             })
             .setOrigin(0.5)
-            .setInteractive({ useHandCursor: true });
+            .setAlpha(0) // Start invisible
+            .setScale(0.8); // Start smaller
 
-        // Button Hover Effects
-        const originalScale = startButton.scale;
+        // GSAP Timeline for staggered entrance
+        const tl = gsap.timeline({ delay: 0.3 }); // Start after background fade
+
+        tl.to(title, {
+            alpha: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: "back.out(1.7)",
+        }) // Title pops in
+            .to(
+                instructionBg,
+                { alpha: 0.65, scale: 1, duration: 0.4, ease: "power2.out" },
+                "-=0.4"
+            ) // Instruction BG fades/scales in
+            .to(
+                instructions,
+                { alpha: 1, duration: 0.4, ease: "power2.out" },
+                "-=0.3"
+            ) // Instructions fade in
+            .to(
+                startButton,
+                { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
+                "-=0.2"
+            ); // Button pops in
+
+        // --- End Entrance Animation ---
+
+        // Button Hover/Click (Phaser Tweens are fine here)
+        startButton.setInteractive({ useHandCursor: true }); // Make interactive AFTER initial animation setup potentially
+        const originalScale = 1; // Base scale is 1 after animation
         startButton.on("pointerover", () => {
+            this.tweens.killTweensOf(startButton);
             this.tweens.add({
                 targets: startButton,
                 scale: originalScale * 1.08,
                 duration: 150,
                 ease: "Sine.easeInOut",
             });
-            startButton.setBackgroundColor("#3CB371"); // MediumSeaGreen
+            startButton.setBackgroundColor("#3CB371");
         });
         startButton.on("pointerout", () => {
+            this.tweens.killTweensOf(startButton);
             this.tweens.add({
                 targets: startButton,
                 scale: originalScale,
                 duration: 150,
                 ease: "Sine.easeInOut",
             });
-            startButton.setBackgroundColor("#2E8B57"); // Back to SeaGreen
+            startButton.setBackgroundColor("#2E8B57");
         });
-
-        // Button Click Action
         startButton.on("pointerdown", () => {
+            this.tweens.killTweensOf(startButton);
             this.tweens.add({
                 targets: startButton,
                 scale: originalScale * 0.95,
@@ -101,9 +139,21 @@ export class MainMenu extends Scene {
                 ease: "Sine.easeInOut",
                 yoyo: true,
             });
-            this.time.delayedCall(100, () => {
-                this.scene.start("Game");
+            // Transition Out Animation (Optional)
+            gsap.to([title, instructionBg, instructions, startButton], {
+                alpha: 0,
+                y: "-=30", // Move up slightly
+                duration: 0.3,
+                stagger: 0.1,
+                ease: "power1.in",
+                onComplete: () => {
+                    this.scene.start("Game");
+                },
             });
         });
+
+        // Emit scene readiness for potential future use by PhaserGame bridge
+        this.events.emit("scene-ready", this);
     }
 }
+
