@@ -1,0 +1,73 @@
+/* src/styles/MobileControls.module.css */
+
+.dpadContainer {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 140px; /* Slightly smaller */
+    height: 140px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 20;
+    opacity: 0.65; /* More subtle */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Use Poppins for consistency if desired, or keep default */
+    /* font-family: var(--font-poppins); */
+}
+
+.dpadButton {
+    background-color: rgba(50, 50, 50, 0.75);
+    border: 1px solid rgba(220, 220, 220, 0.8);
+    border-radius: 12px; /* More rounded buttons */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px; /* Larger arrows */
+    color: white;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: background-color 0.1s ease, transform 0.05s ease; /* Faster transform */
+}
+
+/* Specific button positioning */
+.up {
+    grid-area: 1 / 2 / 2 / 3;
+}
+.down {
+    grid-area: 3 / 2 / 4 / 3;
+}
+.left {
+    grid-area: 2 / 1 / 3 / 2;
+}
+.right {
+    grid-area: 2 / 3 / 3 / 4;
+}
+
+/* Active state */
+.dpadButton:active,
+.dpadButtonPressed {
+    background-color: rgba(120, 120, 120, 0.85);
+    transform: scale(0.92); /* More pronounced press */
+}
+
+/* Arrows */
+.up::before {
+    content: "▲";
+}
+.down::before {
+    content: "▼";
+}
+.left::before {
+    content: "◀";
+}
+.right::before {
+    content: "▶";
+}

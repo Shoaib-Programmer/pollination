@@ -1,6 +1,6 @@
 // src/game/scenes/Game.ts
 import Phaser, { Scene } from "phaser";
-// Removed: import EventBus from '../EventBus';
+import EventBus from "../EventBus"; // Import EventBus to LISTEN for DPad
 
 // Define an interface for Flower data
 interface FlowerData {
@@ -9,11 +9,19 @@ interface FlowerData {
     isPollinated: boolean;
 }
 
-// REMOVE THIS - Phaser already provides this type
-// type ArcadePhysicsCallback = (
-//     object1: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-//     object2: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
-// ) => void;
+// Define ArcadePhysicsCallback type alias
+type ArcadePhysicsCallback = (
+    object1:
+        | Phaser.Types.Physics.Arcade.GameObjectWithBody
+        | Phaser.Tilemaps.Tile
+        | Phaser.Physics.Arcade.Body
+        | Phaser.Physics.Arcade.StaticBody,
+    object2:
+        | Phaser.Types.Physics.Arcade.GameObjectWithBody
+        | Phaser.Tilemaps.Tile
+        | Phaser.Physics.Arcade.Body
+        | Phaser.Physics.Arcade.StaticBody
+) => void;
 
 export class Game extends Scene {
     private bee!: Phaser.Physics.Arcade.Sprite;
@@ -38,15 +46,21 @@ export class Game extends Scene {
     private carryingPollen: { type: "red" | "blue" | null } = { type: null };
     private pollenIndicator!: Phaser.GameObjects.Sprite | null;
 
+    // Add DPad state
+    private dpadState = {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+    };
+
     constructor() {
         super("Game");
     }
 
     create() {
-        // --- Environment ---
+        // --- Environment, Bee, Flowers, Cursors setup ... (as before) ---
         this.add.image(400, 300, "background_generated");
-
-        // --- Player (Bee) ---
         this.bee = this.physics.add.sprite(
             100,
             this.cameras.main.height / 2,
@@ -56,57 +70,95 @@ export class Game extends Scene {
         this.bee
             .setBodySize(this.bee.width * 0.8, this.bee.height * 0.8)
             .setOrigin(0.5, 0.5);
-
-        // --- Flowers ---
         this.flowers = this.physics.add.staticGroup();
         this.spawnFlowers(6, "red");
         this.spawnFlowers(6, "blue");
         this.assignInitialPollen();
-
-        // --- Input ---
         if (this.input && this.input.keyboard) {
             this.cursors = this.input.keyboard.createCursorKeys();
         } else {
             console.error("Keyboard input plugin not found.");
         }
-
-        // --- Physics Collisions ---
-        // Pass the handler directly without casting.
-        // Ensure the handler signature matches Phaser.Types.Physics.Arcade.ArcadePhysicsCallback
         this.physics.add.overlap(
             this.bee,
             this.flowers,
-            this.handleBeeFlowerCollision as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            this.handleBeeFlowerCollision as ArcadePhysicsCallback,
             undefined,
             this
         );
 
-        // --- Reset Game State ---
+        // --- Reset Game State ... (as before) ---
         this.score = 0;
         this.carryingPollen.type = null;
         if (this.pollenIndicator) this.pollenIndicator.destroy();
         this.pollenIndicator = null;
 
         // --- Emit initial state via INTERNAL scene events ---
-        this.events.emit("game:update-score", this.score); // Use internal emitter
+        this.events.emit("game:update-score", this.score);
         this.events.emit(
             "game:show-fact",
             "Fly to a glowing flower (yellow tint) to collect pollen!"
-        ); // Use internal emitter
-        // ---------------------------------------------------
+        );
 
-        // Emit scene readiness for potential future use by PhaserGame bridge
-        this.events.emit("scene-ready", this); // Emit reference to this scene
-        console.log("Game scene emitted scene-ready");
+        // --- Listen for DPad events from EventBus ---
+        EventBus.on("dpad", this.handleDpadInput, this);
+
+        // --- Cleanup listener on scene shutdown ---
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            // console.log("Game scene shutdown: Removing DPad listener."); // Keep off unless debugging
+            EventBus.off("dpad", this.handleDpadInput, this);
+        });
+
+        // Emit scene readiness
+        this.events.emit("scene-ready", this);
+        // console.log("Game scene emitted scene-ready"); // Keep off unless debugging
+    }
+
+    // Handler for DPad events
+    private handleDpadInput(data: {
+        direction: "up" | "down" | "left" | "right";
+        active: boolean;
+    }) {
+        if (data.direction in this.dpadState) {
+            this.dpadState[data.direction] = data.active;
+        }
     }
 
     update(time: number, delta: number) {
-        if (this.cursors) {
-            this.handlePlayerMovement(delta);
-        }
+        this.handlePlayerMovement(delta);
         this.updatePollenIndicatorPosition();
     }
 
+    // Modified handlePlayerMovement
+    handlePlayerMovement(delta: number) {
+        if (!this.bee?.body) return;
+
+        const speed = 250;
+        this.bee.setVelocity(0);
+
+        let moveX = 0;
+        let moveY = 0;
+
+        // Check Cursors OR DPad State
+        const leftPressed = this.cursors?.left.isDown || this.dpadState.left;
+        const rightPressed = this.cursors?.right.isDown || this.dpadState.right;
+        const upPressed = this.cursors?.up.isDown || this.dpadState.up;
+        const downPressed = this.cursors?.down.isDown || this.dpadState.down;
+
+        if (leftPressed) moveX = -1;
+        else if (rightPressed) moveX = 1;
+        if (upPressed) moveY = -1;
+        else if (downPressed) moveY = 1;
+
+        // Normalize and apply velocity
+        const moveVector = new Phaser.Math.Vector2(moveX, moveY);
+        if (moveVector.length() > 0) moveVector.normalize();
+        this.bee.setVelocity(moveVector.x * speed, moveVector.y * speed);
+        if (moveX < 0) this.bee.setFlipX(true);
+        else if (moveX > 0) this.bee.setFlipX(false);
+    }
+
+    // --- assignInitialPollen Method ---
     assignInitialPollen() {
         const flowerChildren =
             this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[];
@@ -126,14 +178,15 @@ export class Game extends Scene {
         }
     }
 
+    // --- spawnFlowers Method ---
     spawnFlowers(count: number, type: "red" | "blue") {
         const texture = `flower_${type}_generated`;
         const margin = 60,
             spacing = 80,
             maxAttempts = 20;
         for (let i = 0; i < count; i++) {
-            let x: number,
-                y: number,
+            let x: number | undefined,
+                y: number | undefined,
                 validPosition,
                 attempts = 0;
             do {
@@ -151,8 +204,12 @@ export class Game extends Scene {
                     const sprite =
                         existingFlower as Phaser.Physics.Arcade.Sprite;
                     if (
-                        Phaser.Math.Distance.Between(x, y, sprite.x, sprite.y) <
-                        spacing
+                        Phaser.Math.Distance.Between(
+                            x!,
+                            y!,
+                            sprite.x,
+                            sprite.y
+                        ) < spacing
                     ) {
                         validPosition = false;
                         return false;
@@ -184,24 +241,7 @@ export class Game extends Scene {
         }
     }
 
-    handlePlayerMovement(delta: number) {
-        if (!this.cursors || !this.bee?.body) return;
-        const speed = 250;
-        this.bee.setVelocity(0);
-        let moveX = 0,
-            moveY = 0;
-        if (this.cursors.left.isDown) moveX = -1;
-        else if (this.cursors.right.isDown) moveX = 1;
-        if (this.cursors.up.isDown) moveY = -1;
-        else if (this.cursors.down.isDown) moveY = 1;
-        const moveVector = new Phaser.Math.Vector2(moveX, moveY);
-        if (moveVector.length() > 0) moveVector.normalize();
-        this.bee.setVelocity(moveVector.x * speed, moveVector.y * speed);
-        if (moveX < 0) this.bee.setFlipX(true);
-        else if (moveX > 0) this.bee.setFlipX(false);
-    }
-
-    // Ensure the signature precisely matches Phaser.Types.Physics.Arcade.ArcadePhysicsCallback
+    // --- handleBeeFlowerCollision Method ---
     handleBeeFlowerCollision(
         beeGO:
             | Phaser.Types.Physics.Arcade.GameObjectWithBody
@@ -210,21 +250,17 @@ export class Game extends Scene {
             | Phaser.Types.Physics.Arcade.GameObjectWithBody
             | Phaser.Tilemaps.Tile
     ) {
-        // Type guards are good practice inside the handler
         if (
             !(beeGO instanceof Phaser.Physics.Arcade.Sprite) ||
             !(flowerGO instanceof Phaser.Physics.Arcade.Sprite)
-        ) {
-            return; // Exit if the objects aren't the Sprites we expect
-        }
-
-        // Now we can safely use beeGO and flowerGO as Sprites
-        const bee = beeGO as Phaser.Physics.Arcade.Sprite;
-        const flower = flowerGO as Phaser.Physics.Arcade.Sprite;
+        )
+            return;
+        const bee = beeGO as Phaser.Physics.Arcade.Sprite,
+            flower = flowerGO as Phaser.Physics.Arcade.Sprite;
         const data = flower.getData("flowerData") as FlowerData | undefined;
-        if (!data) return; // Exit if flower data is missing
+        if (!data) return;
 
-        // --- Pollen Collection ---
+        // Collection
         if (!this.carryingPollen.type && data.hasPollen && !data.isPollinated) {
             this.carryingPollen.type = data.type;
             data.hasPollen = false;
@@ -246,14 +282,12 @@ export class Game extends Scene {
                 0xffff00,
                 15
             );
-            // --- Emit internal scene event ---
             this.events.emit(
                 "game:show-fact",
                 `Collected ${data.type} pollen! Find another ${data.type} flower.`
-            ); // Use internal emitter
-            // ---------------------------------
+            );
         }
-        // --- Pollen Delivery ---
+        // Delivery
         else if (
             this.carryingPollen.type &&
             data.type === this.carryingPollen.type &&
@@ -263,11 +297,9 @@ export class Game extends Scene {
             data.isPollinated = true;
             flower.setTint(0x90ee90);
             this.score += 10;
-            // --- Emit internal scene events ---
-            this.events.emit("game:update-score", this.score); // Use internal emitter
+            this.events.emit("game:update-score", this.score);
             const randomFact = Phaser.Math.RND.pick(this.facts);
-            this.events.emit("game:show-fact", `Pollinated! ${randomFact}`); // Use internal emitter
-            // ----------------------------------
+            this.events.emit("game:show-fact", `Pollinated! ${randomFact}`);
             if (this.pollenIndicator) {
                 this.pollenIndicator.destroy();
                 this.pollenIndicator = null;
@@ -280,14 +312,11 @@ export class Game extends Scene {
                 0x90ee90,
                 25
             );
-
             if (this.checkAllPollinated()) {
-                // --- Emit internal scene event ---
                 this.events.emit(
                     "game:show-fact",
                     `All flowers pollinated! Great job!`
-                ); // Use internal emitter
-                // ---------------------------------
+                );
                 this.time.delayedCall(1500, () => {
                     this.scene.start("GameOver", { score: this.score });
                 });
@@ -297,6 +326,7 @@ export class Game extends Scene {
         }
     }
 
+    // --- assignMorePollenIfNeeded Method ---
     assignMorePollenIfNeeded() {
         let pollenAvailable = false;
         this.flowers.children.iterate((child) => {
@@ -309,7 +339,6 @@ export class Game extends Scene {
             }
             return true;
         });
-
         if (!pollenAvailable) {
             const unpollinatedFlowers = (
                 this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[]
@@ -317,7 +346,6 @@ export class Game extends Scene {
                 const data = f?.getData("flowerData") as FlowerData | undefined;
                 return data && !data.isPollinated && !data.hasPollen;
             });
-
             if (unpollinatedFlowers.length > 0) {
                 const flowerToAddPollen =
                     Phaser.Math.RND.pick(unpollinatedFlowers);
@@ -334,23 +362,23 @@ export class Game extends Scene {
                         0xffff00,
                         10
                     );
-                    // --- Emit internal scene event ---
                     this.events.emit(
                         "game:show-fact",
                         "More pollen has appeared!"
-                    ); // Use internal emitter
-                    // ---------------------------------
+                    );
                 }
             }
         }
     }
 
+    // --- updatePollenIndicatorPosition Method ---
     updatePollenIndicatorPosition() {
         if (this.pollenIndicator && this.bee?.body) {
             this.pollenIndicator.setPosition(this.bee.x, this.bee.y - 25);
         }
     }
 
+    // --- createParticles Method ---
     createParticles(
         x: number,
         y: number,
@@ -372,12 +400,12 @@ export class Game extends Scene {
         if (particles) {
             particles.explode(count);
             this.time.delayedCall(1500, () => {
-                // Check if particles still exist before destroying
-                if (particles && particles.active) particles.destroy();
+                if (particles.active) particles.destroy();
             });
         }
     }
 
+    // --- checkAllPollinated Method ---
     checkAllPollinated(): boolean {
         let allDone = true;
         this.flowers.children.iterate((child) => {
@@ -393,3 +421,4 @@ export class Game extends Scene {
         return allDone;
     }
 }
+

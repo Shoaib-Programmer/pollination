@@ -1,49 +1,52 @@
 /* src/styles/GameUI.module.css */
 
 .uiOverlay {
-    position: absolute; /* Position relative to the container holding PhaserGame */
+    position: absolute;
     top: 0;
     left: 0;
-    width: 100%; /* Match the container's width */
-    height: 100%; /* Match the container's height */
-    pointer-events: none; /* Allow clicks to pass through to the game canvas */
-    font-family: 'Arial', sans-serif; /* Default font */
-    z-index: 10; /* Ensure it's above the canvas */
-    overflow: hidden; /* Prevent content spilling */
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    /* Use Poppins variable */
+    font-family: var(--font-poppins);
+    z-index: 10;
+    overflow: hidden;
 }
 
 .scoreBox {
     position: absolute;
     top: 10px;
     left: 10px;
-    background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
-    color: #ffffff; /* White text */
-    padding: 8px 15px;
-    border-radius: 8px; /* Rounded corners */
-    font-size: 20px;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* Subtle text shadow for readability */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4); /* Subtle box shadow */
+    background-color: rgba(30, 30, 30, 0.8); /* Slightly darker bg */
+    color: #ffffff;
+    padding: 8px 18px; /* Adjusted padding */
+    border-radius: 20px; /* More rounded */
+    font-size: 18px; /* Slightly smaller score font */
+    font-weight: 700; /* Bold Poppins */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+    letter-spacing: 0.5px; /* Slight letter spacing */
 }
 
 .factBox {
     position: absolute;
-    bottom: 15px; /* Position from bottom */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Correct centering */
-    width: calc(100% - 40px); /* Responsive width with padding */
-    max-width: 700px; /* Max width for larger screens */
-    background-color: rgba(0, 0, 0, 0.8); /* Darker background for facts */
-    color: #ffffff;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 16px;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px);
+    max-width: 700px;
+    background-color: rgba(30, 30, 30, 0.85); /* Darker, less transparent */
+    color: #e7e7e7; /* Slightly off-white text */
+    padding: 14px 22px; /* Adjusted padding */
+    border-radius: 8px; /* Less rounded than score */
+    font-size: 15px; /* Slightly smaller fact font */
+    line-height: 1.5; /* Better line spacing */
     text-align: center;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
-    box-shadow: 0 3px 6px rgba(0,0,0,0.5);
-    opacity: 0; /* Start hidden */
-    transition: opacity 0.5s ease-in-out; /* Fade transition */
-    visibility: hidden; /* Hide completely when opacity is 0 */
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.4s ease-out; /* Slightly faster fade */
+    visibility: hidden;
 }
 
 .factBoxVisible {

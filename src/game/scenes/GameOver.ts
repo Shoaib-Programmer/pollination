@@ -1,92 +1,118 @@
 // src/game/scenes/GameOver.ts
-import {Scene} from 'phaser';
-
-// import EventBus from '../EventBus'; // Removed EventBus usage
+import { Scene } from "phaser";
 
 export class GameOver extends Scene {
     private score: number = 0;
 
     constructor() {
-        super('GameOver');
+        super("GameOver");
     }
 
-    init(data: { score?: number }) { // Make score optional in data
-        // Receive the score passed from the Game scene
-        this.score = data.score ?? 0; // Use nullish coalescing for default
+    init(data: { score?: number }) {
+        this.score = data.score ?? 0;
     }
 
     create() {
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
 
-        // Use generated background, slightly dimmed
-        this.add.image(centerX, centerY, 'background_generated').setAlpha(0.6);
+        this.add.image(centerX, centerY, "background_generated").setAlpha(0.6);
 
-        // Game Over Title
-        this.add.text(centerX, centerY - 100, 'Pollination Complete!', {
-            font: '48px "Arial Black"',
-            color: '#ffdd00', // Gold color
-            stroke: '#6a3d0a', // Dark brown stroke
-            strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5);
+        // Game Over Title - Use Luckiest Guy variable
+        this.add
+            .text(centerX, centerY - 110, "Pollination Complete!", {
+                fontFamily: "var(--font-luckiest-guy)", // Use CSS variable
+                fontSize: "54px", // Adjusted size
+                color: "#ffdd00",
+                stroke: "#8B4513", // SaddleBrown
+                strokeThickness: 9,
+                align: "center",
+                shadow: {
+                    offsetX: 3,
+                    offsetY: 3,
+                    color: "#4d2607",
+                    blur: 5,
+                    stroke: true,
+                    fill: true,
+                },
+            })
+            .setOrigin(0.5);
 
-        // Display Final Score
-        this.add.text(centerX, centerY, `Final Score: ${this.score}`, {
-            font: '36px Arial',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 5,
-            align: 'center'
-        }).setOrigin(0.5);
+        // Display Final Score - Use Poppins variable
+        this.add
+            .text(centerX, centerY + 10, `Final Score: ${this.score}`, {
+                fontFamily: "var(--font-poppins)", // Use CSS variable
+                fontSize: "40px", // Larger score
+                font: "bold 34px var(--font-poppins)", // Use bold Poppins
+                color: "#ffffff",
+                stroke: "#000000",
+                strokeThickness: 6, // Thicker stroke for visibility
+                align: "center",
+                shadow: {
+                    offsetX: 3,
+                    offsetY: 3,
+                    color: "#111",
+                    blur: 4,
+                    fill: true,
+                },
+            })
+            .setOrigin(0.5);
 
-        // Play Again Button
-        const playAgainButton = this.add.text(centerX, centerY + 100, 'Play Again?', {
-            font: '32px Arial',
-            color: '#ffffff',
-            backgroundColor: '#228B22', // ForestGreen
-            padding: {x: 20, y: 10},
-            // Consider using a background rectangle for true rounded corners
-        })
+        // Play Again Button - Use Poppins variable
+        const playAgainButton = this.add
+            .text(centerX, centerY + 110, "Play Again?", {
+                fontFamily: "var(--font-poppins)", // Use CSS variable
+                fontSize: "30px",
+                // fontWeight: "bold",
+                font: "bold 34px var(--font-poppins)", // Use bold Poppins
+                color: "#ffffff",
+                backgroundColor: "#2E8B57", // SeaGreen
+                padding: { x: 25, y: 12 }, // Adjusted padding
+                shadow: {
+                    offsetX: 2,
+                    offsetY: 2,
+                    color: "#111",
+                    blur: 2,
+                    fill: true,
+                },
+            })
             .setOrigin(0.5)
-            .setInteractive({useHandCursor: true});
+            .setInteractive({ useHandCursor: true });
 
         // Button Hover Effects
         const originalScale = playAgainButton.scale;
-        playAgainButton.on('pointerover', () => {
+        playAgainButton.on("pointerover", () => {
             this.tweens.add({
                 targets: playAgainButton,
-                scale: originalScale * 1.05,
+                scale: originalScale * 1.08,
                 duration: 100,
-                ease: 'Sine.easeInOut'
+                ease: "Sine.easeInOut",
             });
-            playAgainButton.setBackgroundColor('#3CB371'); // MediumSeaGreen
+            playAgainButton.setBackgroundColor("#3CB371");
         });
-        playAgainButton.on('pointerout', () => {
-            this.tweens.add({targets: playAgainButton, scale: originalScale, duration: 100, ease: 'Sine.easeInOut'});
-            playAgainButton.setBackgroundColor('#228B22');
+        playAgainButton.on("pointerout", () => {
+            this.tweens.add({
+                targets: playAgainButton,
+                scale: originalScale,
+                duration: 100,
+                ease: "Sine.easeInOut",
+            });
+            playAgainButton.setBackgroundColor("#2E8B57");
         });
 
         // Button Click Action
-        playAgainButton.on('pointerdown', () => {
-            // Optional: click visual feedback
+        playAgainButton.on("pointerdown", () => {
             this.tweens.add({
                 targets: playAgainButton,
                 scale: originalScale * 0.95,
                 duration: 80,
-                ease: 'Sine.easeInOut',
-                yoyo: true
+                ease: "Sine.easeInOut",
+                yoyo: true,
             });
-
             this.time.delayedCall(100, () => {
-                // Ensure UIScene is stopped if it was somehow still running
-                if (this.scene.isActive('UIScene')) {
-                    this.scene.stop('UIScene');
-                }
-                this.scene.start('MainMenu'); // Go back to the Main Menu
+                this.scene.start("MainMenu");
             });
         });
-
-        // EventBus.emit('CurrentSceneReady', this); // Removed
     }
 }
+

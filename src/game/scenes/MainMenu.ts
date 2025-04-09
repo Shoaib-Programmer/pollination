@@ -1,78 +1,108 @@
 // src/game/scenes/MainMenu.ts
-import {Scene} from 'phaser';
-
-// import EventBus from '../EventBus'; // Not needed for internal scene logic
+import { Scene } from "phaser";
 
 export class MainMenu extends Scene {
-
     constructor() {
-        super('MainMenu');
+        super("MainMenu");
     }
 
     create() {
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
 
-        this.add.image(centerX, centerY, 'background_generated');
+        this.add.image(centerX, centerY, "background_generated");
 
-        // Title - Added Shadow and slightly different font
-        this.add.text(centerX, centerY - 150, 'Pollination Fun!', {
-            fontFamily: '"Arial Black", Gadget, sans-serif', // More specific font stack
-            fontSize: '52px', // Slightly larger
-            color: '#ffff00',
-            stroke: '#4d2d0a',
-            strokeThickness: 8,
-            shadow: {offsetX: 3, offsetY: 3, color: '#2a1604', blur: 5, stroke: true, fill: true} // Added shadow
-        }).setOrigin(0.5);
+        // Title - Use Luckiest Guy variable
+        this.add
+            .text(centerX, centerY - 150, "Pollination Fun!", {
+                fontFamily: "var(--font-luckiest-guy)", // Use CSS variable
+                fontSize: "60px", // Even larger title
+                color: "#ffff00",
+                stroke: "#8B4513", // SaddleBrown stroke
+                strokeThickness: 10, // Thicker stroke
+                shadow: {
+                    offsetX: 4,
+                    offsetY: 4,
+                    color: "#4d2607",
+                    blur: 6,
+                    stroke: true,
+                    fill: true,
+                },
+            })
+            .setOrigin(0.5);
 
-        // Instructions - Added background for readability
-        const instructionBg = this.add.rectangle(centerX, centerY - 30, 500, 100, 0x000000, 0.6).setOrigin(0.5); // Semi-transparent background
-        this.add.text(centerX, centerY - 30, 'Use Arrow Keys to move the Bee.\nCollect pollen from a glowing flower\nand deliver it to another of the SAME color!', {
-            fontFamily: 'Arial, sans-serif', // Standard sans-serif
-            fontSize: '22px',
-            color: '#ffffff',
-            align: 'center',
-            // stroke: '#000000', // Can remove stroke if background provides enough contrast
-            // strokeThickness: 4,
-            lineSpacing: 8,
-            wordWrap: {width: instructionBg.width - 20} // Wrap text within background
-        }).setOrigin(0.5);
+        // Instructions - Use Poppins variable
+        const instructionBg = this.add
+            .rectangle(centerX, centerY - 15, 550, 110, 0x000000, 0.65)
+            .setOrigin(0.5);
+        this.add
+            .text(
+                centerX,
+                centerY - 15,
+                "Use Arrow Keys (or D-Pad on mobile)\nto move the Bee. Collect pollen from a\nglowing flower & deliver it to another\nof the SAME color!",
+                {
+                    fontFamily: "var(--font-poppins)", // Use CSS variable
+                    fontSize: "20px", // Slightly smaller for more text
+                    color: "#ffffff",
+                    align: "center",
+                    lineSpacing: 8,
+                    wordWrap: { width: instructionBg.width - 30 },
+                }
+            )
+            .setOrigin(0.5);
 
-        // Start Button - Added shadow
-        const startButton = this.add.text(centerX, centerY + 80, 'Start Game', {
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '36px',
-            color: '#ffffff',
-            backgroundColor: '#228B22',
-            padding: {x: 25, y: 12},
-            shadow: {offsetX: 2, offsetY: 2, color: '#111', blur: 2, fill: true} // Added button shadow
-        })
+        // Start Button - Use Poppins variable
+        const startButton = this.add
+            .text(centerX, centerY + 95, "Start Game", {
+                fontFamily: "var(--font-poppins)", // Use CSS variable
+                fontSize: "34px",
+                font: "bold 34px var(--font-poppins)", // Use bold Poppins
+                color: "#ffffff",
+                backgroundColor: "#2E8B57", // SeaGreen
+                padding: { x: 30, y: 15 }, // Bigger padding
+                shadow: {
+                    offsetX: 2,
+                    offsetY: 2,
+                    color: "#111",
+                    blur: 2,
+                    fill: true,
+                },
+            })
             .setOrigin(0.5)
-            .setInteractive({useHandCursor: true});
+            .setInteractive({ useHandCursor: true });
 
         // Button Hover Effects
         const originalScale = startButton.scale;
-        startButton.on('pointerover', () => {
-            this.tweens.add({targets: startButton, scale: originalScale * 1.1, duration: 150, ease: 'Sine.easeInOut'});
-            startButton.setBackgroundColor('#3CB371');
+        startButton.on("pointerover", () => {
+            this.tweens.add({
+                targets: startButton,
+                scale: originalScale * 1.08,
+                duration: 150,
+                ease: "Sine.easeInOut",
+            });
+            startButton.setBackgroundColor("#3CB371"); // MediumSeaGreen
         });
-        startButton.on('pointerout', () => {
-            this.tweens.add({targets: startButton, scale: originalScale, duration: 150, ease: 'Sine.easeInOut'});
-            startButton.setBackgroundColor('#228B22');
+        startButton.on("pointerout", () => {
+            this.tweens.add({
+                targets: startButton,
+                scale: originalScale,
+                duration: 150,
+                ease: "Sine.easeInOut",
+            });
+            startButton.setBackgroundColor("#2E8B57"); // Back to SeaGreen
         });
 
         // Button Click Action
-        startButton.on('pointerdown', () => {
+        startButton.on("pointerdown", () => {
             this.tweens.add({
                 targets: startButton,
                 scale: originalScale * 0.95,
                 duration: 80,
-                ease: 'Sine.easeInOut',
-                yoyo: true
+                ease: "Sine.easeInOut",
+                yoyo: true,
             });
             this.time.delayedCall(100, () => {
-                this.scene.start('Game');
-                // Don't launch UIScene anymore
+                this.scene.start("Game");
             });
         });
     }
