@@ -14,9 +14,9 @@ const config: {
     height: number;
     parent: string;
     backgroundColor: string;
-    physics: { default: string; arcade: { gravity: { y: number }; debug: boolean } };
-    scene: (Boot | Preloader | MainMenu | Game | GameOver)[]
-} = { // You can simplify the type annotation
+    physics: { default: string; arcade: { gravity: { x: number, y: number }; debug: boolean } };
+    scene: (typeof Boot | typeof Preloader | typeof MainMenu | typeof Game | typeof GameOver)[]
+} = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
@@ -25,7 +25,7 @@ const config: {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 0 },
+            gravity: { x: 0, y: 0 },
             debug: false
         }
     },

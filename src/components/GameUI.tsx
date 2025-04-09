@@ -1,6 +1,6 @@
 // src/components/GameUI.tsx
-import React, { useState, useEffect, useRef } from 'react';
-import styles from '@/styles/GameUI.module.css'; // Import CSS module
+import React, { useState, useEffect, useRef } from "react";
+import styles from "@/styles/GameUI.module.css"; // Import CSS module
 
 interface GameUIProps {
     initialScore?: number;
@@ -9,10 +9,10 @@ interface GameUIProps {
 }
 
 export const GameUI: React.FC<GameUIProps> = ({
-                                                  initialScore = 0,
-                                                  initialFact = '',
-                                                  listenTo, // Receive the EventBus instance
-                                              }) => {
+    initialScore = 0,
+    initialFact = "",
+    listenTo, // Receive the EventBus instance
+}) => {
     const [score, setScore] = useState<number>(initialScore);
     const [currentFact, setCurrentFact] = useState<string>(initialFact);
     const [isFactVisible, setIsFactVisible] = useState<boolean>(false);
@@ -47,14 +47,14 @@ export const GameUI: React.FC<GameUIProps> = ({
         };
 
         // Attach listeners
-        listenTo.on('update-score', handleScoreUpdate);
-        listenTo.on('show-fact', handleShowFact);
+        listenTo.on("update-score", handleScoreUpdate);
+        listenTo.on("show-fact", handleShowFact);
 
         // Cleanup function: Remove listeners when component unmounts or EventBus changes
         return () => {
             // console.log('GameUI cleaning up listeners');
-            listenTo.off('update-score', handleScoreUpdate);
-            listenTo.off('show-fact', handleShowFact);
+            listenTo.off("update-score", handleScoreUpdate);
+            listenTo.off("show-fact", handleShowFact);
             // Clear timeout on cleanup
             if (factTimeoutRef.current) {
                 clearTimeout(factTimeoutRef.current);
@@ -65,12 +65,12 @@ export const GameUI: React.FC<GameUIProps> = ({
     return (
         <div className={styles.uiOverlay}>
             {/* Score Box */}
-            <div className={styles.scoreBox}>
-                Score: {score}
-            </div>
+            <div className={styles.scoreBox}>Score: {score}</div>
 
             {/* Fact Box - Use conditional class for visibility */}
-            <div className={`${styles.factBox} ${isFactVisible ? styles.factBoxVisible : ''}`}>
+            <div
+                className={`${styles.factBox} ${isFactVisible ? styles.factBoxVisible : ""}`}
+            >
                 {currentFact}
             </div>
         </div>

@@ -67,7 +67,7 @@ export class Preloader extends Scene {
         console.log("Preloader: Create - Starting texture generation...");
         const updateProgress = this.registry.get('updateProgress');
 
-        const graphics = this.make.graphics({x: 0, y: 0, add: false});
+        const graphics = this.make.graphics({x: 0, y: 0});
 
         // --- 1. Generate Background Texture (Grass Only) ---
         const bgWidth = this.cameras.main.width;
