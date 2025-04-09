@@ -3,42 +3,41 @@ import React, { useRef, useState, useEffect } from "react"; // Added useEffect
 import PhaserGame, { PhaserGameRef } from "@/game/PhaserGame";
 import EventBus from "@/game/EventBus";
 import { GameUI } from "@/components/GameUI";
-import { MobileControls } from "@/components/MobileControls"; // Import Mobile Controls
+import { MobileControls } from "@/components/MobileControls"; // Import MobileControls
 
 function App() {
     const phaserGameRef = useRef<PhaserGameRef>(null);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
 
-    // Check for touch support on component mount (client-side only)
+    // Check for touch device on component mount (client-side only)
     useEffect(() => {
-        // Basic check for touch event support
-        const touchSupport =
+        const checkForTouch = () =>
             "ontouchstart" in window || navigator.maxTouchPoints > 0;
-        setIsTouchDevice(touchSupport);
-        console.log("Is Touch Device:", touchSupport);
-    }, []);
+        setIsTouchDevice(checkForTouch());
+    }, []); // Empty dependency array ensures this runs only once on mount
 
     return (
-        // Container needs defined dimensions and relative positioning
+        // Main container styling ensures proper sizing and context
         <div
             style={{
                 position: "relative",
-                width: "800px", // Or use responsive width like '100vw' or '90%'
-                maxWidth: "800px", // Ensure it doesn't get too wide
-                height: "600px", // Or use responsive height like '100vh' or aspect ratio padding
-                maxHeight: "600px",
+                width: "800px", // Or use responsive units like '90vw', '800px max-width' etc.
+                height: "600px", // Or use responsive units like '90vh', '600px max-height' etc.
+                maxWidth: "100vw", // Prevent overflow on small screens
+                maxHeight: "100vh",
                 margin: "auto",
-                border: "1px solid #ccc" /* Optional border */,
-                overflow: "hidden", // Prevent controls spilling out if container is smaller
+                border: "1px solid #444", // Optional border for visual structure
+                overflow: "hidden", // Clip content
+                backgroundColor: "#000", // Fallback background
             }}
         >
             {/* Phaser Game Component */}
             <PhaserGame ref={phaserGameRef} />
 
-            {/* React UI Overlay Component - Pass the imported EventBus */}
+            {/* React UI Overlay Component */}
             <GameUI listenTo={EventBus} />
 
-            {/* Conditionally Render Mobile Controls */}
+            {/* Conditionally render Mobile Controls */}
             {isTouchDevice && <MobileControls />}
         </div>
     );

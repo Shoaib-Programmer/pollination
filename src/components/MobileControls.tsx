@@ -1,93 +1,98 @@
 // src/components/MobileControls.tsx
-import React, { useState, useCallback } from "react";
+import React, { useState, PointerEvent } from "react";
 import styles from "@/styles/MobileControls.module.css";
-import EventBus from "@/game/EventBus"; // Import the central EventBus
+import EventBus from "@/game/EventBus"; // Use the global EventBus
 
-type Direction = "up" | "down" | "left" | "right";
+type DPadDirection = "up" | "down" | "left" | "right";
 
 export const MobileControls: React.FC = () => {
-    // State to track which button is visually pressed
-    const [pressed, setPressed] = useState<Partial<Record<Direction, boolean>>>(
-        {},
+    // State to track which button is actively pressed for styling
+    const [pressedButton, setPressedButton] = useState<DPadDirection | null>(
+        null
     );
 
-    const handlePress = useCallback(
-        (direction: Direction, e: React.MouseEvent | React.TouchEvent) => {
-            e.preventDefault(); // Prevent default actions like scrolling or double-tap zoom
-            setPressed((prev) => ({ ...prev, [direction]: true }));
-            EventBus.emit("dpad", { direction, active: true });
-            // console.log(`DPad Press: ${direction}`);
-        },
-        [],
-    );
+    const handlePointerDown = (
+        e: PointerEvent<HTMLButtonElement>,
+        direction: DPadDirection
+    ) => {
+        // Prevent default actions like text selection or drag
+        e.preventDefault();
+        // Capture the pointer to ensure pointerup is received even if cursor moves off
+        (e.target as HTMLButtonElement).setPointerCapture(e.pointerId);
+        setPressedButton(direction);
+        EventBus.emit("dpad", { direction, active: true });
+        // console.log(`DPad Down: ${direction}`);
+    };
 
-    const handleRelease = useCallback(
-        (direction: Direction, e?: React.MouseEvent | React.TouchEvent) => {
-            e?.preventDefault();
-            setPressed((prev) => ({ ...prev, [direction]: false }));
+    const handlePointerUp = (
+        e: PointerEvent<HTMLButtonElement>,
+        direction: DPadDirection
+    ) => {
+        e.preventDefault();
+        // Release pointer capture
+        (e.target as HTMLButtonElement).releasePointerCapture(e.pointerId);
+        // Only deactivate if this is the currently pressed button
+        if (pressedButton === direction) {
+            setPressedButton(null);
             EventBus.emit("dpad", { direction, active: false });
-            // console.log(`DPad Release: ${direction}`);
-        },
-        [],
-    );
+            // console.log(`DPad Up: ${direction}`);
+        }
+    };
 
-    // Handle cases where touch/mouse leaves the button area while still pressed down
-    const handleReleaseAll = useCallback(
-        (e?: React.MouseEvent | React.TouchEvent) => {
-            e?.preventDefault();
-            // Release any direction that might still be considered pressed
-            (Object.keys(pressed) as Direction[]).forEach((dir) => {
-                if (pressed[dir]) {
-                    handleRelease(dir);
-                }
-            });
-            // console.log(`DPad Release All`);
-        },
-        [pressed, handleRelease],
-    );
+    // Handle pointer leaving the button area *while pressed*
+    const handlePointerLeave = (
+        e: PointerEvent<HTMLButtonElement>,
+        direction: DPadDirection
+    ) => {
+        if (pressedButton === direction) {
+            // Optional: Decide if leaving should cancel the press.
+            // For continuous movement, it's often better *not* to cancel here,
+            // rely on pointerup/pointercancel instead.
+            // setPressedButton(null);
+            // EventBus.emit('dpad', { direction, active: false });
+        }
+    };
+
+    // Handle unexpected pointer cancellation (e.g., browser interruption)
+    const handlePointerCancel = (
+        e: PointerEvent<HTMLButtonElement>,
+        direction: DPadDirection
+    ) => {
+        if (pressedButton === direction) {
+            setPressedButton(null);
+            EventBus.emit("dpad", { direction, active: false });
+            // console.log(`DPad Cancel: ${direction}`);
+        }
+    };
+
+    // Helper to generate button props
+    const getButtonProps = (direction: DPadDirection) => ({
+        className: `${styles.dpadButton} ${styles[direction]} ${
+            pressedButton === direction ? styles.dpadButtonPressed : ""
+        }`,
+        onPointerDown: (e: PointerEvent<HTMLButtonElement>) =>
+            handlePointerDown(e, direction),
+        onPointerUp: (e: PointerEvent<HTMLButtonElement>) =>
+            handlePointerUp(e, direction),
+        onPointerLeave: (e: PointerEvent<HTMLButtonElement>) =>
+            handlePointerLeave(e, direction),
+        onPointerCancel: (e: PointerEvent<HTMLButtonElement>) =>
+            handlePointerCancel(e, direction),
+        // Prevent context menu on long press
+        onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+    });
 
     return (
         <div className={styles.dpadContainer}>
-            {/* Up Button */}
-            <div
-                className={`${styles.dpadButton} ${styles.up} ${pressed.up ? styles.dpadButtonPressed : ""}`}
-                onTouchStart={(e) => handlePress("up", e)}
-                onTouchEnd={(e) => handleRelease("up", e)}
-                onTouchCancel={handleReleaseAll} // Handle interruption
-                onMouseDown={(e) => handlePress("up", e)}
-                onMouseUp={(e) => handleRelease("up", e)}
-                onMouseLeave={(e) => pressed.up && handleRelease("up", e)} // Release if mouse leaves while pressed
-            />
-            {/* Down Button */}
-            <div
-                className={`${styles.dpadButton} ${styles.down} ${pressed.down ? styles.dpadButtonPressed : ""}`}
-                onTouchStart={(e) => handlePress("down", e)}
-                onTouchEnd={(e) => handleRelease("down", e)}
-                onTouchCancel={handleReleaseAll}
-                onMouseDown={(e) => handlePress("down", e)}
-                onMouseUp={(e) => handleRelease("down", e)}
-                onMouseLeave={(e) => pressed.down && handleRelease("down", e)}
-            />
-            {/* Left Button */}
-            <div
-                className={`${styles.dpadButton} ${styles.left} ${pressed.left ? styles.dpadButtonPressed : ""}`}
-                onTouchStart={(e) => handlePress("left", e)}
-                onTouchEnd={(e) => handleRelease("left", e)}
-                onTouchCancel={handleReleaseAll}
-                onMouseDown={(e) => handlePress("left", e)}
-                onMouseUp={(e) => handleRelease("left", e)}
-                onMouseLeave={(e) => pressed.left && handleRelease("left", e)}
-            />
-            {/* Right Button */}
-            <div
-                className={`${styles.dpadButton} ${styles.right} ${pressed.right ? styles.dpadButtonPressed : ""}`}
-                onTouchStart={(e) => handlePress("right", e)}
-                onTouchEnd={(e) => handleRelease("right", e)}
-                onTouchCancel={handleReleaseAll}
-                onMouseDown={(e) => handlePress("right", e)}
-                onMouseUp={(e) => handleRelease("right", e)}
-                onMouseLeave={(e) => pressed.right && handleRelease("right", e)}
-            />
+            <button {...getButtonProps("up")} aria-label="Move Up"></button>
+            <button {...getButtonProps("left")} aria-label="Move Left"></button>
+            {/* Optional: Central spacer element if needed */}
+            {/* <div style={{ gridArea: '2 / 2 / 3 / 3' }}></div> */}
+            <button
+                {...getButtonProps("right")}
+                aria-label="Move Right"
+            ></button>
+            <button {...getButtonProps("down")} aria-label="Move Down"></button>
         </div>
     );
 };
