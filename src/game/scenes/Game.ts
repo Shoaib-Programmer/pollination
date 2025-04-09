@@ -1,6 +1,6 @@
 // src/game/scenes/Game.ts
 import Phaser, {Scene} from 'phaser';
-import EventBus from '../EventBus'; // Import the central EventBus
+// Removed: import EventBus from '../EventBus';
 
 // Define an interface for Flower data
 interface FlowerData {
@@ -9,7 +9,7 @@ interface FlowerData {
     isPollinated: boolean;
 }
 
-// Define ArcadePhysicsCallback type alias if not globally available
+// Define ArcadePhysicsCallback type alias
 type ArcadePhysicsCallback = (
     object1: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
     object2: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
@@ -21,7 +21,7 @@ export class Game extends Scene {
     private flowers!: Phaser.Physics.Arcade.StaticGroup;
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private score: number = 0;
-    private facts: string[] = [
+    private facts: string[] = [ /* Fact strings... */
         "Bees are responsible for pollinating about 1/3 of the food we eat!",
         "Some flowers only open at night for nocturnal pollinators like moths and bats.",
         "Honeybees communicate flower locations using a 'waggle dance'.",
@@ -48,11 +48,8 @@ export class Game extends Scene {
 
         // --- Player (Bee) ---
         this.bee = this.physics.add.sprite(100, this.cameras.main.height / 2, 'bee_generated');
-        this.bee.setCollideWorldBounds(true);
-        this.bee.setBounce(0.1);
-        this.bee.setDepth(10);
-        this.bee.setBodySize(this.bee.width * 0.8, this.bee.height * 0.8);
-        this.bee.setOrigin(0.5, 0.5);
+        this.bee.setCollideWorldBounds(true).setBounce(0.1).setDepth(10);
+        this.bee.setBodySize(this.bee.width * 0.8, this.bee.height * 0.8).setOrigin(0.5, 0.5);
 
         // --- Flowers ---
         this.flowers = this.physics.add.staticGroup();
@@ -82,11 +79,14 @@ export class Game extends Scene {
         if (this.pollenIndicator) this.pollenIndicator.destroy();
         this.pollenIndicator = null;
 
-        // --- Emit initial state to React UI via EventBus ---
-        EventBus.emit('update-score', this.score);
-        EventBus.emit('show-fact', 'Fly to a glowing flower (yellow tint) to collect pollen!');
+        // --- Emit initial state via INTERNAL scene events ---
+        this.events.emit('game:update-score', this.score); // Use internal emitter
+        this.events.emit('game:show-fact', 'Fly to a glowing flower (yellow tint) to collect pollen!'); // Use internal emitter
+        // ---------------------------------------------------
 
-        // EventBus.emit('CurrentSceneReady', this); // Keep this commented
+        // Emit scene readiness for potential future use by PhaserGame bridge
+        this.events.emit('scene-ready', this); // Emit reference to this scene
+        console.log("Game scene emitted scene-ready");
     }
 
     update(time: number, delta: number) {
@@ -101,38 +101,26 @@ export class Game extends Scene {
         Phaser.Utils.Array.Shuffle(flowerChildren);
         let pollenCount = 0;
         const maxPollen = Math.ceil(flowerChildren.length / 2);
-
-        // console.log(`Assigning initial pollen to max ${maxPollen} flowers.`);
-
         for (const flower of flowerChildren) {
             if (pollenCount >= maxPollen) break;
             const data = flower?.getData('flowerData') as FlowerData | undefined;
             if (flower && data && !data.isPollinated && !data.hasPollen) {
                 data.hasPollen = true;
-                flower.setTint(0xFFFF00); // Bright Yellow tint
-                // console.log(`Assigned initial pollen to flower at (${flower.x.toFixed(0)}, ${flower.y.toFixed(0)})`);
+                flower.setTint(0xFFFF00); // Bright Yellow
                 pollenCount++;
             }
         }
-        // if (pollenCount < maxPollen) {
-        //     console.warn(`Could only assign initial pollen to ${pollenCount} flowers.`);
-        // }
     }
 
     spawnFlowers(count: number, type: 'red' | 'blue') {
         const texture = `flower_${type}_generated`;
-        const margin = 60;
-        const spacing = 80;
-
+        const margin = 60, spacing = 80, maxAttempts = 20;
         for (let i = 0; i < count; i++) {
             let x, y, validPosition, attempts = 0;
-            const maxAttempts = 20;
-
             do {
                 validPosition = true;
                 x = Phaser.Math.Between(margin, this.cameras.main.width - margin);
                 y = Phaser.Math.Between(margin + 60, this.cameras.main.height - margin);
-
                 this.flowers.children.iterate((existingFlower) => {
                     if (!existingFlower) return true;
                     const sprite = existingFlower as Phaser.Physics.Arcade.Sprite;
@@ -144,7 +132,6 @@ export class Game extends Scene {
                 });
                 attempts++;
                 if (attempts > maxAttempts) break;
-
             } while (!validPosition);
 
             if (validPosition) {
@@ -152,11 +139,7 @@ export class Game extends Scene {
                 if (flower) {
                     flower.setData('flowerData', {type: type, hasPollen: false, isPollinated: false} as FlowerData);
                     const bodyRadius = flower.width * 0.35;
-                    flower.setCircle(bodyRadius);
-                    const offsetX = (flower.width / 2) - bodyRadius;
-                    const offsetY = (flower.height / 2) - bodyRadius;
-                    flower.setOffset(offsetX, offsetY);
-                    flower.refreshBody();
+                    flower.setCircle(bodyRadius).setOffset((flower.width / 2) - bodyRadius, (flower.height / 2) - bodyRadius).refreshBody();
                 }
             }
         }
@@ -164,31 +147,20 @@ export class Game extends Scene {
 
     handlePlayerMovement(delta: number) {
         if (!this.cursors || !this.bee?.body) return;
-
         const speed = 250;
         this.bee.setVelocity(0);
-        let moveX = 0;
-        let moveY = 0;
-
-        if (this.cursors.left.isDown) moveX = -1;
-        else if (this.cursors.right.isDown) moveX = 1;
-        if (this.cursors.up.isDown) moveY = -1;
-        else if (this.cursors.down.isDown) moveY = 1;
-
+        let moveX = 0, moveY = 0;
+        if (this.cursors.left.isDown) moveX = -1; else if (this.cursors.right.isDown) moveX = 1;
+        if (this.cursors.up.isDown) moveY = -1; else if (this.cursors.down.isDown) moveY = 1;
         const moveVector = new Phaser.Math.Vector2(moveX, moveY);
         if (moveVector.length() > 0) moveVector.normalize();
-
         this.bee.setVelocity(moveVector.x * speed, moveVector.y * speed);
-
-        if (moveX < 0) this.bee.setFlipX(true);
-        else if (moveX > 0) this.bee.setFlipX(false);
+        if (moveX < 0) this.bee.setFlipX(true); else if (moveX > 0) this.bee.setFlipX(false);
     }
 
     handleBeeFlowerCollision(beeGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile, flowerGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile) {
         if (!(beeGO instanceof Phaser.Physics.Arcade.Sprite) || !(flowerGO instanceof Phaser.Physics.Arcade.Sprite)) return;
-
-        const bee = beeGO as Phaser.Physics.Arcade.Sprite;
-        const flower = flowerGO as Phaser.Physics.Arcade.Sprite;
+        const bee = beeGO as Phaser.Physics.Arcade.Sprite, flower = flowerGO as Phaser.Physics.Arcade.Sprite;
         const data = flower.getData('flowerData') as FlowerData | undefined;
         if (!data) return;
 
@@ -197,37 +169,35 @@ export class Game extends Scene {
             this.carryingPollen.type = data.type;
             data.hasPollen = false;
             flower.clearTint();
-
             if (this.pollenIndicator) this.pollenIndicator.destroy();
-            this.pollenIndicator = this.add.sprite(this.bee.x, this.bee.y - 25, 'pollen_particle_generated')
-                .setScale(2.5).setDepth(11).setTint(data.type === 'red' ? 0xffaaaa : 0xaaaaff);
-
+            this.pollenIndicator = this.add.sprite(this.bee.x, this.bee.y - 25, 'pollen_particle_generated').setScale(2.5).setDepth(11).setTint(data.type === 'red' ? 0xffaaaa : 0xaaaaff);
             this.createParticles(flower.x, flower.y, 'pollen_particle_generated', 0xFFFF00, 15);
-            EventBus.emit('show-fact', `Collected ${data.type} pollen! Find another ${data.type} flower.`);
+            // --- Emit internal scene event ---
+            this.events.emit('game:show-fact', `Collected ${data.type} pollen! Find another ${data.type} flower.`); // Use internal emitter
+            // ---------------------------------
         }
         // --- Pollen Delivery ---
         else if (this.carryingPollen.type && data.type === this.carryingPollen.type && !data.isPollinated && !data.hasPollen) {
             data.isPollinated = true;
             flower.setTint(0x90EE90);
-
             this.score += 10;
-            EventBus.emit('update-score', this.score); // Use EventBus
-
+            // --- Emit internal scene events ---
+            this.events.emit('game:update-score', this.score); // Use internal emitter
             const randomFact = Phaser.Math.RND.pick(this.facts);
-            EventBus.emit('show-fact', `Pollinated! ${randomFact}`); // Use EventBus
-
+            this.events.emit('game:show-fact', `Pollinated! ${randomFact}`); // Use internal emitter
+            // ----------------------------------
             if (this.pollenIndicator) {
                 this.pollenIndicator.destroy();
                 this.pollenIndicator = null;
             }
             this.carryingPollen.type = null;
-
             this.createParticles(flower.x, flower.y, 'pollen_particle_generated', 0x90EE90, 25);
 
             if (this.checkAllPollinated()) {
-                EventBus.emit('show-fact', `All flowers pollinated! Great job!`); // Use EventBus
+                // --- Emit internal scene event ---
+                this.events.emit('game:show-fact', `All flowers pollinated! Great job!`); // Use internal emitter
+                // ---------------------------------
                 this.time.delayedCall(1500, () => {
-                    // No UIScene to stop
                     this.scene.start('GameOver', {score: this.score});
                 });
             } else {
@@ -262,7 +232,9 @@ export class Game extends Scene {
                     data.hasPollen = true;
                     flowerToAddPollen.setTint(0xFFFF00);
                     this.createParticles(flowerToAddPollen.x, flowerToAddPollen.y, 'pollen_particle_generated', 0xFFFF00, 10);
-                    EventBus.emit('show-fact', 'More pollen has appeared!'); // Use EventBus
+                    // --- Emit internal scene event ---
+                    this.events.emit('game:show-fact', 'More pollen has appeared!'); // Use internal emitter
+                    // ---------------------------------
                 }
             }
         }
@@ -276,13 +248,11 @@ export class Game extends Scene {
 
     createParticles(x: number, y: number, texture: string, tint: number, count: number = 10) {
         if (!this.textures.exists(texture)) return;
-
         const particles = this.add.particles(x, y, texture, {
             speed: {min: 50, max: 150}, angle: {min: 0, max: 360},
             scale: {start: 1.5, end: 0}, lifespan: {min: 300, max: 600},
             gravityY: 80, blendMode: 'ADD', tint: tint, emitting: false
         });
-
         if (particles) {
             particles.explode(count);
             this.time.delayedCall(1500, () => {
