@@ -24,8 +24,10 @@
     "scripts": {
         "dev": "bun log.js dev & next dev -p 8080 --turbopack",
         "build": "bun log.js build & next build",
+        "start": "bun log.js start & next start -p 3000",
         "dev-nolog": "next dev -p 8080",
-        "build-nolog": "next build"
+        "build-nolog": "next build",
+        "start-nolog": "next start -p 3000"
     },
     "dependencies": {
         "@gsap/react": "^2.1.2",
@@ -44,3 +46,4 @@
         "typescript": "^5"
     }
 }
+
