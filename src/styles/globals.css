@@ -8,7 +8,6 @@
     /* --font-luckiest-guy: ; /* Next.js injects this if using next/font */
 
     /* --- OR Fallbacks/Direct Definition (if not using next/font correctly) --- */
-    /* These are just examples, replace with your actual font setup */
     --font-poppins-family: "Poppins", -apple-system, BlinkMacSystemFont,
         Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,
         Helvetica Neue, sans-serif;

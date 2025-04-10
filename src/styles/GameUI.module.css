@@ -33,7 +33,7 @@
 }
 
 .factBox {
-    /* Positioned by flexbox parent now, remove absolute/transform */
+    /* --- Layout & Styling --- */
     align-self: center; /* Align to the center horizontally */
     width: 100%;
     max-width: 650px; /* Adjust max width */
@@ -53,20 +53,19 @@
     box-shadow: inset 0 1px 1px var(--ui-shadow-light),
         0 4px 10px var(--ui-shadow-dark);
     border: 1px solid rgba(255, 255, 255, 0.08); /* Very subtle border */
-    opacity: 0;
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out; /* Add transform transition */
-    visibility: hidden;
-    transform: translateY(15px); /* Start slightly lower */
-    /* Add backdrop filter (optional) */
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
+
+    /* --- REMOVE/COMMENT OUT these conflicting properties --- */
+    /* opacity: 0; */ /* Let GSAP handle initial opacity */
+    /* transition: opacity 0.4s ease-out, transform 0.4s ease-out; */ /* REMOVE transition */
+    /* transform: translateY(15px); */ /* Let GSAP handle initial transform */
+
+    /* --- Keep visibility hidden initially before JS runs --- */
+    visibility: hidden;
 }
 
-.factBoxVisible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0); /* Move up to final position */
-}
+/* --- NO .factBoxVisible class needed for GSAP --- */
 
 /* Media Query for smaller screens */
 @media (max-width: 768px) {

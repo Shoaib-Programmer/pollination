@@ -8,12 +8,12 @@ type DPadDirection = "up" | "down" | "left" | "right";
 export const MobileControls: React.FC = () => {
     // State to track which button is actively pressed for styling
     const [pressedButton, setPressedButton] = useState<DPadDirection | null>(
-        null
+        null,
     );
 
     const handlePointerDown = (
         e: PointerEvent<HTMLButtonElement>,
-        direction: DPadDirection
+        direction: DPadDirection,
     ) => {
         // Prevent default actions like text selection or drag
         e.preventDefault();
@@ -26,7 +26,7 @@ export const MobileControls: React.FC = () => {
 
     const handlePointerUp = (
         e: PointerEvent<HTMLButtonElement>,
-        direction: DPadDirection
+        direction: DPadDirection,
     ) => {
         e.preventDefault();
         // Release pointer capture
@@ -42,7 +42,7 @@ export const MobileControls: React.FC = () => {
     // Handle pointer leaving the button area *while pressed*
     const handlePointerLeave = (
         e: PointerEvent<HTMLButtonElement>,
-        direction: DPadDirection
+        direction: DPadDirection,
     ) => {
         if (pressedButton === direction) {
             // Optional: Decide if leaving should cancel the press.
@@ -56,7 +56,7 @@ export const MobileControls: React.FC = () => {
     // Handle unexpected pointer cancellation (e.g., browser interruption)
     const handlePointerCancel = (
         e: PointerEvent<HTMLButtonElement>,
-        direction: DPadDirection
+        direction: DPadDirection,
     ) => {
         if (pressedButton === direction) {
             setPressedButton(null);
