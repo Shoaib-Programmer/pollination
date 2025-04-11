@@ -28,6 +28,12 @@ export class Game extends Scene {
     private isMoving: boolean = false;
     private inputEnabled: boolean = true; // Flag controls body enable/disable in update
 
+    // --- Timer Properties ---
+    private gameDuration: number = 60; // Seconds (1 minute)
+    private timerValue: number = 0;
+    private gameTimerEvent!: Phaser.Time.TimerEvent;
+    // --------------------------
+
     constructor() {
         super("Game");
     }
@@ -94,14 +100,26 @@ export class Game extends Scene {
         this.isMoving = false;
         this.inputEnabled = true; // Start enabled
 
-        // Emit Initial Score ONLY
+        // --- Initialize Timer ---
+        this.timerValue = this.gameDuration;
+        this.gameTimerEvent = this.time.addEvent({
+            delay: 1000, // 1 second in ms
+            callback: this.decrementTimer,
+            callbackScope: this,
+            loop: true,
+        });
+        // -----------------------
+
+        // Emit Initial UI Events (Score and Timer)
         this.events.emit("game:update-score", this.score);
-        // Initial instructions are no longer sent via 'game:show-fact' to avoid modal
+        this.events.emit("game:update-timer", this.timerValue); // Emit initial timer value
+        // Do NOT emit initial fact here to avoid immediate modal
 
         // Scene Cleanup Logic
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             EventBus.off("dpad", this.handleDpadInput, this);
             EventBus.off("game:set-input-active", this.setInputActive, this);
+            this.gameTimerEvent?.destroy(); // Clean up timer event
             this.wingFlapTween?.kill();
             this.wingFlapTween = null;
             gsap.killTweensOf(this.bee);
@@ -110,28 +128,86 @@ export class Game extends Scene {
         });
     }
 
-    // Method to enable/disable input FLAG ONLY (Body enable/disable is handled in update)
+    // Method to enable/disable input AND pause/resume timer
     private setInputActive(isActive: boolean) {
         if (this.inputEnabled === isActive) return; // No change needed
 
         this.inputEnabled = isActive;
+        const beeBody = this.bee?.body as
+            | Phaser.Physics.Arcade.Body
+            | undefined;
 
-        // Reset input state immediately when enabling
-        if (isActive) {
-            this.input.keyboard?.resetKeys();
+        if (!isActive) {
+            // --- Disable ---
+            // Note: Body disable/enable happens in update loop now
+            // Pause Timer
+            if (this.gameTimerEvent) this.gameTimerEvent.paused = true;
+            // Reset DPad state
             this.dpadState = {
                 up: false,
                 down: false,
                 left: false,
                 right: false,
             };
-            // Reset visual state immediately
-            this.isMoving = false;
+            // Stop wing animation visually
+            if (this.isMoving && this.wingFlapTween) {
+                this.wingFlapTween.pause();
+                gsap.to(this.bee, { scaleY: 1, duration: 0.1 });
+                this.isMoving = false;
+            }
+        } else {
+            // --- Enable ---
+            // Note: Body enable/disable happens in update loop now
+            // Resume Timer
+            if (this.gameTimerEvent) this.gameTimerEvent.paused = false;
+            // Reset keyboard keys state
+            this.input.keyboard?.resetKeys();
+            this.dpadState = {
+                up: false,
+                down: false,
+                left: false,
+                right: false,
+            }; // Also reset DPad on enable
+            this.isMoving = false; // Reset visual state
             this.wingFlapTween?.pause();
             gsap.to(this.bee, { scaleY: 1, duration: 0.05 });
         }
-        // Disabling actions are handled in the update loop now
     }
+
+    // --- Timer Decrement Function ---
+    private decrementTimer() {
+        // Check Phaser's internal paused state for the event first
+        if (this.gameTimerEvent.paused) {
+            return;
+        }
+
+        this.timerValue--; // Decrement the tracked time
+
+        // Emit the update event for the UI
+        this.events.emit("game:update-timer", this.timerValue);
+
+        // Check if time has run out
+        if (this.timerValue <= 0) {
+            this.inputEnabled = false; // Prevent further actions by setting flag
+            // Let the update loop handle disabling the body and stopping velocity
+            this.gameTimerEvent.paused = true; // Stop timer callbacks for good
+
+            // Emit Time's Up message for the modal
+            this.events.emit("game:show-fact", "Time's Up!");
+
+            // Transition to GameOver after a short delay to show the message
+            this.time.delayedCall(1500, () => {
+                if (this.scene.isActive()) {
+                    // Ensure scene is still active before starting another
+                    this.scene.start("GameOver", {
+                        score: this.score,
+                        reason: "time",
+                    }); // Pass score and optional reason
+                }
+            });
+        }
+    }
+    // ----------------------------------
 
     // Handles DPad input events
     private handleDpadInput(data: {
@@ -160,7 +236,7 @@ export class Game extends Scene {
         });
     }
 
-    // --- Main game loop update method - THE CONTROLLER ---
+    // --- Main game loop update method - Controls body enable/disable ---
     update(time: number, delta: number) {
         const beeBody = this.bee?.body as
             | Phaser.Physics.Arcade.Body
@@ -432,7 +508,7 @@ export class Game extends Scene {
             this.events.emit("game:update-score", this.score); // Update score
             const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS); // Use imported facts
             if (this.pollenIndicator) {
-                /* Animate indicator out */
+                // Animate indicator out
                 this.pollenIndicatorTween?.stop();
                 this.tweens.add({
                     targets: this.pollenIndicator,
