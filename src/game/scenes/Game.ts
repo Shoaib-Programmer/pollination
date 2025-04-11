@@ -2,6 +2,7 @@
 import Phaser, { Scene } from "phaser";
 import EventBus from "../EventBus"; // Import EventBus for DPad and input control
 import gsap from "gsap"; // Import GSAP for animations
+import POLLINATION_FACTS from "../data/pollinationFacts"; // Import the facts array
 
 // Define an interface for Flower data
 interface FlowerData {
@@ -18,34 +19,14 @@ export class Game extends Scene {
     private flowers!: Phaser.Physics.Arcade.StaticGroup;
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private score: number = 0;
-    private facts: string[] = [
-        // Educational facts for the modal
-        "Bees are responsible for pollinating about 1/3 of the food we eat!",
-        "Some flowers only open at night for nocturnal pollinators like moths and bats.",
-        "Honeybees communicate flower locations using a 'waggle dance'.",
-        "Not all bees make honey! Many bee species are solitary.",
-        "Pollinators include bees, butterflies, moths, beetles, flies, birds, and bats.",
-        "Without pollination, many plants cannot produce fruits or seeds.",
-        "Some plants trick insects into pollinating them without offering nectar.",
-        "Wind and water can also be pollinators for certain plants like grasses and oaks.",
-        "Climate change can disrupt the timing between flower blooming and pollinator activity.",
-        "Planting native flowers helps support local pollinator populations.",
-        "A single bee colony can pollinate 300 million flowers each day.",
-        "Flowers have specific colors and scents to attract their preferred pollinators.",
-    ];
+    // Facts array is now imported
     private carryingPollen: { type: "red" | "blue" | null } = { type: null };
     private pollenIndicator!: Phaser.GameObjects.Sprite | null;
     private pollenIndicatorTween: Phaser.Tweens.Tween | null = null;
     private wingFlapTween: gsap.core.Tween | null = null;
     private dpadState = { up: false, down: false, left: false, right: false };
     private isMoving: boolean = false;
-    private inputEnabled: boolean = true; // Controls if input is processed and physics body is active
-
-    // --- Timer Properties ---
-    private gameDuration: number = 60; // Seconds (1 minute)
-    private timerValue: number = 0;
-    private gameTimerEvent!: Phaser.Time.TimerEvent;
-    // --------------------------
+    private inputEnabled: boolean = true; // Flag controls body enable/disable in update
 
     constructor() {
         super("Game");
@@ -91,7 +72,7 @@ export class Game extends Scene {
             this.bee,
             this.flowers,
             this.handleBeeFlowerCollision as ArcadePhysicsCallback,
-            undefined, // No processCallback, relying on body enable/disable in update
+            undefined, // No processCallback, rely on body enable/disable in update
             this
         );
 
@@ -113,26 +94,14 @@ export class Game extends Scene {
         this.isMoving = false;
         this.inputEnabled = true; // Start enabled
 
-        // --- Initialize Timer ---
-        this.timerValue = this.gameDuration;
-        this.gameTimerEvent = this.time.addEvent({
-            delay: 1000, // 1 second in ms
-            callback: this.decrementTimer,
-            callbackScope: this,
-            loop: true,
-        });
-        // -----------------------
-
-        // Emit Initial UI Events (Score and Timer)
+        // Emit Initial Score ONLY
         this.events.emit("game:update-score", this.score);
-        this.events.emit("game:update-timer", this.timerValue); // Emit initial timer value
-        // Do NOT emit initial fact here to avoid immediate modal
+        // Initial instructions are no longer sent via 'game:show-fact' to avoid modal
 
         // Scene Cleanup Logic
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             EventBus.off("dpad", this.handleDpadInput, this);
             EventBus.off("game:set-input-active", this.setInputActive, this);
-            this.gameTimerEvent?.destroy(); // Clean up timer event
             this.wingFlapTween?.kill();
             this.wingFlapTween = null;
             gsap.killTweensOf(this.bee);
@@ -141,79 +110,27 @@ export class Game extends Scene {
         });
     }
 
-    // Method to enable/disable input AND pause/resume timer
+    // Method to enable/disable input FLAG ONLY (Body enable/disable is handled in update)
     private setInputActive(isActive: boolean) {
         if (this.inputEnabled === isActive) return; // No change needed
 
         this.inputEnabled = isActive;
-        const beeBody = this.bee?.body as
-            | Phaser.Physics.Arcade.Body
-            | undefined;
 
-        if (!isActive) {
-            // --- Disable ---
-            // Note: Body disable/enable happens in update loop now
-            // Pause Timer
-            if (this.gameTimerEvent) this.gameTimerEvent.paused = true;
-            // Reset DPad state
-            this.dpadState = {
-                up: false,
-                down: false,
-                left: false,
-                right: false,
-            };
-            // Stop wing animation visually
-            if (this.isMoving && this.wingFlapTween) {
-                this.wingFlapTween.pause();
-                gsap.to(this.bee, { scaleY: 1, duration: 0.1 });
-                this.isMoving = false;
-            }
-        } else {
-            // --- Enable ---
-            // Note: Body enable/disable happens in update loop now
-            // Resume Timer
-            if (this.gameTimerEvent) this.gameTimerEvent.paused = false;
-            // Reset keyboard keys state
+        // Reset input state immediately when enabling
+        if (isActive) {
             this.input.keyboard?.resetKeys();
             this.dpadState = {
                 up: false,
                 down: false,
                 left: false,
                 right: false,
-            }; // Also reset DPad on enable
-            this.isMoving = false; // Reset visual state
+            };
+            // Reset visual state immediately
+            this.isMoving = false;
             this.wingFlapTween?.pause();
             gsap.to(this.bee, { scaleY: 1, duration: 0.05 });
         }
-    }
-
-    // Timer Decrement Function
-    private decrementTimer() {
-        // Timer event might fire slightly after pause requested, check internal paused state
-        if (this.gameTimerEvent.paused) return;
-
-        this.timerValue--;
-        this.events.emit("game:update-timer", this.timerValue); // Update UI
-
-        if (this.timerValue <= 0) {
-            // Time's up!
-            this.inputEnabled = false; // Prevent further actions by setting flag
-            // Let the update loop handle disabling the body and stopping velocity
-            this.gameTimerEvent.paused = true; // Stop timer callbacks
-
-            // Emit Time's Up message for the modal
-            this.events.emit("game:show-fact", "Time's Up!");
-
-            // Transition to GameOver after a short delay
-            this.time.delayedCall(1500, () => {
-                if (this.scene.isActive()) {
-                    this.scene.start("GameOver", {
-                        score: this.score,
-                        reason: "time",
-                    });
-                }
-            });
-        }
+        // Disabling actions are handled in the update loop now
     }
 
     // Handles DPad input events
@@ -243,7 +160,7 @@ export class Game extends Scene {
         });
     }
 
-    // Main game loop update method - Controls body enable/disable
+    // --- Main game loop update method - THE CONTROLLER ---
     update(time: number, delta: number) {
         const beeBody = this.bee?.body as
             | Phaser.Physics.Arcade.Body
@@ -390,15 +307,9 @@ export class Game extends Scene {
     // Handles player movement calculation and velocity
     handlePlayerMovement(delta: number) {
         // Assumes inputEnabled=true and body.enable=true because called from update
-        if (!this.bee?.body?.enable) {
-            // Safety check
-            console.warn(
-                "GAME: handlePlayerMovement called but bee body is not enabled!"
-            );
-            return;
-        }
-        this.bee.setVelocity(0); // Reset velocity at start of calc
+        if (!this.bee?.body?.enable) return; // Safety check
 
+        this.bee.setVelocity(0); // Reset velocity at start
         const speed = 250;
         let moveX = 0;
         let moveY = 0;
@@ -410,20 +321,16 @@ export class Game extends Scene {
         else if (rightPressed) moveX = 1;
         if (upPressed) moveY = -1;
         else if (downPressed) moveY = 1;
-
         const moveVector = new Phaser.Math.Vector2(moveX, moveY);
         const isTryingToMove = moveVector.length() > 0;
-
         if (isTryingToMove) {
             // Apply velocity if moving
             moveVector.normalize();
             this.bee.setVelocity(moveVector.x * speed, moveVector.y * speed);
         }
-
         // Flip sprite
         if (moveX < 0) this.bee.setFlipX(true);
         else if (moveX > 0) this.bee.setFlipX(false);
-
         // Control Wing Flap Animation
         if (this.wingFlapTween) {
             if (isTryingToMove && !this.isMoving) {
@@ -523,9 +430,20 @@ export class Game extends Scene {
             flower.setTint(0x90ee90);
             this.score += 10;
             this.events.emit("game:update-score", this.score); // Update score
-            const randomFact = Phaser.Math.RND.pick(this.facts); // Get potential fact
+            const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS); // Use imported facts
             if (this.pollenIndicator) {
                 /* Animate indicator out */
+                this.pollenIndicatorTween?.stop();
+                this.tweens.add({
+                    targets: this.pollenIndicator,
+                    alpha: 0,
+                    scale: 0,
+                    duration: 200,
+                    ease: "Power1",
+                    onComplete: () => this.pollenIndicator?.destroy(),
+                });
+                this.pollenIndicator = null;
+                this.pollenIndicatorTween = null;
             }
             this.carryingPollen.type = null;
             this.createParticles(
