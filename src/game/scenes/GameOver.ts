@@ -98,12 +98,12 @@ export class GameOver extends Scene {
             .to(
                 scoreText,
                 { alpha: 1, scale: 1, duration: 0.5, ease: "power2.out" },
-                "-=0.3"
+                "-=0.3",
             )
             .to(
                 playAgainButton,
                 { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-                "-=0.2"
+                "-=0.2",
             );
 
         // --- End Entrance Animation ---

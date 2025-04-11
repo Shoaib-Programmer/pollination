@@ -55,7 +55,7 @@ export class MainMenu extends Scene {
                     align: "center",
                     lineSpacing: 8,
                     wordWrap: { width: instructionBg.width - 30 },
-                }
+                },
             )
             .setOrigin(0.5)
             .setAlpha(0); // Start invisible
@@ -92,17 +92,17 @@ export class MainMenu extends Scene {
             .to(
                 instructionBg,
                 { alpha: 0.65, scale: 1, duration: 0.4, ease: "power2.out" },
-                "-=0.4"
+                "-=0.4",
             ) // Instruction BG fades/scales in
             .to(
                 instructions,
                 { alpha: 1, duration: 0.4, ease: "power2.out" },
-                "-=0.3"
+                "-=0.3",
             ) // Instructions fade in
             .to(
                 startButton,
                 { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-                "-=0.2"
+                "-=0.2",
             ); // Button pops in
 
         // --- End Entrance Animation ---
@@ -156,4 +156,3 @@ export class MainMenu extends Scene {
         this.events.emit("scene-ready", this);
     }
 }
-
