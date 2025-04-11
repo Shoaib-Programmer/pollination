@@ -90,3 +90,33 @@
         padding: 20px;
     }
 }
+
+/* --- NEW: Timer Bar Styles --- */
+.timerBar {
+    position: absolute;
+    bottom: 0; /* Position at the bottom of the modal overlay */
+    left: 0;
+    height: 8px; /* Thickness of the bar */
+    width: 100%; /* Start at full width */
+    background-color: #34d399; /* Use an accent color (e.g., emerald green) */
+    transform-origin: left center; /* Ensures scaling happens from the left */
+    /* Opacity/Visibility controlled by GSAP based on modal visibility */
+    opacity: 0;
+    visibility: hidden;
+}
+/* --- End Timer Bar Styles --- */
+
+/* Media Queries */
+@media (max-width: 768px) {
+    /* ... existing media queries ... */
+    .timerBar {
+        height: 6px; /* Slightly thinner on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    /* ... existing media queries ... */
+    .timerBar {
+        height: 5px;
+    }
+}
