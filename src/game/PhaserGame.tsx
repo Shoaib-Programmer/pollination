@@ -1,79 +1,117 @@
 // src/game/PhaserGame.tsx
 import Phaser from "phaser";
-import React, {
-    forwardRef,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    // useState can be removed if not used elsewhere
-} from "react";
+import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import StartGame from "@/game/main";
 import EventBus from "./EventBus";
 
-export interface PhaserGameProps {}
+// Define the PhaserGameRef interface
+interface PhaserGameRef {
+    game: Phaser.Game;
+}
 
-export interface PhaserGameRef {
-    game: Phaser.Game | null;
+// Define the PhaserGameRef interface
+interface PhaserGameRef {
+    game: Phaser.Game;
+}
+
+// Define the PhaserGameProps interface with useful properties
+interface PhaserGameProps {
+    /** Custom class name for the game container */
+    className?: string;
+
+    /** Custom styles for the game container */
+    style?: React.CSSProperties;
+
+    /** Width of the game canvas (default: 100%) */
+    width?: number | string;
+
+    /** Height of the game canvas (default: 100%) */
+    height?: number | string;
+
+    /** Callback when the game instance is ready */
+    onGameReady?: (game: Phaser.Game) => void;
+
+    /** Callback when the game is about to be destroyed */
+    onBeforeDestroy?: () => void;
 }
 
 export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
-    function PhaserGame({}, ref) {
+    function PhaserGame(
+        {
+            className,
+            style,
+            width = "100%",
+            height = "100%",
+            onGameReady,
+            onBeforeDestroy,
+        },
+        ref,
+    ) {
         const gameRef = useRef<Phaser.Game | null>(null);
         const containerRef = useRef<HTMLDivElement>(null);
         const listenersAttachedRef = useRef(false);
         const sceneListenerCleanupRef = useRef<(() => void) | null>(null);
 
-        // --- Initialization Effect ---
+        // Initialization Effect (Listen for modal close)
         useLayoutEffect(() => {
             if (gameRef.current || !containerRef.current) {
-                return; // Skip if already initialized or container missing
+                return;
             }
-
             const game = StartGame(containerRef.current.id);
             gameRef.current = game;
 
-            // Assign ref if provided
+            // Listen for UI modal closing to re-enable input
+            const handleModalClosed = () => {
+                // Only re-enable input if the game instance still exists
+                if (gameRef.current) {
+                    EventBus.emit("game:set-input-active", true);
+                }
+            };
+            EventBus.on("ui:modal-closed", handleModalClosed);
+
             if (typeof ref === "function") {
                 ref({ game: game });
             } else if (ref) {
                 ref.current = { game: game };
             }
 
-            // --- Cleanup Function for Initialization ---
+            // Call onGameReady callback if provided
+            onGameReady?.(game);
+
+            // Cleanup
             return () => {
-                // Execute scene listener cleanup if it exists
+                onBeforeDestroy?.();
+                EventBus.off("ui:modal-closed", handleModalClosed); // Cleanup listener
                 sceneListenerCleanupRef.current?.();
                 sceneListenerCleanupRef.current = null;
-
-                // Destroy Phaser game
                 gameRef.current?.destroy(true);
                 gameRef.current = null;
-                listenersAttachedRef.current = false; // Reset flag
+                listenersAttachedRef.current = false;
             };
-        }, [ref]); // End of Initialization useLayoutEffect
+        }, [ref, onGameReady, onBeforeDestroy]);
 
-        // --- Polling Effect for Scene Listener Management ---
+        // Polling Effect for attaching/detaching scene listeners
         useEffect(() => {
             const intervalId = setInterval(() => {
                 const game = gameRef.current;
-                // Ensure game and scene manager are available
                 if (!game || !game.scene) return;
 
-                // Try to get the 'Game' scene and check if it's active
                 const gameSceneInstance = game.scene.getScene("Game");
                 const isGameSceneActive =
                     gameSceneInstance?.scene.isActive("Game");
 
-                // Scenario 1: Game scene active, listeners need attaching
+                // Attach listeners
                 if (isGameSceneActive && !listenersAttachedRef.current) {
                     const scoreHandler = (score: number) => {
                         EventBus.emit("update-score", score);
                     };
                     const factHandler = (fact: string) => {
+                        // Disable input FIRST
+                        EventBus.emit("game:set-input-active", false);
+                        // Then show fact modal
                         EventBus.emit("show-fact", fact);
                     };
 
-                    // Attach listeners to the specific Game scene's event emitter
                     if (gameSceneInstance.events) {
                         gameSceneInstance.events.on(
                             "game:update-score",
@@ -83,12 +121,11 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                             "game:show-fact",
                             factHandler,
                         );
-                        listenersAttachedRef.current = true; // Mark listeners as attached
+                        listenersAttachedRef.current = true;
 
-                        // Store cleanup function for these specific listeners
+                        // Store cleanup
                         sceneListenerCleanupRef.current = () => {
                             if (gameSceneInstance?.events) {
-                                // Check existence before cleanup
                                 try {
                                     gameSceneInstance.events.off(
                                         "game:update-score",
@@ -99,43 +136,49 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                                         factHandler,
                                     );
                                 } catch (e) {
-                                    /* Handle potential errors silently or log warnings */
+                                    /* Ignore */
                                 }
                             }
-                            listenersAttachedRef.current = false; // Mark as cleaned up
+                            listenersAttachedRef.current = false;
                         };
                     }
                 }
-                // Scenario 2: Game scene inactive, listeners need cleanup
+                // Cleanup listeners AND explicitly hide UI modal
                 else if (!isGameSceneActive && listenersAttachedRef.current) {
-                    sceneListenerCleanupRef.current?.(); // Execute cleanup
-                    sceneListenerCleanupRef.current = null; // Clear cleanup ref
-                    // Reset UI state when leaving the game scene
-                    EventBus.emit("update-score", 0);
-                    EventBus.emit("show-fact", "");
+                    sceneListenerCleanupRef.current?.();
+                    sceneListenerCleanupRef.current = null;
+                    // --- NEW: Tell UI to hide modal immediately ---
+                    EventBus.emit("ui:hide-modal");
+                    // ---------------------------------------------
+                    // Reset score (optional, could be handled by UI itself)
+                    // EventBus.emit("update-score", 0);
                 }
-            }, 250); // Polling interval
+            }, 250);
 
-            // --- Cleanup for the Polling Effect ---
+            // Cleanup polling effect
             return () => {
-                clearInterval(intervalId); // Stop polling
-                // Clean up scene listeners if the effect stops while they are active
+                clearInterval(intervalId);
                 sceneListenerCleanupRef.current?.();
                 sceneListenerCleanupRef.current = null;
                 listenersAttachedRef.current = false;
+                // Ensure input is enabled on unmount
+                EventBus.emit("game:set-input-active", true);
             };
-        }, []); // Empty dependency array: Run only once on mount
+        }, []);
 
-        // --- Render Container Div ---
+        // Render Container Div
         return (
             <div
                 id="game-container"
                 ref={containerRef}
-                style={{ width: "100%", height: "100%" }}
+                className={className}
+                style={{ width, height, ...style }}
             />
         );
     },
 );
+
+export type { PhaserGameRef, PhaserGameProps };
 
 PhaserGame.displayName = "PhaserGame";
 export default PhaserGame;
