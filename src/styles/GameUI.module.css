@@ -3,18 +3,26 @@
 .uiOverlay {
     position: absolute;
     inset: 0;
-    pointer-events: none; /* Allow clicks through overlay EXCEPT modal */
+    pointer-events: none;
     font-family: var(--font-poppins-family);
-    z-index: 10; /* Base UI layer */
+    z-index: 10;
     overflow: hidden;
-    display: flex; /* Use flexbox for score positioning */
+    display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Pushes score to top */
+    /* Removed justify-content: space-between; */
     padding: 15px;
 }
 
+/* --- NEW: Container for top elements --- */
+.topBar {
+    display: flex;
+    justify-content: space-between; /* Puts score left, timer right */
+    align-items: center;
+    width: 100%;
+}
+
 .scoreBox {
-    align-self: flex-start;
+    /* align-self: flex-start; no longer needed */
     background: linear-gradient(145deg, var(--ui-bg-light), var(--ui-bg-dark));
     color: var(--ui-text-primary);
     padding: 10px 20px;
@@ -27,50 +35,70 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     -webkit-backdrop-filter: blur(3px);
     backdrop-filter: blur(3px);
-    /* pointer-events: auto; */ /* Score box doesn't need interaction */
 }
 
-/* --- NEW: Modal Overlay Styles --- */
+/* --- NEW: Timer Box Styles --- */
+.timerBox {
+    background: linear-gradient(145deg, var(--ui-bg-light), var(--ui-bg-dark));
+    color: var(--ui-text-primary);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px var(--ui-shadow-dark);
+    box-shadow: inset 0 1px 2px var(--ui-shadow-light),
+        0 4px 8px var(--ui-shadow-dark);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    min-width: 120px; /* Ensure minimum width */
+    text-align: center;
+}
+/* --- End Timer Box Styles --- */
+
+/* --- Modal Overlay Styles --- */
 .modalOverlay {
     position: absolute;
-    inset: 0; /* Cover the entire parent */
-    background-color: rgba(
-        0,
-        0,
-        0,
-        0.85
-    ); /* Dark semi-transparent background */
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.85);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 50; /* Higher than scoreBox */
-    pointer-events: auto; /* Block interaction with game below */
-    /* Visibility and opacity controlled by GSAP */
+    z-index: 50;
+    pointer-events: auto;
 }
 
 .modalContent {
     color: #ffffff;
     padding: 40px;
-    max-width: 90%; /* Limit width on very wide screens */
+    max-width: 90%;
     text-align: center;
-    font-size: 1.8rem; /* Adjust font size as needed */
+    font-size: 1.8rem;
     line-height: 1.6;
-    font-family: var(
-        --font-luckiest-guy-family
-    ); /* Use a more prominent font */
+    font-family: var(--font-luckiest-guy-family);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-    /* Optional: Add a subtle border or background to the content area */
-    /* background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 10px; */
 }
-/* --- End Modal Styles --- */
 
-/* Media Queries (adjust modal font size if needed) */
+/* --- Timer Bar Styles --- */
+.timerBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 8px;
+    width: 100%;
+    background-color: #34d399; /* Accent color */
+    transform-origin: left center;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Media Queries */
 @media (max-width: 768px) {
     .uiOverlay {
         padding: 10px;
     }
-    .scoreBox {
+    .scoreBox,
+    .timerBox {
         font-size: 1.1rem;
         padding: 8px 16px;
     }
@@ -78,10 +106,14 @@
         font-size: 1.5rem;
         padding: 30px;
     }
+    .timerBar {
+        height: 6px;
+    }
 }
 
 @media (max-width: 480px) {
-    .scoreBox {
+    .scoreBox,
+    .timerBox {
         font-size: 1rem;
         padding: 6px 12px;
     }
@@ -89,33 +121,6 @@
         font-size: 1.2rem;
         padding: 20px;
     }
-}
-
-/* --- NEW: Timer Bar Styles --- */
-.timerBar {
-    position: absolute;
-    bottom: 0; /* Position at the bottom of the modal overlay */
-    left: 0;
-    height: 8px; /* Thickness of the bar */
-    width: 100%; /* Start at full width */
-    background-color: #34d399; /* Use an accent color (e.g., emerald green) */
-    transform-origin: left center; /* Ensures scaling happens from the left */
-    /* Opacity/Visibility controlled by GSAP based on modal visibility */
-    opacity: 0;
-    visibility: hidden;
-}
-/* --- End Timer Bar Styles --- */
-
-/* Media Queries */
-@media (max-width: 768px) {
-    /* ... existing media queries ... */
-    .timerBar {
-        height: 6px; /* Slightly thinner on smaller screens */
-    }
-}
-
-@media (max-width: 480px) {
-    /* ... existing media queries ... */
     .timerBar {
         height: 5px;
     }

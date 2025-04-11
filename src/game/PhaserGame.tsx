@@ -35,9 +35,8 @@ interface PhaserGameProps {
     onBeforeDestroy?: () => void;
 }
 
-
 export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
-    function PhaserGame({ onGameReady, onBeforeDestroy, ...props }, ref) { // Pass props through
+    function PhaserGame({ onGameReady, onBeforeDestroy, ...props }, ref) {
         const gameRef = useRef<Phaser.Game | null>(null);
         const containerRef = useRef<HTMLDivElement>(null);
         const listenersAttachedRef = useRef(false);
@@ -45,102 +44,123 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
 
         // Initialization Effect
         useLayoutEffect(() => {
-            console.log("PhaserGame: useLayoutEffect for initialization running.");
-            if (gameRef.current || !containerRef.current) { return; }
-
-            console.log("PhaserGame: Starting Phaser game instance...");
+            if (gameRef.current || !containerRef.current) return;
             const game = StartGame(containerRef.current.id);
             gameRef.current = game;
 
             const handleModalClosed = () => {
-                console.log("PhaserGame: Received 'ui:modal-closed'. Emitting 'game:set-input-active' (true)."); // <<< LOG RECEIPT
-                if (gameRef.current) { // Safety check
+                if (gameRef.current) {
                     EventBus.emit("game:set-input-active", true);
                 }
             };
-            console.log("PhaserGame: Attaching 'ui:modal-closed' listener.");
             EventBus.on("ui:modal-closed", handleModalClosed);
 
-            if (typeof ref === "function") { ref({ game: game }); }
-            else if (ref) { ref.current = { game: game }; }
+            if (typeof ref === "function") {
+                ref({ game: game });
+            } else if (ref) {
+                ref.current = { game: game };
+            }
             onGameReady?.(game);
-            console.log("PhaserGame: Initialization effect finished.");
 
             return () => {
-                console.log("PhaserGame: Cleanup running (unmount/ref change).");
+                // Cleanup
                 onBeforeDestroy?.();
-                console.log("PhaserGame: Removing 'ui:modal-closed' listener.");
                 EventBus.off("ui:modal-closed", handleModalClosed);
                 sceneListenerCleanupRef.current?.();
                 sceneListenerCleanupRef.current = null;
-                console.log("PhaserGame: Destroying Phaser game instance.");
                 gameRef.current?.destroy(true);
                 gameRef.current = null;
                 listenersAttachedRef.current = false;
             };
-        }, [ref, onGameReady, onBeforeDestroy]); // Include callbacks in dependencies
+        }, [ref, onGameReady, onBeforeDestroy]);
 
         // Polling Effect
         useEffect(() => {
-            console.log("PhaserGame: Polling effect starting.");
             const intervalId = setInterval(() => {
                 const game = gameRef.current;
                 if (!game || !game.scene) return;
-
                 const gameSceneInstance = game.scene.getScene("Game");
-                const isGameSceneActive = gameSceneInstance?.scene.isActive("Game");
+                const isGameSceneActive =
+                    gameSceneInstance?.scene.isActive("Game");
 
                 // Attach listeners
                 if (isGameSceneActive && !listenersAttachedRef.current) {
-                     console.log("PhaserGame Polling: Game scene is active and listeners NOT attached. Attaching...");
-                    const scoreHandler = (score: number) => { EventBus.emit("update-score", score); };
-                    const factHandler = (fact: string) => {
-                        console.log(`PhaserGame: factHandler triggered for fact: "${fact}"`); // <<< LOG HANDLER ENTRY
-                        console.log("PhaserGame: Emitting 'game:set-input-active' (false)."); // <<< LOG INPUT DISABLE
-                        EventBus.emit("game:set-input-active", false);
-                        console.log(`PhaserGame: Emitting 'show-fact': "${fact}"`); // <<< LOG SHOW FACT EMIT
-                        EventBus.emit("show-fact", fact);
+                    const scoreHandler = (score: number) => {
+                        EventBus.emit("update-score", score);
                     };
+                    const factHandler = (fact: string) => {
+                        EventBus.emit("game:set-input-active", false); // Disable input
+                        EventBus.emit("show-fact", fact); // Show fact modal
+                    };
+                    // --- NEW: Timer Handler ---
+                    const timerHandler = (time: number) => {
+                        EventBus.emit("ui:update-timer", time); // Relay timer update
+                    };
+                    // ------------------------
 
                     if (gameSceneInstance.events) {
-                        gameSceneInstance.events.on("game:update-score", scoreHandler);
-                        gameSceneInstance.events.on("game:show-fact", factHandler);
+                        gameSceneInstance.events.on(
+                            "game:update-score",
+                            scoreHandler
+                        );
+                        gameSceneInstance.events.on(
+                            "game:show-fact",
+                            factHandler
+                        );
+                        gameSceneInstance.events.on(
+                            "game:update-timer",
+                            timerHandler
+                        ); // <<< Attach timer listener
                         listenersAttachedRef.current = true;
-                         console.log("PhaserGame Polling: Listeners attached to Game scene.");
-                        sceneListenerCleanupRef.current = () => { /* Cleanup logic */ };
-                    } else {
-                         console.error("PhaserGame Polling: Game scene active but 'events' missing!");
+
+                        // Store cleanup
+                        sceneListenerCleanupRef.current = () => {
+                            if (gameSceneInstance?.events) {
+                                try {
+                                    gameSceneInstance.events.off(
+                                        "game:update-score",
+                                        scoreHandler
+                                    );
+                                    gameSceneInstance.events.off(
+                                        "game:show-fact",
+                                        factHandler
+                                    );
+                                    gameSceneInstance.events.off(
+                                        "game:update-timer",
+                                        timerHandler
+                                    ); // <<< Detach timer listener
+                                } catch (e) {
+                                    /* Ignore */
+                                }
+                            }
+                            listenersAttachedRef.current = false;
+                        };
                     }
                 }
-                // Cleanup listeners
+                // Cleanup listeners AND explicitly hide UI modal/reset timer display
                 else if (!isGameSceneActive && listenersAttachedRef.current) {
-                    console.log("PhaserGame Polling: Game scene is NOT active and listeners ARE attached. Cleaning up...");
                     sceneListenerCleanupRef.current?.();
                     sceneListenerCleanupRef.current = null;
-                    console.log("PhaserGame Polling: Emitting 'ui:hide-modal'."); // <<< LOG HIDE MODAL EMIT
-                    EventBus.emit("ui:hide-modal");
-                    // EventBus.emit("update-score", 0); // Removed optional score reset
+                    EventBus.emit("ui:hide-modal"); // Hide modal if scene changes
+                    EventBus.emit("ui:update-timer", 60); // <<< Reset UI timer display
                 }
             }, 250);
 
-            return () => { // Cleanup for polling effect
-                console.log("PhaserGame: Polling effect cleanup. Clearing interval.");
+            // Cleanup polling effect
+            return () => {
                 clearInterval(intervalId);
                 sceneListenerCleanupRef.current?.();
                 sceneListenerCleanupRef.current = null;
                 listenersAttachedRef.current = false;
-                console.log("PhaserGame Polling Cleanup: Emitting 'game:set-input-active' (true)."); // <<< LOG INPUT ENABLE ON UNMOUNT
-                EventBus.emit("game:set-input-active", true);
+                EventBus.emit("game:set-input-active", true); // Ensure input enabled on unmount
             };
-        }, []); // End of Polling useEffect
+        }, []);
 
-        console.log("PhaserGame: Rendering component.");
-        // Pass props down to the div
-        return (
-            <div id="game-container" ref={containerRef} {...props} />
-        );
+        // Render Container Div
+        return <div id="game-container" ref={containerRef} {...props} />;
     }
 );
+
 PhaserGame.displayName = "PhaserGame";
 // Export types separately if needed elsewhere, default export is the component
 export type { PhaserGameRef, PhaserGameProps };

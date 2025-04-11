@@ -9,18 +9,33 @@ interface GameUIProps {
     listenTo: Phaser.Events.EventEmitter | null;
 }
 
+// Helper function to format seconds into MM:SS
+const formatTime = (totalSeconds: number): string => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const paddedSeconds = seconds.toString().padStart(2, "0");
+    return `${minutes}:${paddedSeconds}`;
+};
+
 export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
+    // Score state
     const [targetScore, setTargetScore] = useState<number>(0);
     const [displayScore, setDisplayScore] = useState<number>(0);
+    // Modal state
     const [modalFact, setModalFact] = useState<string>("");
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+    // Timer state
+    const [remainingTime, setRemainingTime] = useState<number>(60); // Default to 60 seconds
 
+    // Refs
     const containerRef = useRef<HTMLDivElement>(null);
     const scoreBoxRef = useRef<HTMLDivElement>(null);
     const modalOverlayRef = useRef<HTMLDivElement>(null);
-    const timerBarRef = useRef<HTMLDivElement>(null); // <<< NEW: Ref for the timer bar
+    const timerBarRef = useRef<HTMLDivElement>(null); // Ref for the modal's timer bar
+    const timerDisplayRef = useRef<HTMLDivElement>(null); // Ref for the game timer display
     const scoreTweenProxy = useRef({ value: 0 });
     const modalTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+    // Ref to track visibility state accurately for cleanup, avoiding stale closures
     const isModalVisibleOnCleanup = useRef(isModalVisible);
 
     // Update ref whenever isModalVisible changes
@@ -33,9 +48,10 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         () => {
             const target = modalOverlayRef.current;
             if (!target) return;
-            gsap.set(target, { opacity: 0, visibility: "hidden" });
+            gsap.set(target, { opacity: 0, visibility: "hidden" }); // Ensure hidden initially
             let animation: gsap.core.Tween;
             if (isModalVisible) {
+                // Animate IN
                 animation = gsap.to(target, {
                     opacity: 1,
                     visibility: "visible",
@@ -43,11 +59,13 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                     ease: "power2.out",
                 });
             } else {
+                // Animate OUT
                 animation = gsap.to(target, {
                     opacity: 0,
                     duration: 0.4,
                     ease: "power2.in",
                     onComplete: () => {
+                        // Ensure visibility is hidden only if state still matches (using ref)
                         if (!isModalVisibleOnCleanup.current && target) {
                             gsap.set(target, { visibility: "hidden" });
                         }
@@ -56,141 +74,183 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
             }
             return () => {
                 animation?.kill();
-            };
+            }; // Cleanup tween
         },
         { dependencies: [isModalVisible], scope: containerRef }
     );
 
-    // --- NEW: GSAP Animation for the Timer Bar ---
+    // GSAP Animation for the Modal's Timer Bar Shrink
     useGSAP(
         () => {
             const bar = timerBarRef.current;
             if (!bar) return;
 
-            // Kill previous timer bar tweens on this element
-            gsap.killTweensOf(bar);
+            gsap.killTweensOf(bar); // Kill previous bar animations
 
             if (isModalVisible) {
-                // When modal becomes visible, RESET bar to full width and fade it in slightly delayed
+                // Reset bar to full width and invisible, then animate
                 gsap.set(bar, {
                     width: "100%",
                     opacity: 0,
                     visibility: "hidden",
-                }); // Start full width but invisible
-                // Start the 10-second shrink animation slightly after modal fades in
+                });
                 gsap.to(bar, {
                     delay: 0.3, // Start slightly after modal fade-in
-                    opacity: 1, // Fade in
+                    opacity: 1,
                     visibility: "visible",
                     width: "0%", // Animate to 0 width
                     duration: 10, // Exactly 10 seconds
-                    ease: "none", // Linear depletion for a timer
+                    ease: "none", // Linear depletion
                 });
             } else {
-                // When modal becomes invisible, immediately hide the bar and reset width
+                // Immediately hide and reset bar when modal is not visible
                 gsap.set(bar, {
                     width: "100%",
                     opacity: 0,
                     visibility: "hidden",
                 });
             }
-            // Cleanup is handled automatically by useGSAP hook killing tweens on dependency change/unmount
         },
         { dependencies: [isModalVisible], scope: containerRef }
     );
-    // -------------------------------------------
 
-    // GSAP Animation for Score
+    // GSAP Animation for Score Ticker/Pop
     useGSAP(
         () => {
-            /* ... score animation logic ... */
+            const scoreBoxTarget = scoreBoxRef.current;
+            const scoreIncreased = targetScore > scoreTweenProxy.current.value;
+            gsap.killTweensOf(scoreTweenProxy.current);
+            const scoreTween = gsap.to(scoreTweenProxy.current, {
+                value: targetScore,
+                duration: 0.6,
+                ease: "power1.out",
+                onUpdate: () => {
+                    setDisplayScore(Math.round(scoreTweenProxy.current.value));
+                },
+            });
+            if (scoreIncreased && scoreBoxTarget) {
+                gsap.fromTo(
+                    scoreBoxTarget,
+                    { scale: 1 },
+                    {
+                        scale: 1.15,
+                        duration: 0.15,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: "power1.inOut",
+                        overwrite: true,
+                    }
+                );
+            }
+            return () => {
+                // Cleanup
+                scoreTween.kill();
+                if (scoreBoxTarget) gsap.killTweensOf(scoreBoxTarget, "scale");
+            };
         },
         { dependencies: [targetScore], scope: containerRef }
     );
 
     // Event Listeners Setup
     useLayoutEffect(() => {
-        if (!listenTo) return;
-        // console.log("GameUI: Attaching EventBus listeners...");
+        if (!listenTo) {
+            console.warn("GameUI: EventBus (listenTo prop) is null.");
+            return;
+        }
 
         const handleScoreUpdate = (newScore: number) => {
             setTargetScore(newScore);
         };
 
         const handleShowFactModal = (fact: string) => {
-            // console.log(`GameUI: Received 'show-fact': "${fact}".`);
             setModalFact(fact);
             setIsModalVisible(true); // Show modal & trigger animations
             if (modalTimeoutIdRef.current)
-                clearTimeout(modalTimeoutIdRef.current);
+                clearTimeout(modalTimeoutIdRef.current); // Clear previous timer
             modalTimeoutIdRef.current = setTimeout(() => {
-                // console.log("GameUI: Modal timeout finished.");
-                setIsModalVisible(false); // Hide modal & trigger animations
+                // Set new timer
+                setIsModalVisible(false); // Hide modal & trigger animations after timeout
+                // setModalFact(""); // Clear fact after animation out if needed
                 EventBus.emit("ui:modal-closed"); // Notify game
                 modalTimeoutIdRef.current = null;
             }, 10000); // 10 seconds
         };
 
+        // Handler to force hide the modal if the scene changes etc.
         const forceHideModal = () => {
-            // console.log("GameUI: Received 'ui:hide-modal'.");
             if (modalTimeoutIdRef.current) {
+                // If timer was running
                 clearTimeout(modalTimeoutIdRef.current);
                 modalTimeoutIdRef.current = null;
+                // Use the REF to check if modal was visible when force hide was called
                 if (isModalVisibleOnCleanup.current) {
-                    // Use ref for correct check
-                    // console.log("GameUI: Force hide - Emitting 'ui:modal-closed'.");
-                    EventBus.emit("ui:modal-closed");
+                    EventBus.emit("ui:modal-closed"); // Notify game immediately
                 }
             }
             setIsModalVisible(false); // Trigger animation out
+            // setModalFact("");
         };
 
-        // Initial State
+        // Handler for game timer updates
+        const handleTimerUpdate = (time: number) => {
+            setRemainingTime(Math.max(0, time)); // Update state, ensuring non-negative
+        };
+
+        // Initial State Setup on mount or when listenTo changes
         setTargetScore(0);
         setDisplayScore(0);
         scoreTweenProxy.current.value = 0;
         setModalFact("");
         setIsModalVisible(false);
+        setRemainingTime(60); // Reset timer display
 
         // Attach Listeners
         listenTo.on("update-score", handleScoreUpdate);
         listenTo.on("show-fact", handleShowFactModal);
         listenTo.on("ui:hide-modal", forceHideModal);
+        listenTo.on("ui:update-timer", handleTimerUpdate); // Attach timer listener
 
         // Cleanup Function
         return () => {
-            // console.log("GameUI: Cleaning up listeners.");
             listenTo.off("update-score", handleScoreUpdate);
             listenTo.off("show-fact", handleShowFactModal);
             listenTo.off("ui:hide-modal", forceHideModal);
+            listenTo.off("ui:update-timer", handleTimerUpdate); // Detach timer listener
+
+            // Clear timeout on unmount or dependency change
             if (modalTimeoutIdRef.current) {
                 clearTimeout(modalTimeoutIdRef.current);
+                // Use the REF value captured by THIS cleanup closure
+                // to correctly determine if the modal WAS visible when cleanup runs.
                 if (isModalVisibleOnCleanup.current) {
-                    // Use ref for correct check
-                    // console.log("GameUI: Cleanup - Emitting 'ui:modal-closed'.");
-                    EventBus.emit("ui:modal-closed");
+                    EventBus.emit("ui:modal-closed"); // Ensure game input is re-enabled
                 }
             }
         };
-    }, [listenTo]); // ONLY listenTo is the dependency here
+    }, [listenTo]); // Only dependency needed is listenTo (EventBus instance)
 
     // Component Rendering
-    // console.log(`GameUI: Rendering. isModalVisible: ${isModalVisible}`);
     return (
         <div ref={containerRef} className={styles.uiOverlay}>
-            <div ref={scoreBoxRef} className={styles.scoreBox}>
-                {" "}
-                Score: {displayScore}{" "}
+            {/* Top Bar for Score and Timer */}
+            <div className={styles.topBar}>
+                <div ref={scoreBoxRef} className={styles.scoreBox}>
+                    Score: {displayScore}
+                </div>
+                <div ref={timerDisplayRef} className={styles.timerBox}>
+                    Time: {formatTime(remainingTime)}
+                </div>
             </div>
+
+            {/* Full Screen Modal for Facts */}
             <div
                 ref={modalOverlayRef}
                 className={styles.modalOverlay}
-                style={{ visibility: "hidden" }}
+                style={{ visibility: "hidden" }} // Initial visibility set by GSAP
             >
                 <div className={styles.modalContent}> {modalFact} </div>
-                {/* --- NEW: Timer Bar Element --- */}
+                {/* Timer Bar inside the modal */}
                 <div ref={timerBarRef} className={styles.timerBar}></div>
-                {/* ----------------------------- */}
             </div>
         </div>
     );
