@@ -56,7 +56,7 @@ export class Settings extends Scene {
                     color: "#ffffff",
                     align: "center",
                     lineSpacing: 24,
-                }
+                },
             )
             .setOrigin(0.5)
             .setAlpha(0);
@@ -87,17 +87,17 @@ export class Settings extends Scene {
             .to(
                 settingsBox,
                 { alpha: 1, scale: 1, duration: 0.4, ease: "power1.inOut" },
-                "-=0.2"
+                "-=0.2",
             )
             .to(
                 settingsContent,
                 { alpha: 1, duration: 0.4, ease: "power1.inOut" },
-                "-=0.2"
+                "-=0.2",
             )
             .to(
                 backButton,
                 { alpha: 1, scale: 1, duration: 0.4, ease: "back.out" },
-                "-=0.2"
+                "-=0.2",
             );
 
         // Button interaction
@@ -129,7 +129,7 @@ export class Settings extends Scene {
                 ease: "Sine.easeInOut",
                 yoyo: true,
             });
-            
+
             // Transition Out
             gsap.to([title, settingsBox, settingsContent, backButton], {
                 alpha: 0,

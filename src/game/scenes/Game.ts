@@ -45,7 +45,7 @@ export class Game extends Scene {
         this.bee = this.physics.add.sprite(
             100,
             this.cameras.main.height / 2,
-            "bee_generated"
+            "bee_generated",
         );
         this.bee.setCollideWorldBounds(true).setBounce(0.1).setDepth(10);
         this.bee
@@ -79,7 +79,7 @@ export class Game extends Scene {
             this.flowers,
             this.handleBeeFlowerCollision as ArcadePhysicsCallback,
             undefined, // No processCallback, rely on body enable/disable in update
-            this
+            this,
         );
 
         // --- Input Setup ---
@@ -252,10 +252,7 @@ export class Game extends Scene {
                 this.bee.setVelocity(0);
             } else {
                 // Body already disabled, ensure velocity stays zero
-                if (
-                    beeBody.velocity.x !== 0 ||
-                    beeBody.velocity.y !== 0
-                ) {
+                if (beeBody.velocity.x !== 0 || beeBody.velocity.y !== 0) {
                     this.bee.setVelocity(0);
                 }
             }
@@ -279,7 +276,7 @@ export class Game extends Scene {
             } else {
                 // This case indicates a potential problem if it occurs
                 console.warn(
-                    "GAME Update: inputEnabled=TRUE but body is still disabled?"
+                    "GAME Update: inputEnabled=TRUE but body is still disabled?",
                 );
             }
         }
@@ -322,11 +319,11 @@ export class Game extends Scene {
                 validPosition = true;
                 x = Phaser.Math.Between(
                     margin,
-                    this.cameras.main.width - margin
+                    this.cameras.main.width - margin,
                 );
                 y = Phaser.Math.Between(
                     margin + 60,
-                    this.cameras.main.height - margin
+                    this.cameras.main.height - margin,
                 );
                 this.flowers.children.iterate((existingFlower) => {
                     if (!existingFlower) return true;
@@ -344,7 +341,7 @@ export class Game extends Scene {
                 attempts++;
                 if (attempts > maxAttempts) {
                     console.warn(
-                        `Could not find valid pos for ${type} flower ${i + 1}`
+                        `Could not find valid pos for ${type} flower ${i + 1}`,
                     );
                     break;
                 }
@@ -363,7 +360,7 @@ export class Game extends Scene {
                         .setCircle(bodyRadius)
                         .setOffset(
                             flower.width / 2 - bodyRadius,
-                            flower.height / 2 - bodyRadius
+                            flower.height / 2 - bodyRadius,
                         )
                         .refreshBody();
                     flower.setScale(0).setAlpha(0);
@@ -434,7 +431,7 @@ export class Game extends Scene {
             | Phaser.Tilemaps.Tile,
         flowerGO:
             | Phaser.Types.Physics.Arcade.GameObjectWithBody
-            | Phaser.Tilemaps.Tile
+            | Phaser.Tilemaps.Tile,
     ) {
         // No input/body check needed here, physics system shouldn't call this if body is disabled
         if (
@@ -459,7 +456,7 @@ export class Game extends Scene {
                 .sprite(
                     this.bee.x,
                     this.bee.y - 25,
-                    "pollen_particle_generated"
+                    "pollen_particle_generated",
                 )
                 .setDepth(11)
                 .setTint(data.type === "red" ? 0xffaaaa : 0xaaaaff)
@@ -470,7 +467,7 @@ export class Game extends Scene {
                 flower.y,
                 "pollen_particle_generated",
                 0xffff00,
-                15
+                15,
             );
             this.addInteractionPulse(flower);
             this.addInteractionPulse(this.bee, 1.05);
@@ -527,7 +524,7 @@ export class Game extends Scene {
                 flower.y,
                 "pollen_particle_generated",
                 0x90ee90,
-                25
+                25,
             );
             this.addInteractionPulse(flower);
             this.addInteractionPulse(this.bee, 1.05);
@@ -564,7 +561,7 @@ export class Game extends Scene {
     // Creates a brief scale pulse animation
     addInteractionPulse(
         target: Phaser.GameObjects.Sprite,
-        scaleAmount: number = 1.15
+        scaleAmount: number = 1.15,
     ) {
         if (!target?.active) return;
         const startScaleX = target.scaleX;
@@ -616,14 +613,14 @@ export class Game extends Scene {
                         flowerToAddPollen.y,
                         "pollen_particle_generated",
                         0xffff00,
-                        10
+                        10,
                     );
                     // NO FACT EMITTED HERE
                     this.addInteractionPulse(flowerToAddPollen);
                     return true; // Indicate pollen was added
                 } else {
                     console.warn(
-                        "GAME: Failed to get data for flower selected to add pollen."
+                        "GAME: Failed to get data for flower selected to add pollen.",
                     );
                 }
             }
@@ -644,7 +641,7 @@ export class Game extends Scene {
         y: number,
         texture: string,
         tint: number,
-        count: number = 10
+        count: number = 10,
     ) {
         if (!this.textures.exists(texture)) return;
         const particles = this.add.particles(x, y, texture, {

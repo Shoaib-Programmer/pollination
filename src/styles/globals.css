@@ -8,11 +8,12 @@
     /* --font-luckiest-guy: ; /* Next.js injects this if using next/font */
 
     /* --- OR Fallbacks/Direct Definition (if not using next/font correctly) --- */
-    --font-poppins-family: "Poppins", -apple-system, BlinkMacSystemFont,
-        Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,
-        Helvetica Neue, sans-serif;
-    --font-luckiest-guy-family: "Luckiest Guy", cursive, -apple-system,
-        BlinkMacSystemFont, Segoe UI, Roboto;
+    --font-poppins-family:
+        "Poppins", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+        Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    --font-luckiest-guy-family:
+        "Luckiest Guy", cursive, -apple-system, BlinkMacSystemFont, Segoe UI,
+        Roboto;
 
     /* UI Colors */
     --ui-bg-dark: rgba(25, 25, 30, 0.85);

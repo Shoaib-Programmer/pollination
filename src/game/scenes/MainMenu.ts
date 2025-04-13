@@ -158,7 +158,7 @@ export class MainMenu extends Scene {
                     onComplete: () => {
                         this.scene.start("Settings"); // Go to Settings scene
                     },
-                }
+                },
             );
         });
 
@@ -195,16 +195,19 @@ export class MainMenu extends Scene {
                 yoyo: true,
             });
             // Transition Out Animation (Optional)
-            gsap.to([title, instructionBg, instructions, startButton, settingsIcon], {
-                alpha: 0,
-                y: "-=30", // Move up slightly
-                duration: 0.3,
-                stagger: 0.1,
-                ease: "power1.in",
-                onComplete: () => {
-                    this.scene.start("Game");
+            gsap.to(
+                [title, instructionBg, instructions, startButton, settingsIcon],
+                {
+                    alpha: 0,
+                    y: "-=30", // Move up slightly
+                    duration: 0.3,
+                    stagger: 0.1,
+                    ease: "power1.in",
+                    onComplete: () => {
+                        this.scene.start("Game");
+                    },
                 },
-            });
+            );
         });
 
         // Emit scene readiness for potential future use by PhaserGame bridge

@@ -12,7 +12,7 @@ const main = async () => {
         // Ensure dependencies and phaser exist before accessing
         if (!packageData.dependencies || !packageData.dependencies.phaser) {
             console.error(
-                "Error: 'phaser' not found in package.json dependencies."
+                "Error: 'phaser' not found in package.json dependencies.",
             );
             process.exit(1);
         }
@@ -55,4 +55,3 @@ const main = async () => {
 };
 
 main();
-

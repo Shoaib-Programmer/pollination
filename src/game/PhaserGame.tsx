@@ -29,7 +29,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
             onGameReady,
             onBeforeDestroy,
         },
-        ref
+        ref,
     ) {
         const gameRef = useRef<Phaser.Game | null>(null);
         const containerRef = useRef<HTMLDivElement>(null);
@@ -61,8 +61,8 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
             // Setup scene change monitoring
             const setupSceneMonitoring = () => {
                 // Watch for scene changes and emit events
-                game.scene.scenes.forEach(scene => {
-                    scene.events.on('start', () => {
+                game.scene.scenes.forEach((scene) => {
+                    scene.events.on("start", () => {
                         const sceneName = scene.scene.key;
                         if (currentSceneRef.current !== sceneName) {
                             currentSceneRef.current = sceneName;
@@ -72,12 +72,12 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                     });
                 });
             };
-            
+
             // Setup monitoring once game is ready
             if (game.isBooted) {
                 setupSceneMonitoring();
             } else {
-                game.events.once('ready', setupSceneMonitoring);
+                game.events.once("ready", setupSceneMonitoring);
             }
 
             // Assign ref if provided
@@ -134,15 +134,15 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                     if (gameSceneInstance.events) {
                         gameSceneInstance.events.on(
                             "game:update-score",
-                            scoreHandler
+                            scoreHandler,
                         );
                         gameSceneInstance.events.on(
                             "game:show-fact",
-                            factHandler
+                            factHandler,
                         );
                         gameSceneInstance.events.on(
                             "game:update-timer",
-                            timerHandler
+                            timerHandler,
                         );
                         listenersAttachedRef.current = true; // Mark as attached
 
@@ -153,20 +153,20 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                                 try {
                                     gameSceneInstance.events.off(
                                         "game:update-score",
-                                        scoreHandler
+                                        scoreHandler,
                                     );
                                     gameSceneInstance.events.off(
                                         "game:show-fact",
-                                        factHandler
+                                        factHandler,
                                     );
                                     gameSceneInstance.events.off(
                                         "game:update-timer",
-                                        timerHandler
+                                        timerHandler,
                                     );
                                 } catch (e) {
                                     console.warn(
                                         "[PhaserGame Cleanup Ref] Error removing listeners.",
-                                        e
+                                        e,
                                     );
                                 }
                             }
@@ -174,7 +174,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                         };
                     } else {
                         console.error(
-                            "[PhaserGame Polling] Game scene active but 'events' missing!"
+                            "[PhaserGame Polling] Game scene active but 'events' missing!",
                         );
                     }
                 }
@@ -217,7 +217,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                 style={{ width, height, ...style }} // Combine default/prop width/height with other styles
             />
         );
-    }
+    },
 );
 
 PhaserGame.displayName = "PhaserGame";

@@ -41,8 +41,12 @@
     color: var(--ui-text-primary);
     cursor: pointer;
     pointer-events: auto; /* Buttons are interactive */
-    transition: background 0.1s ease, transform 0.08s ease, box-shadow 0.1s ease; /* Smooth transitions */
-    box-shadow: inset 0 1px 1px var(--ui-shadow-light),
+    transition:
+        background 0.1s ease,
+        transform 0.08s ease,
+        box-shadow 0.1s ease; /* Smooth transitions */
+    box-shadow:
+        inset 0 1px 1px var(--ui-shadow-light),
         0 3px 5px var(--ui-shadow-dark); /* Add shadow */
     /* Add backdrop filter (optional) */
     -webkit-backdrop-filter: blur(2px);
@@ -72,7 +76,8 @@
         var(--ui-bg-light)
     ); /* Invert gradient */
     transform: scale(0.94); /* Slightly less extreme press */
-    box-shadow: inset 0 2px 4px var(--ui-shadow-dark),
+    box-shadow:
+        inset 0 2px 4px var(--ui-shadow-dark),
         /* Inset shadow */ 0 1px 2px var(--ui-shadow-dark); /* Reduce outer shadow */
     border-color: rgba(255, 255, 255, 0.25);
     color: var(--ui-accent); /* Highlight arrow color on press */

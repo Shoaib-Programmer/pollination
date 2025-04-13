@@ -78,7 +78,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                 animation?.kill();
             }; // Cleanup tween
         },
-        { dependencies: [isModalVisible], scope: containerRef }
+        { dependencies: [isModalVisible], scope: containerRef },
     );
 
     // GSAP Animation for the Modal's Timer Bar Shrink
@@ -113,7 +113,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                 });
             }
         },
-        { dependencies: [isModalVisible], scope: containerRef }
+        { dependencies: [isModalVisible], scope: containerRef },
     );
 
     // GSAP Animation for Score Ticker/Pop
@@ -141,7 +141,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                         repeat: 1,
                         ease: "power1.inOut",
                         overwrite: true,
-                    }
+                    },
                 );
             }
             return () => {
@@ -150,7 +150,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                 if (scoreBoxTarget) gsap.killTweensOf(scoreBoxTarget, "scale");
             };
         },
-        { dependencies: [targetScore], scope: containerRef }
+        { dependencies: [targetScore], scope: containerRef },
     );
 
     // Event Listeners Setup
