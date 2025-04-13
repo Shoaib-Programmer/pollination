@@ -1,5 +1,24 @@
 // src/game/scenes/Preloader.ts
 import { Scene } from "phaser";
+import { getFlowerById } from "@/game/data/flowerTypes";
+
+interface FlowerType {
+    id: string;
+    name: string;
+    scientificName: string;
+    family: string;
+    color: number;
+    discovered: boolean;
+    collectionCount: number;
+    facts: string[];
+    regions: string[];
+    imageParams?: {
+        petalLength?: number;
+        petalWidth?: number;
+        numPetals?: number;
+        centerColor?: number;
+    };
+}
 
 export class Preloader extends Scene {
     // Graphics objects for the loader
@@ -202,81 +221,101 @@ export class Preloader extends Scene {
         if (updateProgress) updateProgress();
         // console.log("Generated: bee_generated");
 
-        // 3. Generate Flower Textures (Rolled back to original method)
+        // 3. Generate Flower Textures using our flower types data
         const flowerSize = 48;
         const petalRadius = flowerSize * 0.35;
         const centerRadius = flowerSize * 0.15;
         const numPetals = 6;
 
-        const drawFlower = (
-            key: string,
-            petalColor: number,
-            flowerType: string = "generic",
-        ) => {
-            // Center colors based on flower type
+        const drawFlower = (key: string, petalColor: number, flowerId: string = "generic") => {
+            // Get flower data if it exists
+            const flowerData = getFlowerById(flowerId);
+            
+            // Default values
             let centerColor = 0xffd700; // Default golden center
             let centerOutlineColor = 0x333333; // Default outline
-
-            // Customize center based on flower type
-            if (flowerType === "poppy" || flowerType === "rose") {
-                centerColor = 0x4d3319; // Dark brown center for red flowers
-                centerOutlineColor = 0x231709; // Darker outline
-            } else if (
-                flowerType === "cornflower" ||
-                flowerType === "bluebell"
-            ) {
-                centerColor = 0xffde59; // Yellow-gold center for blue flowers
-                centerOutlineColor = 0x8c7800; // Darker yellow outline
+            let currentNumPetals = numPetals;
+            let petalLength = petalRadius * 1.3;
+            let petalWidth = petalRadius * 0.8;
+            
+            // Type assertion to match our local interface definition
+            const flowerWithParams = flowerData as unknown as FlowerType;
+            
+            // If flower data exists, use its parameters
+            if (flowerWithParams?.imageParams) {
+                if (flowerWithParams.imageParams.petalLength) {
+                    petalLength = petalRadius * flowerWithParams.imageParams.petalLength;
+                }
+                if (flowerWithParams.imageParams.petalWidth) {
+                    petalWidth = petalRadius * flowerWithParams.imageParams.petalWidth;
+                }
+                if (flowerWithParams.imageParams.numPetals) {
+                    currentNumPetals = flowerWithParams.imageParams.numPetals;
+                }
+                if (flowerWithParams.imageParams.centerColor) {
+                    centerColor = flowerWithParams.imageParams.centerColor;
+                }
+            } else {
+                // Fallback behavior based on flower type category
+                if (flowerId === "poppy" || flowerId === "rose" || flowerId === "tulip") {
+                    centerColor = 0x4d3319; // Dark brown center for red flowers
+                    centerOutlineColor = 0x231709; // Darker outline
+                } else if (
+                    flowerId === "cornflower" || 
+                    flowerId === "bluebell" ||
+                    flowerId === "delphinium"
+                ) {
+                    centerColor = 0xffde59; // Yellow-gold center for blue flowers
+                    centerOutlineColor = 0x8c7800; // Darker yellow outline
+                }
+                
+                // Legacy petal shape adjustments for backward compatibility
+                if (flowerId === "poppy") {
+                    petalLength = petalRadius * 1.5; // Longer petals for poppies
+                    petalWidth = petalRadius * 0.9; // Wider petals
+                    currentNumPetals = 4; // Poppies typically have 4 petals
+                } else if (flowerId === "rose") {
+                    petalLength = petalRadius * 1.2; // Shorter, more compact petals
+                    petalWidth = petalRadius * 1.0; // Wider, rounder petals
+                    currentNumPetals = 8; // More petals for roses
+                } else if (flowerId === "cornflower") {
+                    petalLength = petalRadius * 1.4; // Elongated petals
+                    petalWidth = petalRadius * 0.7; // Thinner petals
+                    currentNumPetals = 8; // Cornflowers have many petals
+                } else if (flowerId === "bluebell") {
+                    petalLength = petalRadius * 1.3;
+                    petalWidth = petalRadius * 0.75;
+                    currentNumPetals = 6; // Bluebells have 6 petals
+                }
             }
-
+            
             // Draw flower center with a subtle gradient effect
             graphics.fillStyle(centerColor, 1);
             graphics.fillCircle(flowerSize / 2, flowerSize / 2, centerRadius);
-
+            
             // Center decoration (add texture to center)
             const innerRadius = centerRadius * 0.7;
-            graphics.fillStyle(
-                centerColor === 0xffd700 ? 0xffea00 : 0x59421f,
-                0.6,
-            );
+            graphics.fillStyle(centerColor === 0xffd700 ? 0xffea00 : 0x59421f, 0.6);
             graphics.fillCircle(flowerSize / 2, flowerSize / 2, innerRadius);
-
+            
             // Center outline
             graphics.lineStyle(1, centerOutlineColor, 0.8);
             graphics.strokeCircle(flowerSize / 2, flowerSize / 2, centerRadius);
-
+            
             // Petal main color and outline
             graphics.fillStyle(petalColor, 1);
             graphics.lineStyle(1, 0x000000, 0.5); // Slightly more transparent outline
 
-            // Adjust petal shape based on flower type
-            let petalLength = petalRadius * 1.3;
-            let petalWidth = petalRadius * 0.8;
-
-            if (flowerType === "poppy") {
-                petalLength = petalRadius * 1.5; // Longer petals for poppies
-                petalWidth = petalRadius * 0.9; // Wider petals
-            } else if (flowerType === "rose") {
-                petalLength = petalRadius * 1.2; // Shorter, more compact petals
-                petalWidth = petalRadius * 1.0; // Wider, rounder petals
-            } else if (flowerType === "cornflower") {
-                petalLength = petalRadius * 1.4; // Elongated petals
-                petalWidth = petalRadius * 0.7; // Thinner petals
-            } else if (flowerType === "bluebell") {
-                petalLength = petalRadius * 1.3;
-                petalWidth = petalRadius * 0.75;
-            }
-
             const numSegments = 16; // Controls smoothness of petal curve
 
-            for (let i = 0; i < numPetals; i++) {
-                const angle = Phaser.Math.DegToRad((360 / numPetals) * i);
+            for (let i = 0; i < currentNumPetals; i++) {
+                const angle = Phaser.Math.DegToRad((360 / currentNumPetals) * i);
                 const petalDist = petalRadius * 0.95; // Distance from center to petal center
                 const petalCenterX =
                     flowerSize / 2 + Math.cos(angle) * petalDist;
                 const petalCenterY =
                     flowerSize / 2 + Math.sin(angle) * petalDist;
-
+                
                 const rotationAngle = angle + Math.PI / 2; // Rotate petal to point outwards
 
                 // Draw petal using segmented ellipse approximation
@@ -302,25 +341,17 @@ export class Preloader extends Scene {
                 graphics.closePath();
                 graphics.fillPath();
                 graphics.strokePath();
-
+                
                 // Add vein/highlight to petal for more detail and realism
-                if (flowerType !== "generic") {
-                    graphics.lineStyle(
-                        1,
-                        flowerType.includes("blue") ? 0x3a86ff : 0xffd6a5,
-                        0.3,
-                    );
+                if (flowerId !== "generic") {
+                    graphics.lineStyle(1, flowerId.includes("blue") ? 0x3a86ff : 0xffd6a5, 0.3);
                     const veinStart = {
-                        x:
-                            flowerSize / 2 +
-                            Math.cos(angle) * (centerRadius * 0.9),
-                        y:
-                            flowerSize / 2 +
-                            Math.sin(angle) * (centerRadius * 0.9),
+                        x: flowerSize / 2 + Math.cos(angle) * (centerRadius * 0.9),
+                        y: flowerSize / 2 + Math.sin(angle) * (centerRadius * 0.9)
                     };
                     const veinEnd = {
                         x: petalCenterX + Math.cos(angle) * petalLength * 0.65,
-                        y: petalCenterY + Math.sin(angle) * petalLength * 0.65,
+                        y: petalCenterY + Math.sin(angle) * petalLength * 0.65
                     };
                     graphics.beginPath();
                     graphics.moveTo(veinStart.x, veinStart.y);
@@ -328,7 +359,7 @@ export class Preloader extends Scene {
                     graphics.strokePath();
                 }
             }
-
+            
             graphics.generateTexture(key, flowerSize, flowerSize);
             graphics.clear();
             if (updateProgress) updateProgress(); // Call after each flower type
@@ -336,8 +367,8 @@ export class Preloader extends Scene {
         };
 
         // Draw flowers with realistic colors based on actual flowers
-        drawFlower("flower_red_generated", 0xe63946, "poppy"); // Red poppy
-        drawFlower("flower_blue_generated", 0x4361ee, "cornflower"); // Blue cornflower
+        drawFlower("flower_red_generated", 0xE63946, "poppy"); // Red poppy
+        drawFlower("flower_blue_generated", 0x4361EE, "cornflower"); // Blue cornflower
 
         // 4. Generate Pollen Particle Texture
         const pollenSize = 10;

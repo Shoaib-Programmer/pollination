@@ -163,6 +163,27 @@ export class MainMenu extends Scene {
             .setOrigin(0.5)
             .setAlpha(0) // Start invisible
             .setScale(0.8); // Start smaller
+            
+        // Flower Collection Button - always visible
+        const flowerCollectionButton = this.add
+            .text(centerX, centerY + 200, "Flower Collection", {
+                font: "bold",
+                fontFamily: "var(--font-poppins)",
+                fontSize: "28px",
+                color: "#ffffff",
+                backgroundColor: "#9C27B0", // Purple color
+                padding: { x: 25, y: 12 },
+                shadow: {
+                    offsetX: 2,
+                    offsetY: 2,
+                    color: "#111",
+                    blur: 2,
+                    fill: true,
+                },
+            })
+            .setOrigin(0.5)
+            .setAlpha(0) // Start invisible
+            .setScale(0.8); // Start smaller
 
         // GSAP Timeline for staggered entrance
         const tl = gsap.timeline({ delay: 0.3 }); // Start after background fade
@@ -188,6 +209,11 @@ export class MainMenu extends Scene {
                 { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
                 "-=0.2",
             ) // Button pops in
+            .to(
+                flowerCollectionButton,
+                { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
+                "-=0.3",
+            ) // Flower Collection button pops in
             .to(settingsIcon, { alpha: 0.8, duration: 0.4 }, "-=0.3"); // Fade in settings icon
             
         // Update high scores button visibility based on stored state
@@ -339,6 +365,54 @@ export class MainMenu extends Scene {
                 );
             });
         }
+
+        // Flower Collection button interaction
+        flowerCollectionButton.setInteractive({ useHandCursor: true });
+        
+        flowerCollectionButton.on("pointerover", () => {
+            this.tweens.add({
+                targets: flowerCollectionButton,
+                scale: originalScale * 1.08,
+                duration: 150,
+                ease: "Sine.easeInOut",
+            });
+            flowerCollectionButton.setBackgroundColor("#B039C8"); // Lighter purple
+        });
+        
+        flowerCollectionButton.on("pointerout", () => {
+            this.tweens.add({
+                targets: flowerCollectionButton,
+                scale: originalScale,
+                duration: 150,
+                ease: "Sine.easeInOut",
+            });
+            flowerCollectionButton.setBackgroundColor("#9C27B0"); // Original purple
+        });
+        
+        flowerCollectionButton.on("pointerdown", () => {
+            this.tweens.add({
+                targets: flowerCollectionButton,
+                scale: originalScale * 0.95,
+                duration: 80,
+                ease: "Sine.easeInOut",
+                yoyo: true,
+            });
+            
+            // Transition to Flower Collection scene
+            gsap.to(
+                [title, instructionBg, instructions, startButton, this.highScoresButton, flowerCollectionButton, settingsIcon],
+                {
+                    alpha: 0,
+                    y: "-=30",
+                    duration: 0.3,
+                    stagger: 0.05,
+                    ease: "power1.in",
+                    onComplete: () => {
+                        this.scene.start("FlowerCollection");
+                    },
+                }
+            );
+        });
 
         // Emit scene readiness for potential future use by PhaserGame bridge
         this.events.emit("scene-ready", this);

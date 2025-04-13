@@ -6,6 +6,7 @@ import { MainMenu } from "./scenes/MainMenu";
 import { Game } from "./scenes/Game";
 import { GameOver } from "./scenes/GameOver";
 import { Settings } from "./scenes/Settings"; // Import the new Settings scene
+import FlowerCollection from "./scenes/FlowerCollection"; // Import the new FlowerCollection scene
 
 // Define the configuration for the game
 const config: Phaser.Types.Core.GameConfig = {
@@ -30,6 +31,7 @@ const config: Phaser.Types.Core.GameConfig = {
         Game,
         GameOver,
         Settings, // Add the Settings scene here
+        FlowerCollection, // Add the FlowerCollection scene here
         // No separate UI scene needed with React overlay
     ],
     // Improve pixel art rendering if using pixelated assets
