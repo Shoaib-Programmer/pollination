@@ -1,19 +1,25 @@
 {
   "name": "template-nextjs",
   "version": "1.1.1",
-  "description": "A Phaser 3 Next.js project template that demonstrates Next.js with React communication and uses Vite for bundling.",
+  "description": "An interactive pollination game designed for students, built with Phaser 3 and Next.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/phaserjs/template-nextjs.git"
+    "url": "git+https://github.com/Shoaib-Programmer/pollination.git"
   },
-  "author": "Phaser Studio <support@phaser.io> (https://phaser.io/)",
+  "author": "Shoaib Nigam Shaik <support@phaser.io> (https://phaser.io/)",
   "license": "MIT",
   "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
   "bugs": {
-    "url": "https://github.com/phaserjs/template-nextjs/issues"
+    "url": "https://github.com/Shoaib-Programmer/pollination/issues"
   },
-  "homepage": "https://github.com/phaserjs/template-nextjs#readme",
+  "homepage": "https://github.com/Shoaib-Programmer/pollination#readme",
   "keywords": [
+    "pollination",
+    "game",
+    "interactive",
+    "education",
+    "learning",
+    "IndexedDB",
     "phaser",
     "phaser3",
     "next",
