@@ -6,180 +6,273 @@ import { FlowerGenerator } from "@/game/utils/textures/FlowerGenerator";
 import { PollenGenerator } from "@/game/utils/textures/PollenGenerator";
 import { GearGenerator } from "@/game/utils/textures/GearGenerator";
 
+// --- Constants ---
+const SCENE_KEY = "Preloader";
+const MAIN_MENU_SCENE_KEY = "MainMenu";
+const LOGO_TEXTURE_KEY = "logo";
+
+const REGISTRY_KEYS = {
+    TOTAL: "generation_progress_total",
+    CURRENT: "generation_progress_current",
+};
+
+const LOADER_GEOMETRY = {
+    RADIUS: 80,
+    LINE_WIDTH: 8,
+    LOGO_OFFSET_Y: -40, // Offset above the loader center
+    TEXT_OFFSET_Y: 35, // Offset below the loader center
+};
+
+const LOADER_STYLE = {
+    TRACK_COLOR: 0x555555,
+    PROGRESS_COLOR: 0xffffff,
+    FONT_LOADING: "20px Poppins, sans-serif",
+    FONT_PERCENT: "bold 24px Poppins, sans-serif",
+    TEXT_COLOR: "#ffffff",
+};
+
+const CLEANUP_DELAY_MS = 200; // Delay before cleaning up UI and changing scene
+
+// --- Generator Definitions ---
+// Array of generator constructors to iterate over
+const GENERATOR_CONSTRUCTORS = [
+    BackgroundGenerator,
+    BeeGenerator,
+    FlowerGenerator,
+    PollenGenerator,
+    GearGenerator,
+];
+
+// Interface for Generators (assuming they have generate and destroy)
+interface ITextureGenerator {
+    generate(): void;
+    destroy(): void;
+}
+// Interface for Generator constructor options
+interface IGeneratorOptions {
+    scene: Scene;
+    updateProgress: () => void;
+}
+
 export class Preloader extends Scene {
-    // Graphics objects for the loader
-    private progressTrack!: Phaser.GameObjects.Graphics;
-    private progressBar!: Phaser.GameObjects.Graphics;
-    // Text object for percentage
-    private percentText!: Phaser.GameObjects.Text;
-    // Keep track of the registry update function
-    private updateProgressFn: (() => void) | null = null;
+    // UI Elements
+    private progressTrack?: Phaser.GameObjects.Graphics;
+    private progressBar?: Phaser.GameObjects.Graphics;
+    private percentText?: Phaser.GameObjects.Text;
+    private loadingText?: Phaser.GameObjects.Text;
+    private logoImage?: Phaser.GameObjects.Image;
+
+    // Scene Properties
+    private centerX: number = 0;
+    private centerY: number = 0;
+    private totalGenerations: number = 0;
 
     constructor() {
-        super("Preloader");
+        super(SCENE_KEY);
     }
 
     init() {
-        const centerX = this.cameras.main.width / 2;
-        const centerY = this.cameras.main.height / 2;
-        const loaderRadius = 80; // Radius of the circular loader
-        const lineWidth = 8; // Thickness of the loader lines
+        this.centerX = this.cameras.main.width / 2;
+        this.centerY = this.cameras.main.height / 2;
+        this.totalGenerations = GENERATOR_CONSTRUCTORS.length;
 
+        this.setupRegistry();
+        this.createLoaderUI();
+        this.updateProgressDisplay(); // Draw initial 0% state
+    }
+
+    preload() {
+        // No assets are loaded via Phaser's loader in this scene
+    }
+
+    create() {
+        console.log(`${SCENE_KEY}: Starting texture generation...`);
+
+        const generators: ITextureGenerator[] = [];
+        const generatorOptions: IGeneratorOptions = {
+            scene: this,
+            updateProgress: this.incrementAndProgress.bind(this),
+        };
+
+        // 1. Instantiate all generators
+        GENERATOR_CONSTRUCTORS.forEach((GeneratorConst) => {
+            generators.push(new GeneratorConst(generatorOptions));
+        });
+
+        // 2. Run generation process for all generators
+        // Assuming generate() calls updateProgress internally and synchronously
+        generators.forEach((generator) => {
+            try {
+                generator.generate();
+            } catch (error) {
+                console.error(
+                    `Error during generation for ${generator.constructor.name}:`,
+                    error,
+                );
+                // Optionally handle error, e.g., stop loading, show error message
+            }
+        });
+
+        // 3. Destroy all generator instances
+        generators.forEach((generator) => {
+            generator.destroy();
+        });
+        console.log(`${SCENE_KEY}: Texture generation complete.`);
+
+        // 4. Schedule cleanup and scene transition
+        this.time.delayedCall(CLEANUP_DELAY_MS, () => {
+            console.log(`${SCENE_KEY}: Cleaning up loader visuals.`);
+            this.cleanupLoaderUI();
+            console.log(`${SCENE_KEY}: Starting ${MAIN_MENU_SCENE_KEY} scene.`);
+            this.scene.start(MAIN_MENU_SCENE_KEY);
+        });
+    }
+
+    // --- Private Helper Methods ---
+
+    /**
+     * Sets up the initial values in the Phaser Registry for progress tracking.
+     */
+    private setupRegistry(): void {
+        this.registry.set(REGISTRY_KEYS.TOTAL, this.totalGenerations);
+        this.registry.set(REGISTRY_KEYS.CURRENT, 0);
+    }
+
+    /**
+     * Creates all the visual elements for the loader UI.
+     */
+    private createLoaderUI(): void {
         // --- Logo (Optional) ---
-        if (this.textures.exists("logo")) {
-            this.add
-                .image(centerX, centerY - loaderRadius - 40, "logo")
+        if (this.textures.exists(LOGO_TEXTURE_KEY)) {
+            this.logoImage = this.add
+                .image(
+                    this.centerX,
+                    this.centerY +
+                        LOADER_GEOMETRY.RADIUS +
+                        LOADER_GEOMETRY.LOGO_OFFSET_Y,
+                    LOGO_TEXTURE_KEY,
+                )
                 .setOrigin(0.5);
         } else {
-            console.warn("Preloader: 'logo' texture not found.");
+            console.warn(
+                `${SCENE_KEY}: '${LOGO_TEXTURE_KEY}' texture not found. Skipping logo display.`,
+            );
         }
 
         // --- Loading Text ---
-        const loadingText = this.make
+        this.loadingText = this.make
             .text({
-                x: centerX,
-                y: centerY + loaderRadius + 35, // Position below the loader
+                x: this.centerX,
+                y:
+                    this.centerY +
+                    LOADER_GEOMETRY.RADIUS +
+                    LOADER_GEOMETRY.TEXT_OFFSET_Y,
                 text: "Generating Assets...",
-                style: { font: "20px Poppins, sans-serif", color: "#ffffff" },
+                style: {
+                    font: LOADER_STYLE.FONT_LOADING,
+                    color: LOADER_STYLE.TEXT_COLOR,
+                },
             })
             .setOrigin(0.5);
 
         // --- Circular Loader Background (Track) ---
         this.progressTrack = this.add.graphics();
-        this.progressTrack.lineStyle(lineWidth, 0x555555, 1); // Grey track
-        this.progressTrack.strokeCircle(centerX, centerY, loaderRadius);
+        this.progressTrack.lineStyle(
+            LOADER_GEOMETRY.LINE_WIDTH,
+            LOADER_STYLE.TRACK_COLOR,
+            1,
+        );
+        this.progressTrack.strokeCircle(
+            this.centerX,
+            this.centerY,
+            LOADER_GEOMETRY.RADIUS,
+        );
 
         // --- Circular Loader Progress Bar (Filled Arc) ---
         this.progressBar = this.add.graphics();
-        // Arc drawing happens in updateProgress
+        // Initial drawing happens in updateProgressDisplay
 
         // --- Percentage Text (Centered) ---
         this.percentText = this.make
             .text({
-                x: centerX,
-                y: centerY, // Center vertically inside the circle
-                text: "0%",
+                x: this.centerX,
+                y: this.centerY,
+                text: "0%", // Initial value
                 style: {
-                    font: "bold 24px Poppins, sans-serif",
-                    color: "#ffffff",
+                    font: LOADER_STYLE.FONT_PERCENT,
+                    color: LOADER_STYLE.TEXT_COLOR,
                 },
             })
             .setOrigin(0.5);
+    }
 
-        // --- Progress Update Logic ---
-        let progress = 0;
-        const totalGenerations = 6; // background, bee, flower_red, flower_blue, pollen, gear
-        this.registry.set("generation_progress_total", totalGenerations);
-        this.registry.set("generation_progress_current", 0);
+    /**
+     * Increments the progress counter in the registry and updates the display.
+     * This function is passed to the generators.
+     */
+    private incrementAndProgress(): void {
+        const current =
+            (this.registry.get(REGISTRY_KEYS.CURRENT) || 0) + 1;
+        // Ensure current doesn't exceed total (though it shouldn't if called correctly)
+        const clampedCurrent = Math.min(current, this.totalGenerations);
+        this.registry.set(REGISTRY_KEYS.CURRENT, clampedCurrent);
 
-        // Store the update function for use in create()
-        this.updateProgressFn = () => {
-            const current =
-                (this.registry.get("generation_progress_current") || 0) + 1;
-            this.registry.set("generation_progress_current", current);
-            progress = Math.min(1, current / totalGenerations); // Clamp progress between 0 and 1
+        this.updateProgressDisplay();
+    }
 
-            // Update Percentage Text
-            this.percentText?.setText(Math.round(progress * 100) + "%");
+    /**
+     * Updates the visual representation of the progress (text and bar).
+     * Reads the current progress from the registry.
+     */
+    private updateProgressDisplay(): void {
+        const current = this.registry.get(REGISTRY_KEYS.CURRENT) || 0;
+        const total = this.registry.get(REGISTRY_KEYS.TOTAL) || 1; // Avoid division by zero
+        const progress = Math.min(1, Math.max(0, current / total)); // Clamp progress [0, 1]
 
-            // Update Circular Progress Bar
-            this.progressBar?.clear();
-            this.progressBar?.lineStyle(lineWidth, 0xffffff, 1); // White progress line
+        // Update Percentage Text
+        this.percentText?.setText(`${Math.round(progress * 100)}%`);
+
+        // Update Circular Progress Bar
+        this.progressBar?.clear();
+        if (progress > 0) {
+            // Only draw if there's progress
+            this.progressBar?.lineStyle(
+                LOADER_GEOMETRY.LINE_WIDTH,
+                LOADER_STYLE.PROGRESS_COLOR,
+                1,
+            );
 
             const startAngle = Phaser.Math.DegToRad(-90); // Start at the top
-            const endAngle = startAngle + Phaser.Math.PI2 * progress; // Add fraction of full circle
+            const endAngle = startAngle + Phaser.Math.PI2 * progress;
+
             this.progressBar?.beginPath();
             this.progressBar?.arc(
-                centerX,
-                centerY,
-                loaderRadius,
+                this.centerX,
+                this.centerY,
+                LOADER_GEOMETRY.RADIUS,
                 startAngle,
                 endAngle,
-                false,
-            ); // false = clockwise
+                false, // Clockwise
+            );
             this.progressBar?.strokePath();
-        };
-
-        // Trigger initial draw of 0%
-        // Don't increment count yet
-        this.percentText?.setText("0%");
-        this.progressBar?.clear();
-        this.progressBar?.lineStyle(lineWidth, 0xffffff, 1);
-        const startAngle = Phaser.Math.DegToRad(-90);
-        this.progressBar?.beginPath();
-        this.progressBar?.arc(
-            centerX,
-            centerY,
-            loaderRadius,
-            startAngle,
-            startAngle,
-            false,
-        ); // Draw 0 length arc initially
-        this.progressBar?.strokePath();
+        }
     }
 
-    preload() {
-        // No assets loaded here in this setup
-    }
+    /**
+     * Destroys all the UI elements created for the loader.
+     */
+    private cleanupLoaderUI(): void {
+        this.progressTrack?.destroy();
+        this.progressBar?.destroy();
+        this.percentText?.destroy();
+        this.loadingText?.destroy();
+        this.logoImage?.destroy();
 
-    create() {
-        // console.log("Preloader: Create - Starting texture generation...");
-        const updateProgress = this.updateProgressFn; // Use stored function
-        
-        // Create generators with a common options object
-        const generatorOptions = {
-            scene: this,
-            updateProgress: updateProgress || undefined
-        };
-
-        // Generate all textures using our specialized generators
-        const backgroundGenerator = new BackgroundGenerator(generatorOptions);
-        backgroundGenerator.generate();
-        
-        const beeGenerator = new BeeGenerator(generatorOptions);
-        beeGenerator.generate();
-        
-        const flowerGenerator = new FlowerGenerator(generatorOptions);
-        flowerGenerator.generate();
-        
-        const pollenGenerator = new PollenGenerator(generatorOptions);
-        pollenGenerator.generate();
-        
-        const gearGenerator = new GearGenerator(generatorOptions);
-        gearGenerator.generate();
-        
-        // Clean up all generators
-        backgroundGenerator.destroy();
-        beeGenerator.destroy();
-        flowerGenerator.destroy();
-        pollenGenerator.destroy();
-        gearGenerator.destroy();
-
-        // Destroy loader elements explicitly AFTER generation is complete
-        // Use a short delay to ensure the final 100% state is visible briefly
-        this.time.delayedCall(200, () => {
-            // console.log("Preloader: Cleaning up loader visuals.");
-            // Find and destroy progress bar related elements created in init()
-            this.progressTrack?.destroy();
-            this.progressBar?.destroy();
-            this.percentText?.destroy();
-            // Also destroy logo and loading text if they exist
-            const loadingText = this.children.list.find(
-                (child) =>
-                    child instanceof Phaser.GameObjects.Text &&
-                    child.text.includes("Generating"),
-            );
-            loadingText?.destroy();
-            const logoImage = this.children.list.find(
-                (child) =>
-                    child instanceof Phaser.GameObjects.Image &&
-                    child.texture.key === "logo",
-            );
-            logoImage?.destroy();
-
-            // --- Start Main Menu ---
-            // console.log("Preloader: Starting MainMenu scene.");
-            this.scene.start("MainMenu");
-        });
+        // Nullify references to prevent potential memory leaks if scene reused (unlikely here)
+        this.progressTrack = undefined;
+        this.progressBar = undefined;
+        this.percentText = undefined;
+        this.loadingText = undefined;
+        this.logoImage = undefined;
     }
 }
