@@ -2,6 +2,8 @@
 const nextConfig = {
     // output: 'export',
     // distDir: 'dist'
+    reactStrictMode: true,
+    swcMinify: true,
 };
 
 export default nextConfig;
