@@ -2,10 +2,62 @@
 import { Scene } from "phaser";
 import gsap from "gsap"; // Import GSAP
 import EventBus from "../EventBus"; // Import EventBus if needed for settings icon
+import storageService from "@/services/StorageService"; // Import storage service
 
 export class MainMenu extends Scene {
+    private hasHighScores: boolean = false;
+    private isCheckingScores: boolean = false;
+    private highScoresButton?: Phaser.GameObjects.Text;
+
     constructor() {
         super("MainMenu");
+    }
+    
+    init() {
+        // Check if there are high scores when the scene initializes
+        this.checkForHighScores();
+    }
+    
+    async checkForHighScores() {
+        this.isCheckingScores = true;
+        try {
+            const highScores = await storageService.getHighScores(1); // Just check if there's at least one
+            this.hasHighScores = highScores.length > 0;
+            this.isCheckingScores = false;
+            
+            // If high scores button exists, update its visibility
+            this.updateHighScoresButtonVisibility();
+        } catch (error) {
+            console.error("Failed to check for high scores:", error);
+            this.isCheckingScores = false;
+            this.hasHighScores = false;
+        }
+    }
+    
+    updateHighScoresButtonVisibility() {
+        if (this.highScoresButton) {
+            if (this.hasHighScores) {
+                // If high scores exist, show the button with animation
+                if (this.highScoresButton.alpha === 0) {
+                    gsap.to(this.highScoresButton, {
+                        alpha: 1,
+                        scale: 1,
+                        duration: 0.4,
+                        ease: "back.out(1.7)"
+                    });
+                }
+            } else {
+                // If no high scores, hide the button
+                if (this.highScoresButton.alpha > 0) {
+                    gsap.to(this.highScoresButton, {
+                        alpha: 0,
+                        scale: 0.8,
+                        duration: 0.3,
+                        ease: "power1.in"
+                    });
+                }
+            }
+        }
     }
 
     create() {
@@ -50,14 +102,14 @@ export class MainMenu extends Scene {
             .setScale(0.5); // Start invisible and small
 
         const instructionBg = this.add
-            .rectangle(centerX, centerY - 15, 550, 110, 0x000000, 0.65)
+            .rectangle(centerX, centerY - 45, 550, 110, 0x000000, 0.65)
             .setOrigin(0.5)
             .setAlpha(0)
             .setScale(0.8); // Start invisible and smaller
         const instructions = this.add
             .text(
                 centerX,
-                centerY - 15,
+                centerY - 45,
                 "Use Arrow Keys (or D-Pad on mobile)\nto move the Bee. Collect pollen from a\nglowing flower & deliver it to another\nof the SAME color!",
                 {
                     fontFamily: "var(--font-poppins)",
@@ -72,13 +124,34 @@ export class MainMenu extends Scene {
             .setAlpha(0); // Start invisible
 
         const startButton = this.add
-            .text(centerX, centerY + 95, "Start Game", {
+            .text(centerX, centerY + 65, "Start Game", {
                 font: "bold",
                 fontFamily: "var(--font-poppins)",
                 fontSize: "34px",
                 color: "#ffffff",
                 backgroundColor: "#2E8B57",
                 padding: { x: 30, y: 15 },
+                shadow: {
+                    offsetX: 2,
+                    offsetY: 2,
+                    color: "#111",
+                    blur: 2,
+                    fill: true,
+                },
+            })
+            .setOrigin(0.5)
+            .setAlpha(0) // Start invisible
+            .setScale(0.8); // Start smaller
+            
+        // High Scores button - only shown if there are high scores
+        this.highScoresButton = this.add
+            .text(centerX, centerY + 140, "High Scores", {
+                font: "bold",
+                fontFamily: "var(--font-poppins)",
+                fontSize: "28px",
+                color: "#ffffff",
+                backgroundColor: "#4682B4", // Steel blue color
+                padding: { x: 25, y: 12 },
                 shadow: {
                     offsetX: 2,
                     offsetY: 2,
@@ -116,6 +189,9 @@ export class MainMenu extends Scene {
                 "-=0.2",
             ) // Button pops in
             .to(settingsIcon, { alpha: 0.8, duration: 0.4 }, "-=0.3"); // Fade in settings icon
+            
+        // Update high scores button visibility based on stored state
+        this.updateHighScoresButtonVisibility();
 
         // --- End Entrance Animation ---
 
@@ -150,7 +226,7 @@ export class MainMenu extends Scene {
             });
             // Transition Out (Fade everything except maybe background)
             gsap.to(
-                [title, instructionBg, instructions, startButton, settingsIcon],
+                [title, instructionBg, instructions, startButton, this.highScoresButton, settingsIcon],
                 {
                     alpha: 0,
                     duration: 0.3,
@@ -196,7 +272,7 @@ export class MainMenu extends Scene {
             });
             // Transition Out Animation (Optional)
             gsap.to(
-                [title, instructionBg, instructions, startButton, settingsIcon],
+                [title, instructionBg, instructions, startButton, this.highScoresButton, settingsIcon],
                 {
                     alpha: 0,
                     y: "-=30", // Move up slightly
@@ -209,6 +285,60 @@ export class MainMenu extends Scene {
                 },
             );
         });
+        
+        // High Scores button interaction
+        if (this.highScoresButton) {
+            this.highScoresButton.setInteractive({ useHandCursor: true });
+            
+            this.highScoresButton.on("pointerover", () => {
+                this.tweens.killTweensOf(this.highScoresButton);
+                this.tweens.add({
+                    targets: this.highScoresButton,
+                    scale: originalScale * 1.08,
+                    duration: 150,
+                    ease: "Sine.easeInOut",
+                });
+                this.highScoresButton.setBackgroundColor("#5A9BDC"); // Lighter blue
+            });
+            
+            this.highScoresButton.on("pointerout", () => {
+                this.tweens.killTweensOf(this.highScoresButton);
+                this.tweens.add({
+                    targets: this.highScoresButton,
+                    scale: originalScale,
+                    duration: 150,
+                    ease: "Sine.easeInOut",
+                });
+                this.highScoresButton.setBackgroundColor("#4682B4");
+            });
+            
+            this.highScoresButton.on("pointerdown", () => {
+                this.tweens.killTweensOf(this.highScoresButton);
+                this.tweens.add({
+                    targets: this.highScoresButton,
+                    scale: originalScale * 0.95,
+                    duration: 80,
+                    ease: "Sine.easeInOut",
+                    yoyo: true,
+                });
+                
+                // Go directly to the GameOver scene which shows high scores
+                gsap.to(
+                    [title, instructionBg, instructions, startButton, this.highScoresButton, settingsIcon],
+                    {
+                        alpha: 0,
+                        y: "-=30",
+                        duration: 0.3,
+                        stagger: 0.1,
+                        ease: "power1.in",
+                        onComplete: () => {
+                            // Pass 0 score to just show high scores without current game score emphasis
+                            this.scene.start("GameOver", { score: 0, showHighScoresOnly: true });
+                        },
+                    },
+                );
+            });
+        }
 
         // Emit scene readiness for potential future use by PhaserGame bridge
         this.events.emit("scene-ready", this);
