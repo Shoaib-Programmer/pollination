@@ -1,24 +1,10 @@
 // src/game/scenes/Preloader.ts
 import { Scene } from "phaser";
-import { getFlowerById } from "@/game/data/flowerTypes";
-
-interface FlowerType {
-    id: string;
-    name: string;
-    scientificName: string;
-    family: string;
-    color: number;
-    discovered: boolean;
-    collectionCount: number;
-    facts: string[];
-    regions: string[];
-    imageParams?: {
-        petalLength?: number;
-        petalWidth?: number;
-        numPetals?: number;
-        centerColor?: number;
-    };
-}
+import { BackgroundGenerator } from "@/game/utils/textures/BackgroundGenerator";
+import { BeeGenerator } from "@/game/utils/textures/BeeGenerator";
+import { FlowerGenerator } from "@/game/utils/textures/FlowerGenerator";
+import { PollenGenerator } from "@/game/utils/textures/PollenGenerator";
+import { GearGenerator } from "@/game/utils/textures/GearGenerator";
 
 export class Preloader extends Scene {
     // Graphics objects for the loader
@@ -102,7 +88,6 @@ export class Preloader extends Scene {
 
             const startAngle = Phaser.Math.DegToRad(-90); // Start at the top
             const endAngle = startAngle + Phaser.Math.PI2 * progress; // Add fraction of full circle
-
             this.progressBar?.beginPath();
             this.progressBar?.arc(
                 centerX,
@@ -140,325 +125,35 @@ export class Preloader extends Scene {
     create() {
         // console.log("Preloader: Create - Starting texture generation...");
         const updateProgress = this.updateProgressFn; // Use stored function
-
-        const graphics = this.make.graphics(); // Use temporary graphics for generation
-
-        // --- Texture Generation Logic ---
-
-        // 1. Generate Background Texture
-        const bgWidth = this.cameras.main.width;
-        const bgHeight = this.cameras.main.height;
-        graphics.fillStyle(0x228b22, 1);
-        graphics.fillRect(0, 0, bgWidth, bgHeight);
-        graphics.fillStyle(0x3cb371, 0.4);
-        for (let i = 0; i < 2000; i++) {
-            const x = Phaser.Math.Between(0, bgWidth);
-            const y = Phaser.Math.Between(0, bgHeight);
-            const width = Phaser.Math.Between(1, 3);
-            const height = Phaser.Math.Between(2, 5);
-            graphics.fillRect(x, y, width, height);
-        }
-        graphics.generateTexture("background_generated", bgWidth, bgHeight);
-        graphics.clear();
-        if (updateProgress) updateProgress();
-        // console.log("Generated: background_generated");
-
-        // 2. Generate Bee Texture
-        const beeSize = 32;
-        const beeBodyY = beeSize / 2;
-        const beeBodyWidth = beeSize * 0.6;
-        const beeBodyHeight = beeSize * 0.45;
-        const headRadius = beeSize * 0.2;
-        const wingWidth = beeSize * 0.25;
-        graphics.fillStyle(0xffd700, 1);
-        graphics.fillEllipse(
-            beeSize / 2,
-            beeBodyY,
-            beeBodyWidth,
-            beeBodyHeight,
-        );
-        graphics.fillStyle(0x000000, 1);
-        graphics.fillRect(
-            beeSize / 2 - beeBodyWidth * 0.3,
-            beeBodyY - beeBodyHeight / 2,
-            beeBodyWidth * 0.2,
-            beeBodyHeight,
-        );
-        graphics.fillRect(
-            beeSize / 2 + beeBodyWidth * 0.1,
-            beeBodyY - beeBodyHeight / 2,
-            beeBodyWidth * 0.2,
-            beeBodyHeight,
-        );
-        graphics.fillCircle(
-            beeSize / 2 + beeBodyWidth / 2 - headRadius * 0.3,
-            beeBodyY,
-            headRadius,
-        );
-        graphics.fillStyle(0xadd8e6, 0.7);
-        graphics
-            .slice(
-                beeSize / 2 - wingWidth * 0.4,
-                beeBodyY - beeBodyHeight * 0.3,
-                wingWidth,
-                Phaser.Math.DegToRad(180),
-                Phaser.Math.DegToRad(340),
-                false,
-            )
-            .fillPath();
-        graphics
-            .slice(
-                beeSize / 2 - wingWidth * 0.4,
-                beeBodyY + beeBodyHeight * 0.3,
-                wingWidth,
-                Phaser.Math.DegToRad(20),
-                Phaser.Math.DegToRad(180),
-                false,
-            )
-            .fillPath();
-        graphics.generateTexture("bee_generated", beeSize, beeSize);
-        graphics.clear();
-        if (updateProgress) updateProgress();
-        // console.log("Generated: bee_generated");
-
-        // 3. Generate Flower Textures using our flower types data
-        const flowerSize = 48;
-        const petalRadius = flowerSize * 0.35;
-        const centerRadius = flowerSize * 0.15;
-        const numPetals = 6;
-
-        const drawFlower = (key: string, petalColor: number, flowerId: string = "generic") => {
-            // Get flower data if it exists
-            const flowerData = getFlowerById(flowerId);
-            
-            // Default values
-            let centerColor = 0xffd700; // Default golden center
-            let centerOutlineColor = 0x333333; // Default outline
-            let currentNumPetals = numPetals;
-            let petalLength = petalRadius * 1.3;
-            let petalWidth = petalRadius * 0.8;
-            
-            // Type assertion to match our local interface definition
-            const flowerWithParams = flowerData as unknown as FlowerType;
-            
-            // If flower data exists, use its parameters
-            if (flowerWithParams?.imageParams) {
-                if (flowerWithParams.imageParams.petalLength) {
-                    petalLength = petalRadius * flowerWithParams.imageParams.petalLength;
-                }
-                if (flowerWithParams.imageParams.petalWidth) {
-                    petalWidth = petalRadius * flowerWithParams.imageParams.petalWidth;
-                }
-                if (flowerWithParams.imageParams.numPetals) {
-                    currentNumPetals = flowerWithParams.imageParams.numPetals;
-                }
-                if (flowerWithParams.imageParams.centerColor) {
-                    centerColor = flowerWithParams.imageParams.centerColor;
-                }
-            } else {
-                // Fallback behavior based on flower type category
-                if (flowerId === "poppy" || flowerId === "rose" || flowerId === "tulip") {
-                    centerColor = 0x4d3319; // Dark brown center for red flowers
-                    centerOutlineColor = 0x231709; // Darker outline
-                } else if (
-                    flowerId === "cornflower" || 
-                    flowerId === "bluebell" ||
-                    flowerId === "delphinium"
-                ) {
-                    centerColor = 0xffde59; // Yellow-gold center for blue flowers
-                    centerOutlineColor = 0x8c7800; // Darker yellow outline
-                }
-                
-                // Legacy petal shape adjustments for backward compatibility
-                if (flowerId === "poppy") {
-                    petalLength = petalRadius * 1.5; // Longer petals for poppies
-                    petalWidth = petalRadius * 0.9; // Wider petals
-                    currentNumPetals = 4; // Poppies typically have 4 petals
-                } else if (flowerId === "rose") {
-                    petalLength = petalRadius * 1.2; // Shorter, more compact petals
-                    petalWidth = petalRadius * 1.0; // Wider, rounder petals
-                    currentNumPetals = 8; // More petals for roses
-                } else if (flowerId === "cornflower") {
-                    petalLength = petalRadius * 1.4; // Elongated petals
-                    petalWidth = petalRadius * 0.7; // Thinner petals
-                    currentNumPetals = 8; // Cornflowers have many petals
-                } else if (flowerId === "bluebell") {
-                    petalLength = petalRadius * 1.3;
-                    petalWidth = petalRadius * 0.75;
-                    currentNumPetals = 6; // Bluebells have 6 petals
-                }
-            }
-            
-            // Draw flower center with a subtle gradient effect
-            graphics.fillStyle(centerColor, 1);
-            graphics.fillCircle(flowerSize / 2, flowerSize / 2, centerRadius);
-            
-            // Center decoration (add texture to center)
-            const innerRadius = centerRadius * 0.7;
-            graphics.fillStyle(centerColor === 0xffd700 ? 0xffea00 : 0x59421f, 0.6);
-            graphics.fillCircle(flowerSize / 2, flowerSize / 2, innerRadius);
-            
-            // Center outline
-            graphics.lineStyle(1, centerOutlineColor, 0.8);
-            graphics.strokeCircle(flowerSize / 2, flowerSize / 2, centerRadius);
-            
-            // Petal main color and outline
-            graphics.fillStyle(petalColor, 1);
-            graphics.lineStyle(1, 0x000000, 0.5); // Slightly more transparent outline
-
-            const numSegments = 16; // Controls smoothness of petal curve
-
-            for (let i = 0; i < currentNumPetals; i++) {
-                const angle = Phaser.Math.DegToRad((360 / currentNumPetals) * i);
-                const petalDist = petalRadius * 0.95; // Distance from center to petal center
-                const petalCenterX =
-                    flowerSize / 2 + Math.cos(angle) * petalDist;
-                const petalCenterY =
-                    flowerSize / 2 + Math.sin(angle) * petalDist;
-                
-                const rotationAngle = angle + Math.PI / 2; // Rotate petal to point outwards
-
-                // Draw petal using segmented ellipse approximation
-                graphics.beginPath();
-                for (let seg = 0; seg <= numSegments; seg++) {
-                    const theta = (Math.PI * 2 * seg) / numSegments; // Angle along ellipse
-                    // Calculate point on ellipse centered at (0,0)
-                    const baseX = (petalLength / 2) * Math.cos(theta);
-                    const baseY = (petalWidth / 2) * Math.sin(theta);
-                    // Rotate the point
-                    const rotatedX =
-                        baseX * Math.cos(rotationAngle) -
-                        baseY * Math.sin(rotationAngle);
-                    const rotatedY =
-                        baseX * Math.sin(rotationAngle) +
-                        baseY * Math.cos(rotationAngle);
-                    // Translate to petal's final position
-                    const finalX = petalCenterX + rotatedX;
-                    const finalY = petalCenterY + rotatedY;
-                    if (seg === 0) graphics.moveTo(finalX, finalY);
-                    else graphics.lineTo(finalX, finalY);
-                }
-                graphics.closePath();
-                graphics.fillPath();
-                graphics.strokePath();
-                
-                // Add vein/highlight to petal for more detail and realism
-                if (flowerId !== "generic") {
-                    graphics.lineStyle(1, flowerId.includes("blue") ? 0x3a86ff : 0xffd6a5, 0.3);
-                    const veinStart = {
-                        x: flowerSize / 2 + Math.cos(angle) * (centerRadius * 0.9),
-                        y: flowerSize / 2 + Math.sin(angle) * (centerRadius * 0.9)
-                    };
-                    const veinEnd = {
-                        x: petalCenterX + Math.cos(angle) * petalLength * 0.65,
-                        y: petalCenterY + Math.sin(angle) * petalLength * 0.65
-                    };
-                    graphics.beginPath();
-                    graphics.moveTo(veinStart.x, veinStart.y);
-                    graphics.lineTo(veinEnd.x, veinEnd.y);
-                    graphics.strokePath();
-                }
-            }
-            
-            graphics.generateTexture(key, flowerSize, flowerSize);
-            graphics.clear();
-            if (updateProgress) updateProgress(); // Call after each flower type
-            // console.log("Generated:", key);
+        
+        // Create generators with a common options object
+        const generatorOptions = {
+            scene: this,
+            updateProgress: updateProgress || undefined
         };
 
-        // Draw flowers with realistic colors based on actual flowers
-        drawFlower("flower_red_generated", 0xE63946, "poppy"); // Red poppy
-        drawFlower("flower_blue_generated", 0x4361EE, "cornflower"); // Blue cornflower
-
-        // 4. Generate Pollen Particle Texture
-        const pollenSize = 10;
-        graphics.fillStyle(0xffff00, 1);
-        graphics.fillCircle(pollenSize / 2, pollenSize / 2, pollenSize * 0.4);
-        graphics.generateTexture(
-            "pollen_particle_generated",
-            pollenSize,
-            pollenSize,
-        );
-        graphics.clear();
-        if (updateProgress) updateProgress();
-        // console.log("Generated: pollen_particle_generated");
-
-        // 5. Generate Gear Icon Texture
-        const gearSize = 32;
-        const gearRadius = gearSize * 0.4;
-        const toothHeight = gearSize * 0.15;
-        const toothWidthBase = gearSize * 0.1;
-        const toothWidthTop = gearSize * 0.06;
-        const numTeeth = 8;
-        const holeRadius = gearSize * 0.15;
-
-        graphics.fillStyle(0xc0c0c0, 1); // Silver color
-        graphics.lineStyle(1, 0x555555, 1); // Dark grey outline
-
-        // Draw teeth
-        for (let i = 0; i < numTeeth; i++) {
-            const angle = (Math.PI * 2 * i) / numTeeth;
-            const angleMid = (Math.PI * 2 * (i + 0.5)) / numTeeth;
-
-            // Outer points of the tooth
-            const x1 =
-                gearSize / 2 +
-                Math.cos(angle - toothWidthTop / gearRadius) *
-                    (gearRadius + toothHeight);
-            const y1 =
-                gearSize / 2 +
-                Math.sin(angle - toothWidthTop / gearRadius) *
-                    (gearRadius + toothHeight);
-            const x2 =
-                gearSize / 2 +
-                Math.cos(angle + toothWidthTop / gearRadius) *
-                    (gearRadius + toothHeight);
-            const y2 =
-                gearSize / 2 +
-                Math.sin(angle + toothWidthTop / gearRadius) *
-                    (gearRadius + toothHeight);
-
-            // Inner points (base of the tooth)
-            const x3 =
-                gearSize / 2 +
-                Math.cos(angleMid - toothWidthBase / gearRadius) * gearRadius;
-            const y3 =
-                gearSize / 2 +
-                Math.sin(angleMid - toothWidthBase / gearRadius) * gearRadius;
-            const x4 =
-                gearSize / 2 +
-                Math.cos(angleMid + toothWidthBase / gearRadius) * gearRadius;
-            const y4 =
-                gearSize / 2 +
-                Math.sin(angleMid + toothWidthBase / gearRadius) * gearRadius;
-
-            graphics.beginPath();
-            graphics.moveTo(x3, y3);
-            graphics.lineTo(x1, y1);
-            graphics.lineTo(x2, y2);
-            graphics.lineTo(x4, y4);
-            // Implicitly closed by fill/stroke path
-
-            graphics.fillPath();
-            graphics.strokePath();
-        }
-
-        // Draw main body circle (over teeth bases)
-        graphics.fillStyle(0xc0c0c0, 1);
-        graphics.fillCircle(gearSize / 2, gearSize / 2, gearRadius);
-        graphics.strokeCircle(gearSize / 2, gearSize / 2, gearRadius);
-
-        // Draw center hole
-        graphics.fillStyle(0x333333, 1); // Dark hole
-        graphics.fillCircle(gearSize / 2, gearSize / 2, holeRadius);
-        graphics.strokeCircle(gearSize / 2, gearSize / 2, holeRadius);
-
-        graphics.generateTexture("gear_icon_generated", gearSize, gearSize);
-        graphics.clear();
-        if (updateProgress) updateProgress();
-
-        // --- Cleanup ---
-        graphics.destroy(); // Destroy the temporary graphics object
+        // Generate all textures using our specialized generators
+        const backgroundGenerator = new BackgroundGenerator(generatorOptions);
+        backgroundGenerator.generate();
+        
+        const beeGenerator = new BeeGenerator(generatorOptions);
+        beeGenerator.generate();
+        
+        const flowerGenerator = new FlowerGenerator(generatorOptions);
+        flowerGenerator.generate();
+        
+        const pollenGenerator = new PollenGenerator(generatorOptions);
+        pollenGenerator.generate();
+        
+        const gearGenerator = new GearGenerator(generatorOptions);
+        gearGenerator.generate();
+        
+        // Clean up all generators
+        backgroundGenerator.destroy();
+        beeGenerator.destroy();
+        flowerGenerator.destroy();
+        pollenGenerator.destroy();
+        gearGenerator.destroy();
 
         // Destroy loader elements explicitly AFTER generation is complete
         // Use a short delay to ensure the final 100% state is visible briefly
