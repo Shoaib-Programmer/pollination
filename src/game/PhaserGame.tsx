@@ -37,6 +37,8 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
         const listenersAttachedRef = useRef(false);
         // Ref to store the function that cleans up Game scene specific listeners
         const sceneListenerCleanupRef = useRef<(() => void) | null>(null);
+        // Ref to track the current active scene
+        const currentSceneRef = useRef<string | null>(null);
 
         // Initialization Effect (Sets up game instance and global listener)
         useLayoutEffect(() => {
@@ -56,6 +58,28 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
             };
             EventBus.on("ui:modal-closed", handleModalClosed);
 
+            // Setup scene change monitoring
+            const setupSceneMonitoring = () => {
+                // Watch for scene changes and emit events
+                game.scene.scenes.forEach(scene => {
+                    scene.events.on('start', () => {
+                        const sceneName = scene.scene.key;
+                        if (currentSceneRef.current !== sceneName) {
+                            currentSceneRef.current = sceneName;
+                            console.log(`Scene changed to: ${sceneName}`);
+                            EventBus.emit("scene:changed", sceneName);
+                        }
+                    });
+                });
+            };
+            
+            // Setup monitoring once game is ready
+            if (game.isBooted) {
+                setupSceneMonitoring();
+            } else {
+                game.events.once('ready', setupSceneMonitoring);
+            }
+
             // Assign ref if provided
             if (typeof ref === "function") {
                 ref({ game: game });
@@ -74,6 +98,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                 gameRef.current?.destroy(true); // Destroy Phaser game
                 gameRef.current = null;
                 listenersAttachedRef.current = false;
+                currentSceneRef.current = null;
             };
         }, [ref, onGameReady, onBeforeDestroy]); // Dependencies
 

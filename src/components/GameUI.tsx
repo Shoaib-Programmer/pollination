@@ -26,6 +26,8 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
     // Timer state
     const [remainingTime, setRemainingTime] = useState<number>(60); // Default to 60 seconds
+    // Game scene state - NEW
+    const [isGameSceneActive, setIsGameSceneActive] = useState<boolean>(false);
 
     // Refs
     const containerRef = useRef<HTMLDivElement>(null);
@@ -160,6 +162,8 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
 
         const handleScoreUpdate = (newScore: number) => {
             setTargetScore(newScore);
+            // When we get a score update, it indicates game scene is active
+            setIsGameSceneActive(true);
         };
 
         const handleShowFactModal = (fact: string) => {
@@ -194,6 +198,14 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         // Handler for game timer updates
         const handleTimerUpdate = (time: number) => {
             setRemainingTime(Math.max(0, time)); // Update state, ensuring non-negative
+            // When we get a timer update, it indicates game scene is active
+            setIsGameSceneActive(true);
+        };
+
+        // Handler for scene changes - NEW
+        const handleSceneActivation = (scene: string) => {
+            // Only show UI elements during Game scene
+            setIsGameSceneActive(scene === "Game");
         };
 
         // Initial State Setup on mount or when listenTo changes
@@ -203,12 +215,14 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         setModalFact("");
         setIsModalVisible(false);
         setRemainingTime(60); // Reset timer display
+        setIsGameSceneActive(false); // Reset game scene state
 
         // Attach Listeners
         listenTo.on("update-score", handleScoreUpdate);
         listenTo.on("show-fact", handleShowFactModal);
         listenTo.on("ui:hide-modal", forceHideModal);
         listenTo.on("ui:update-timer", handleTimerUpdate); // Attach timer listener
+        EventBus.on("scene:changed", handleSceneActivation); // NEW: Listen for scene changes
 
         // Cleanup Function
         return () => {
@@ -216,6 +230,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
             listenTo.off("show-fact", handleShowFactModal);
             listenTo.off("ui:hide-modal", forceHideModal);
             listenTo.off("ui:update-timer", handleTimerUpdate); // Detach timer listener
+            EventBus.off("scene:changed", handleSceneActivation); // NEW: Clean up scene change listener
 
             // Clear timeout on unmount or dependency change
             if (modalTimeoutIdRef.current) {
@@ -232,15 +247,17 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
     // Component Rendering
     return (
         <div ref={containerRef} className={styles.uiOverlay}>
-            {/* Top Bar for Score and Timer */}
-            <div className={styles.topBar}>
-                <div ref={scoreBoxRef} className={styles.scoreBox}>
-                    Score: {displayScore}
+            {/* Top Bar for Score and Timer - Only show during gameplay */}
+            {isGameSceneActive && (
+                <div className={styles.topBar}>
+                    <div ref={scoreBoxRef} className={styles.scoreBox}>
+                        Score: {displayScore}
+                    </div>
+                    <div ref={timerDisplayRef} className={styles.timerBox}>
+                        Time: {formatTime(remainingTime)}
+                    </div>
                 </div>
-                <div ref={timerDisplayRef} className={styles.timerBox}>
-                    Time: {formatTime(remainingTime)}
-                </div>
-            </div>
+            )}
 
             {/* Full Screen Modal for Facts */}
             <div

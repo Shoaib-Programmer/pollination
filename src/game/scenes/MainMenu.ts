@@ -1,6 +1,7 @@
 // src/game/scenes/MainMenu.ts
 import { Scene } from "phaser";
 import gsap from "gsap"; // Import GSAP
+import EventBus from "../EventBus"; // Import EventBus if needed for settings icon
 
 export class MainMenu extends Scene {
     constructor() {
@@ -10,12 +11,22 @@ export class MainMenu extends Scene {
     create() {
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
+        const topRightX = this.cameras.main.width - 40; // Position for gear icon
+        const topRightY = 40;
 
         // Background - Fade in
         const bg = this.add
             .image(centerX, centerY, "background_generated")
             .setAlpha(0);
         gsap.to(bg, { alpha: 1, duration: 0.7, ease: "power1.inOut" });
+
+        // --- Settings Icon ---
+        const settingsIcon = this.add
+            .image(topRightX, topRightY, "gear_icon_generated")
+            .setOrigin(0.5)
+            .setScale(1.5) // Make it slightly larger
+            .setAlpha(0)
+            .setInteractive({ useHandCursor: true });
 
         // --- Animate UI Elements In ---
         const title = this.add
@@ -103,9 +114,53 @@ export class MainMenu extends Scene {
                 startButton,
                 { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
                 "-=0.2",
-            ); // Button pops in
+            ) // Button pops in
+            .to(settingsIcon, { alpha: 0.8, duration: 0.4 }, "-=0.3"); // Fade in settings icon
 
         // --- End Entrance Animation ---
+
+        // --- Settings Icon Interaction ---
+        settingsIcon.on("pointerover", () => {
+            this.tweens.add({
+                targets: settingsIcon,
+                angle: 90, // Rotate on hover
+                scale: 1.7,
+                alpha: 1,
+                duration: 200,
+                ease: "Sine.easeInOut",
+            });
+        });
+        settingsIcon.on("pointerout", () => {
+            this.tweens.add({
+                targets: settingsIcon,
+                angle: 0,
+                scale: 1.5,
+                alpha: 0.8,
+                duration: 200,
+                ease: "Sine.easeInOut",
+            });
+        });
+        settingsIcon.on("pointerdown", () => {
+            this.tweens.add({
+                targets: settingsIcon,
+                scale: 1.4,
+                duration: 80,
+                ease: "Sine.easeInOut",
+                yoyo: true,
+            });
+            // Transition Out (Fade everything except maybe background)
+            gsap.to(
+                [title, instructionBg, instructions, startButton, settingsIcon],
+                {
+                    alpha: 0,
+                    duration: 0.3,
+                    ease: "power1.in",
+                    onComplete: () => {
+                        this.scene.start("Settings"); // Go to Settings scene
+                    },
+                }
+            );
+        });
 
         // Button Hover/Click (Phaser Tweens are fine here)
         startButton.setInteractive({ useHandCursor: true }); // Make interactive AFTER initial animation setup potentially
@@ -140,7 +195,7 @@ export class MainMenu extends Scene {
                 yoyo: true,
             });
             // Transition Out Animation (Optional)
-            gsap.to([title, instructionBg, instructions, startButton], {
+            gsap.to([title, instructionBg, instructions, startButton, settingsIcon], {
                 alpha: 0,
                 y: "-=30", // Move up slightly
                 duration: 0.3,

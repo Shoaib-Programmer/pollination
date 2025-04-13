@@ -63,7 +63,7 @@ export class Preloader extends Scene {
 
         // --- Progress Update Logic ---
         let progress = 0;
-        const totalGenerations = 5; // background, bee, flower_red, flower_blue, pollen
+        const totalGenerations = 6; // background, bee, flower_red, flower_blue, pollen, gear
         this.registry.set("generation_progress_total", totalGenerations);
         this.registry.set("generation_progress_current", 0);
 
@@ -275,6 +275,81 @@ export class Preloader extends Scene {
         graphics.clear();
         if (updateProgress) updateProgress();
         // console.log("Generated: pollen_particle_generated");
+
+        // 5. Generate Gear Icon Texture
+        const gearSize = 32;
+        const gearRadius = gearSize * 0.4;
+        const toothHeight = gearSize * 0.15;
+        const toothWidthBase = gearSize * 0.1;
+        const toothWidthTop = gearSize * 0.06;
+        const numTeeth = 8;
+        const holeRadius = gearSize * 0.15;
+
+        graphics.fillStyle(0xc0c0c0, 1); // Silver color
+        graphics.lineStyle(1, 0x555555, 1); // Dark grey outline
+
+        // Draw teeth
+        for (let i = 0; i < numTeeth; i++) {
+            const angle = (Math.PI * 2 * i) / numTeeth;
+            const angleMid = (Math.PI * 2 * (i + 0.5)) / numTeeth;
+
+            // Outer points of the tooth
+            const x1 =
+                gearSize / 2 +
+                Math.cos(angle - toothWidthTop / gearRadius) *
+                    (gearRadius + toothHeight);
+            const y1 =
+                gearSize / 2 +
+                Math.sin(angle - toothWidthTop / gearRadius) *
+                    (gearRadius + toothHeight);
+            const x2 =
+                gearSize / 2 +
+                Math.cos(angle + toothWidthTop / gearRadius) *
+                    (gearRadius + toothHeight);
+            const y2 =
+                gearSize / 2 +
+                Math.sin(angle + toothWidthTop / gearRadius) *
+                    (gearRadius + toothHeight);
+
+            // Inner points (base of the tooth)
+            const x3 =
+                gearSize / 2 +
+                Math.cos(angleMid - toothWidthBase / gearRadius) * gearRadius;
+            const y3 =
+                gearSize / 2 +
+                Math.sin(angleMid - toothWidthBase / gearRadius) * gearRadius;
+            const x4 =
+                gearSize / 2 +
+                Math.cos(angleMid + toothWidthBase / gearRadius) * gearRadius;
+            const y4 =
+                gearSize / 2 +
+                Math.sin(angleMid + toothWidthBase / gearRadius) * gearRadius;
+
+            graphics.beginPath();
+            graphics.moveTo(x3, y3);
+            graphics.lineTo(x1, y1);
+            graphics.lineTo(x2, y2);
+            graphics.lineTo(x4, y4);
+            // Implicitly closed by fill/stroke path
+
+            graphics.fillPath();
+            graphics.strokePath();
+        }
+
+        // Draw main body circle (over teeth bases)
+        graphics.fillStyle(0xc0c0c0, 1);
+        graphics.fillCircle(gearSize / 2, gearSize / 2, gearRadius);
+        graphics.strokeCircle(gearSize / 2, gearSize / 2, gearRadius);
+
+        // Draw center hole
+        graphics.fillStyle(0x333333, 1); // Dark hole
+        graphics.fillCircle(gearSize / 2, gearSize / 2, holeRadius);
+        graphics.strokeCircle(gearSize / 2, gearSize / 2, holeRadius);
+
+        graphics.generateTexture("gear_icon_generated", gearSize, gearSize);
+        graphics.clear();
+        if (updateProgress) updateProgress();
+        // console.log("Generated: gear_icon_generated");
 
         // --- Cleanup ---
         graphics.destroy(); // Destroy the temporary graphics object

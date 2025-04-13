@@ -5,6 +5,7 @@ import { Preloader } from "./scenes/Preloader";
 import { MainMenu } from "./scenes/MainMenu";
 import { Game } from "./scenes/Game";
 import { GameOver } from "./scenes/GameOver";
+import { Settings } from "./scenes/Settings"; // Import the new Settings scene
 
 // Define the configuration for the game
 const config: Phaser.Types.Core.GameConfig = {
@@ -28,6 +29,7 @@ const config: Phaser.Types.Core.GameConfig = {
         MainMenu,
         Game,
         GameOver,
+        Settings, // Add the Settings scene here
         // No separate UI scene needed with React overlay
     ],
     // Improve pixel art rendering if using pixelated assets
