@@ -9,29 +9,25 @@ export class GameOver extends Scene {
     private totalTime: number = 60;
     private highScores: GameScore[] = [];
     private isLoadingScores: boolean = false;
+    private showHighScoresOnly: boolean = false;
 
     constructor() {
         super("GameOver");
     }
 
-    init(data: {
-        score?: number;
-        completedFlowers?: number;
-        totalTime?: number;
-        showHighScoresOnly?: boolean;
-    }) {
+    init(data: { score?: number; completedFlowers?: number; totalTime?: number; showHighScoresOnly?: boolean }) {
         this.score = data.score ?? 0;
         this.completedFlowers = data.completedFlowers ?? 0;
         this.totalTime = data.totalTime ?? 60;
-
+        
         // Check if we're just viewing high scores from the main menu
-        const showHighScoresOnly = data.showHighScoresOnly ?? false;
-
+        this.showHighScoresOnly = data.showHighScoresOnly ?? false;
+        
         // Only save the score if it's from an actual game (not just viewing high scores)
-        if (!showHighScoresOnly && this.score > 0) {
+        if (!this.showHighScoresOnly && this.score > 0) {
             this.saveGameScore();
         }
-
+        
         // Always load high scores
         this.loadHighScores();
     }
@@ -78,9 +74,9 @@ export class GameOver extends Scene {
 
         // --- Animate Elements In ---
         const title = this.add
-            .text(centerX, centerY - 160, "Pollination Complete!", {
+            .text(centerX, centerY - 160, this.showHighScoresOnly ? "High Scores" : "Pollination Complete!", {
                 fontFamily: "var(--font-luckiest-guy)",
-                fontSize: "54px",
+                fontSize: this.showHighScoresOnly ? "60px" : "54px",
                 color: "#ffdd00",
                 stroke: "#8B4513",
                 strokeThickness: 9,
@@ -98,7 +94,8 @@ export class GameOver extends Scene {
             .setAlpha(0)
             .setScale(0.5); // Start hidden/small
 
-        const scoreText = this.add
+        // Only show score text if not viewing high scores only
+        const scoreText = !this.showHighScoresOnly ? this.add
             .text(centerX, centerY - 80, `Final Score: ${this.score}`, {
                 fontFamily: "var(--font-poppins)",
                 fontSize: "40px",
@@ -117,16 +114,17 @@ export class GameOver extends Scene {
             })
             .setOrigin(0.5)
             .setAlpha(0)
-            .setScale(0.8); // Start hidden/smaller
+            .setScale(0.8) // Start hidden/smaller
+        : null;
 
-        // High Scores Panel
+        // High Scores Panel - Adjust position if showing high scores only
         const highScoresPanel = this.add
-            .rectangle(centerX, centerY + 40, 500, 180, 0x000000, 0.7)
+            .rectangle(centerX, this.showHighScoresOnly ? centerY + 20 : centerY + 40, 500, this.showHighScoresOnly ? 260 : 180, 0x000000, 0.7)
             .setOrigin(0.5)
             .setAlpha(0);
 
-        // High Scores Title
-        const highScoresTitle = this.add
+        // High Scores Title - Only show if not viewing high scores only (to avoid duplication)
+        const highScoresTitle = !this.showHighScoresOnly ? this.add
             .text(centerX, centerY - 30, "High Scores", {
                 fontFamily: "var(--font-poppins)",
                 fontSize: "26px",
@@ -134,32 +132,34 @@ export class GameOver extends Scene {
                 align: "center",
             })
             .setOrigin(0.5)
-            .setAlpha(0);
+            .setAlpha(0)
+        : null;
 
-        // High Scores List (will be populated later)
+        // High Scores List (will be populated later) - Adjust position if showing high scores only
         const highScoresList = this.add
             .text(
                 centerX,
-                centerY + 40,
+                this.showHighScoresOnly ? centerY + 20 : centerY + 40,
                 this.isLoadingScores ? "Loading scores..." : "",
                 {
                     fontFamily: "var(--font-poppins)",
-                    fontSize: "20px",
+                    fontSize: this.showHighScoresOnly ? "24px" : "20px",
                     color: "#ffffff",
                     align: "center",
-                    lineSpacing: 10,
+                    lineSpacing: 12,
                 }
             )
             .setOrigin(0.5)
             .setAlpha(0);
 
+        // Adjust button text based on context
         const playAgainButton = this.add
-            .text(centerX, centerY + 170, "Play Again?", {
+            .text(centerX, this.showHighScoresOnly ? centerY + 170 : centerY + 170, this.showHighScoresOnly ? "Back to Menu" : "Play Again?", {
                 fontFamily: "var(--font-poppins)",
                 fontSize: "30px",
                 font: "bold",
                 color: "#ffffff",
-                backgroundColor: "#2E8B57",
+                backgroundColor: this.showHighScoresOnly ? "#4682B4" : "#2E8B57", // Different color for back button
                 padding: { x: 25, y: 12 },
                 shadow: {
                     offsetX: 2,
@@ -173,40 +173,50 @@ export class GameOver extends Scene {
             .setAlpha(0)
             .setScale(0.8); // Start hidden/smaller
 
-        // GSAP Timeline for staggered entrance
+        // GSAP Timeline for staggered entrance - Adjust for high scores only view
         const tl = gsap.timeline({ delay: 0.3 }); // Start after background fade
 
+        // Add elements to timeline conditionally
         tl.to(title, {
             alpha: 1,
             scale: 1,
             duration: 0.6,
             ease: "back.out(1.7)",
-        })
-            .to(
+        });
+        
+        // Only add score text animation if it exists
+        if (scoreText) {
+            tl.to(
                 scoreText,
                 { alpha: 1, scale: 1, duration: 0.5, ease: "power2.out" },
                 "-=0.3"
-            )
-            .to(
-                highScoresPanel,
-                { alpha: 1, duration: 0.5, ease: "power2.out" },
-                "-=0.2"
-            )
-            .to(
+            );
+        }
+        
+        tl.to(
+            highScoresPanel,
+            { alpha: 1, duration: 0.5, ease: "power2.out" },
+            "-=0.2"
+        );
+        
+        // Only add high scores title animation if it exists
+        if (highScoresTitle) {
+            tl.to(
                 highScoresTitle,
                 { alpha: 1, duration: 0.5, ease: "power2.out" },
                 "-=0.3"
-            )
-            .to(
-                highScoresList,
-                { alpha: 1, duration: 0.5, ease: "power2.out" },
-                "-=0.3"
-            )
-            .to(
-                playAgainButton,
-                { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-                "-=0.2"
             );
+        }
+        
+        tl.to(
+            highScoresList,
+            { alpha: 1, duration: 0.5, ease: "power2.out" },
+            "-=0.3"
+        ).to(
+            playAgainButton,
+            { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
+            "-=0.2"
+        );
 
         // --- End Entrance Animation ---
 
@@ -226,7 +236,7 @@ export class GameOver extends Scene {
                 duration: 100,
                 ease: "Sine.easeInOut",
             });
-            playAgainButton.setBackgroundColor("#3CB371");
+            playAgainButton.setBackgroundColor(this.showHighScoresOnly ? "#5A9BDC" : "#3CB371");
         });
         playAgainButton.on("pointerout", () => {
             this.tweens.killTweensOf(playAgainButton);
@@ -236,7 +246,7 @@ export class GameOver extends Scene {
                 duration: 100,
                 ease: "Sine.easeInOut",
             });
-            playAgainButton.setBackgroundColor("#2E8B57");
+            playAgainButton.setBackgroundColor(this.showHighScoresOnly ? "#4682B4" : "#2E8B57");
         });
         playAgainButton.on("pointerdown", () => {
             this.tweens.killTweensOf(playAgainButton);
@@ -247,16 +257,15 @@ export class GameOver extends Scene {
                 ease: "Sine.easeInOut",
                 yoyo: true,
             });
-            // Transition Out (Optional)
+            
+            // Build an array of elements to animate out
+            const elementsToAnimate = [title, highScoresPanel, highScoresList, playAgainButton];
+            if (scoreText) elementsToAnimate.push(scoreText);
+            if (highScoresTitle) elementsToAnimate.push(highScoresTitle);
+            
+            // Transition Out
             gsap.to(
-                [
-                    title,
-                    scoreText,
-                    highScoresPanel,
-                    highScoresTitle,
-                    highScoresList,
-                    playAgainButton,
-                ],
+                elementsToAnimate,
                 {
                     alpha: 0,
                     y: "-=30",
