@@ -91,7 +91,7 @@ export class Preloader extends Scene {
                 loaderRadius,
                 startAngle,
                 endAngle,
-                false
+                false,
             ); // false = clockwise
             this.progressBar?.strokePath();
         };
@@ -109,7 +109,7 @@ export class Preloader extends Scene {
             loaderRadius,
             startAngle,
             startAngle,
-            false
+            false,
         ); // Draw 0 length arc initially
         this.progressBar?.strokePath();
     }
@@ -156,25 +156,25 @@ export class Preloader extends Scene {
             beeSize / 2,
             beeBodyY,
             beeBodyWidth,
-            beeBodyHeight
+            beeBodyHeight,
         );
         graphics.fillStyle(0x000000, 1);
         graphics.fillRect(
             beeSize / 2 - beeBodyWidth * 0.3,
             beeBodyY - beeBodyHeight / 2,
             beeBodyWidth * 0.2,
-            beeBodyHeight
+            beeBodyHeight,
         );
         graphics.fillRect(
             beeSize / 2 + beeBodyWidth * 0.1,
             beeBodyY - beeBodyHeight / 2,
             beeBodyWidth * 0.2,
-            beeBodyHeight
+            beeBodyHeight,
         );
         graphics.fillCircle(
             beeSize / 2 + beeBodyWidth / 2 - headRadius * 0.3,
             beeBodyY,
-            headRadius
+            headRadius,
         );
         graphics.fillStyle(0xadd8e6, 0.7);
         graphics
@@ -184,7 +184,7 @@ export class Preloader extends Scene {
                 wingWidth,
                 Phaser.Math.DegToRad(180),
                 Phaser.Math.DegToRad(340),
-                false
+                false,
             )
             .fillPath();
         graphics
@@ -194,7 +194,7 @@ export class Preloader extends Scene {
                 wingWidth,
                 Phaser.Math.DegToRad(20),
                 Phaser.Math.DegToRad(180),
-                false
+                false,
             )
             .fillPath();
         graphics.generateTexture("bee_generated", beeSize, beeSize);
@@ -208,13 +208,64 @@ export class Preloader extends Scene {
         const centerRadius = flowerSize * 0.15;
         const numPetals = 6;
 
-        const drawFlower = (key: string, petalColor: number) => {
-            graphics.fillStyle(0xffd700, 1); // Center color
+        const drawFlower = (
+            key: string,
+            petalColor: number,
+            flowerType: string = "generic",
+        ) => {
+            // Center colors based on flower type
+            let centerColor = 0xffd700; // Default golden center
+            let centerOutlineColor = 0x333333; // Default outline
+
+            // Customize center based on flower type
+            if (flowerType === "poppy" || flowerType === "rose") {
+                centerColor = 0x4d3319; // Dark brown center for red flowers
+                centerOutlineColor = 0x231709; // Darker outline
+            } else if (
+                flowerType === "cornflower" ||
+                flowerType === "bluebell"
+            ) {
+                centerColor = 0xffde59; // Yellow-gold center for blue flowers
+                centerOutlineColor = 0x8c7800; // Darker yellow outline
+            }
+
+            // Draw flower center with a subtle gradient effect
+            graphics.fillStyle(centerColor, 1);
             graphics.fillCircle(flowerSize / 2, flowerSize / 2, centerRadius);
-            graphics.lineStyle(1, 0x333333, 0.8); // Center outline
+
+            // Center decoration (add texture to center)
+            const innerRadius = centerRadius * 0.7;
+            graphics.fillStyle(
+                centerColor === 0xffd700 ? 0xffea00 : 0x59421f,
+                0.6,
+            );
+            graphics.fillCircle(flowerSize / 2, flowerSize / 2, innerRadius);
+
+            // Center outline
+            graphics.lineStyle(1, centerOutlineColor, 0.8);
             graphics.strokeCircle(flowerSize / 2, flowerSize / 2, centerRadius);
-            graphics.fillStyle(petalColor, 1); // Petal color
-            graphics.lineStyle(1, 0x000000, 0.6); // Petal outline
+
+            // Petal main color and outline
+            graphics.fillStyle(petalColor, 1);
+            graphics.lineStyle(1, 0x000000, 0.5); // Slightly more transparent outline
+
+            // Adjust petal shape based on flower type
+            let petalLength = petalRadius * 1.3;
+            let petalWidth = petalRadius * 0.8;
+
+            if (flowerType === "poppy") {
+                petalLength = petalRadius * 1.5; // Longer petals for poppies
+                petalWidth = petalRadius * 0.9; // Wider petals
+            } else if (flowerType === "rose") {
+                petalLength = petalRadius * 1.2; // Shorter, more compact petals
+                petalWidth = petalRadius * 1.0; // Wider, rounder petals
+            } else if (flowerType === "cornflower") {
+                petalLength = petalRadius * 1.4; // Elongated petals
+                petalWidth = petalRadius * 0.7; // Thinner petals
+            } else if (flowerType === "bluebell") {
+                petalLength = petalRadius * 1.3;
+                petalWidth = petalRadius * 0.75;
+            }
 
             const numSegments = 16; // Controls smoothness of petal curve
 
@@ -225,9 +276,7 @@ export class Preloader extends Scene {
                     flowerSize / 2 + Math.cos(angle) * petalDist;
                 const petalCenterY =
                     flowerSize / 2 + Math.sin(angle) * petalDist;
-                // Adjust length/width for more petal-like shape
-                const petalLength = petalRadius * 1.3;
-                const petalWidth = petalRadius * 0.8;
+
                 const rotationAngle = angle + Math.PI / 2; // Rotate petal to point outwards
 
                 // Draw petal using segmented ellipse approximation
@@ -253,15 +302,42 @@ export class Preloader extends Scene {
                 graphics.closePath();
                 graphics.fillPath();
                 graphics.strokePath();
+
+                // Add vein/highlight to petal for more detail and realism
+                if (flowerType !== "generic") {
+                    graphics.lineStyle(
+                        1,
+                        flowerType.includes("blue") ? 0x3a86ff : 0xffd6a5,
+                        0.3,
+                    );
+                    const veinStart = {
+                        x:
+                            flowerSize / 2 +
+                            Math.cos(angle) * (centerRadius * 0.9),
+                        y:
+                            flowerSize / 2 +
+                            Math.sin(angle) * (centerRadius * 0.9),
+                    };
+                    const veinEnd = {
+                        x: petalCenterX + Math.cos(angle) * petalLength * 0.65,
+                        y: petalCenterY + Math.sin(angle) * petalLength * 0.65,
+                    };
+                    graphics.beginPath();
+                    graphics.moveTo(veinStart.x, veinStart.y);
+                    graphics.lineTo(veinEnd.x, veinEnd.y);
+                    graphics.strokePath();
+                }
             }
+
             graphics.generateTexture(key, flowerSize, flowerSize);
             graphics.clear();
             if (updateProgress) updateProgress(); // Call after each flower type
             // console.log("Generated:", key);
         };
 
-        drawFlower("flower_red_generated", 0xff0000); // Red
-        drawFlower("flower_blue_generated", 0x6495ed); // Cornflower Blue
+        // Draw flowers with realistic colors based on actual flowers
+        drawFlower("flower_red_generated", 0xe63946, "poppy"); // Red poppy
+        drawFlower("flower_blue_generated", 0x4361ee, "cornflower"); // Blue cornflower
 
         // 4. Generate Pollen Particle Texture
         const pollenSize = 10;
@@ -270,7 +346,7 @@ export class Preloader extends Scene {
         graphics.generateTexture(
             "pollen_particle_generated",
             pollenSize,
-            pollenSize
+            pollenSize,
         );
         graphics.clear();
         if (updateProgress) updateProgress();
@@ -349,11 +425,9 @@ export class Preloader extends Scene {
         graphics.generateTexture("gear_icon_generated", gearSize, gearSize);
         graphics.clear();
         if (updateProgress) updateProgress();
-        // console.log("Generated: gear_icon_generated");
 
         // --- Cleanup ---
         graphics.destroy(); // Destroy the temporary graphics object
-        // console.log("Texture generation complete.");
 
         // Destroy loader elements explicitly AFTER generation is complete
         // Use a short delay to ensure the final 100% state is visible briefly
@@ -367,13 +441,13 @@ export class Preloader extends Scene {
             const loadingText = this.children.list.find(
                 (child) =>
                     child instanceof Phaser.GameObjects.Text &&
-                    child.text.includes("Generating")
+                    child.text.includes("Generating"),
             );
             loadingText?.destroy();
             const logoImage = this.children.list.find(
                 (child) =>
                     child instanceof Phaser.GameObjects.Image &&
-                    child.texture.key === "logo"
+                    child.texture.key === "logo",
             );
             logoImage?.destroy();
 
