@@ -39,7 +39,7 @@ export default class FlowerCollection extends Phaser.Scene {
             .setScale(0.7)
             .setInteractive({ useHandCursor: true })
             .on("pointerdown", () => {
-                this.sound.play("click");
+                // this.sound.play("click");
                 this.scene.start("MainMenu");
             });
 
@@ -219,7 +219,7 @@ export default class FlowerCollection extends Phaser.Scene {
             return;
         }
 
-        this.sound.play("click");
+        // this.sound.play("click");
         this.selectedFlower = flower;
         
         // Update details panel with flower information
@@ -277,7 +277,7 @@ export default class FlowerCollection extends Phaser.Scene {
     }
 
     private hideDetailsPanel() {
-        this.sound.play("click");
+        // this.sound.play("click");
         this.tweens.add({
             targets: this.detailsPanel,
             scale: 0.9,
