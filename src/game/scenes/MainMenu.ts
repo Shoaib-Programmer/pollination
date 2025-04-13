@@ -291,31 +291,31 @@ export class MainMenu extends Scene {
             this.highScoresButton.setInteractive({ useHandCursor: true });
             
             this.highScoresButton.on("pointerover", () => {
-                this.tweens.killTweensOf(this.highScoresButton);
+                this.tweens.killTweensOf(this.highScoresButton!);
                 this.tweens.add({
-                    targets: this.highScoresButton,
+                    targets: this.highScoresButton!,
                     scale: originalScale * 1.08,
                     duration: 150,
                     ease: "Sine.easeInOut",
                 });
-                this.highScoresButton.setBackgroundColor("#5A9BDC"); // Lighter blue
+                this.highScoresButton!.setBackgroundColor("#5A9BDC"); // Lighter blue
             });
             
             this.highScoresButton.on("pointerout", () => {
-                this.tweens.killTweensOf(this.highScoresButton);
+                this.tweens.killTweensOf(this.highScoresButton!);
                 this.tweens.add({
-                    targets: this.highScoresButton,
+                    targets: this.highScoresButton!,
                     scale: originalScale,
                     duration: 150,
                     ease: "Sine.easeInOut",
                 });
-                this.highScoresButton.setBackgroundColor("#4682B4");
+                this.highScoresButton!.setBackgroundColor("#4682B4");
             });
             
             this.highScoresButton.on("pointerdown", () => {
-                this.tweens.killTweensOf(this.highScoresButton);
+                this.tweens.killTweensOf(this.highScoresButton!);
                 this.tweens.add({
-                    targets: this.highScoresButton,
+                    targets: this.highScoresButton!,
                     scale: originalScale * 0.95,
                     duration: 80,
                     ease: "Sine.easeInOut",
