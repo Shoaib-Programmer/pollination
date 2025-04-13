@@ -2,6 +2,8 @@
 import { Scene } from "phaser";
 import gsap from "gsap"; // Import GSAP
 import storageService, { GameScore } from "@/services/StorageService";
+import { QuizService } from "@/game/data/quizData";
+import EventBus from "@/game/EventBus";
 
 export class GameOver extends Scene {
     private score: number = 0;
@@ -10,9 +12,11 @@ export class GameOver extends Scene {
     private highScores: GameScore[] = [];
     private isLoadingScores: boolean = false;
     private showHighScoresOnly: boolean = false;
+    private quizService: QuizService;
 
     constructor() {
         super("GameOver");
+        this.quizService = QuizService.getInstance();
     }
 
     init(data: { score?: number; completedFlowers?: number; totalTime?: number; showHighScoresOnly?: boolean }) {
@@ -23,9 +27,18 @@ export class GameOver extends Scene {
         // Check if we're just viewing high scores from the main menu
         this.showHighScoresOnly = data.showHighScoresOnly ?? false;
         
-        // Only save the score if it's from an actual game (not just viewing high scores)
+        // Only save the score and increment games played if it's from an actual game (not just viewing high scores)
         if (!this.showHighScoresOnly && this.score > 0) {
             this.saveGameScore();
+            
+            // Record that a game has been played in QuizService
+            this.quizService.recordGamePlayed();
+            
+            // Check if a quiz is due (3+ games played since last quiz)
+            if (this.quizService.isQuizDue()) {
+                // Update the event name to match what App.tsx is listening for
+                EventBus.emit('quiz-requested', true);
+            }
         }
         
         // Always load high scores
