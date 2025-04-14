@@ -9,571 +9,11 @@ import { QuizService, QuizQuestion, QuestionType } from "../data/quizData";
 import { Bee } from "../entities/Bee";
 import { FlowerManager, FlowerData } from "../managers/FlowerManager"; // Import interface too
 import { GameTimer } from "../managers/GameTimer";
+import { BonusChallenge } from "../managers/BonusChallenge"; // Import BonusChallenge from its new location
 import { createParticles, addInteractionPulse } from "../utils/effects"; // Import utils
 
 // Keep type alias if needed, or rely on Phaser's types directly
 type ArcadePhysicsCallback = Phaser.Types.Physics.Arcade.ArcadePhysicsCallback;
-
-/**
- * BonusChallenge class to manage in-game quiz challenges
- * This replaces the separate quiz screen with interactive gameplay elements
- */
-class BonusChallenge {
-    private scene: Phaser.Scene;
-    private flowerManager: FlowerManager;
-    private active: boolean = false;
-    private currentQuestion?: QuizQuestion;
-    private answerFlowers: Phaser.Physics.Arcade.Sprite[] = [];
-    private challengeContainer?: Phaser.GameObjects.Container;
-    private challengeTimer?: Phaser.Time.TimerEvent;
-    private challengeTimeoutTimer?: Phaser.Time.TimerEvent; // Add property to store the timeout timer
-    private bonusScoreValue: number = 25;
-    private quizService: QuizService;
-
-    constructor(scene: Phaser.Scene, flowerManager: FlowerManager) {
-        this.scene = scene;
-        this.flowerManager = flowerManager;
-        this.quizService = QuizService.getInstance();
-    }
-
-    /**
-     * Start a new challenge at random intervals during gameplay
-     */
-    public scheduleNextChallenge(
-        minDelay: number = 20000,
-        maxDelay: number = 40000,
-    ): void {
-        // Random time between min and max delay
-        const delay = Phaser.Math.Between(minDelay, maxDelay);
-
-        this.challengeTimer = this.scene.time.delayedCall(delay, () => {
-            this.startChallenge();
-        });
-    }
-
-    /**
-     * Start a bonus challenge with a random quiz question
-     */
-    public startChallenge(): void {
-        if (this.active) return; // Don't start if already active
-
-        // Get a random question from the quiz service
-        const questions = this.quizService.getRandomQuizQuestions(1);
-        if (questions.length === 0) return;
-
-        this.currentQuestion = questions[0];
-        this.active = true;
-
-        // Emit event to pause the regular gameplay timer
-        EventBus.emit("game:set-input-active", false);
-
-        // Clear existing flowers for cleaner UI during challenge
-        this.flowerManager.clearFlowers();
-
-        // Create UI for the challenge
-        this.createChallengeUI();
-
-        // Create answer flowers based on question type
-        if (this.currentQuestion.type === QuestionType.MultipleChoice) {
-            this.createMultipleChoiceFlowers();
-        } else {
-            this.createTrueFalseFlowers();
-        }
-
-        // IMPORTANT: Re-enable input so the player can move to the answer
-        EventBus.emit("game:set-input-active", true);
-
-        // Set up physics overlap for answer flowers
-        // Access the bee instance from the scene
-        const gameScene = this.scene as Game;
-        this.answerFlowers.forEach((flower) => {
-            this.scene.physics.add.overlap(
-                gameScene.bee, // Access bee from the Game scene
-                flower,
-                (bee, flower) => {
-                    this.handleAnswerSelection(
-                        flower as Phaser.Physics.Arcade.Sprite,
-                    );
-                },
-                undefined,
-                this,
-            );
-        });
-
-        // Set a time limit for the challenge and store the timer event
-        this.challengeTimeoutTimer = this.scene.time.delayedCall(15000, () => {
-            if (this.active) {
-                console.log("Bonus Challenge: Time ran out!");
-                this.active = false; // Mark as inactive due to timeout
-                EventBus.emit("game:set-input-active", false); // Disable input
-                this.endChallenge(); // Clean up UI
-                this.finalizeChallengeReset(); // Reset game state & schedule next
-            }
-        });
-    }
-
-    /**
-     * Create UI elements for the challenge
-     */
-    private createChallengeUI(): void {
-        if (!this.currentQuestion) return;
-
-        // Create a container for all UI elements
-        this.challengeContainer = this.scene.add.container(0, 0);
-        this.challengeContainer.setDepth(15);
-
-        // Add semi-transparent background overlay
-        const overlay = this.scene.add.rectangle(
-            0,
-            0,
-            this.scene.cameras.main.width,
-            this.scene.cameras.main.height,
-            0x000000,
-            0.5,
-        );
-        overlay.setOrigin(0);
-        this.challengeContainer.add(overlay);
-
-        // Create challenge title
-        const title = this.scene.add
-            .text(this.scene.cameras.main.width / 2, 80, "BONUS CHALLENGE!", {
-                fontFamily: "Arial",
-                fontSize: "32px",
-                color: "#FFD700",
-                stroke: "#000000",
-                strokeThickness: 5,
-                align: "center",
-            })
-            .setOrigin(0.5);
-
-        // Create question text
-        const questionText = this.scene.add
-            .text(
-                this.scene.cameras.main.width / 2,
-                140,
-                this.currentQuestion.question,
-                {
-                    fontFamily: "Arial",
-                    fontSize: "20px",
-                    color: "#FFFFFF",
-                    stroke: "#000000",
-                    strokeThickness: 3,
-                    align: "center",
-                    wordWrap: { width: this.scene.cameras.main.width - 100 },
-                },
-            )
-            .setOrigin(0.5);
-
-        // Create instruction text
-        const instructions = this.scene.add
-            .text(
-                this.scene.cameras.main.width / 2,
-                200,
-                "Quickly! Fly to the correct flower to answer!",
-                {
-                    fontFamily: "Arial",
-                    fontSize: "18px",
-                    color: "#FFFFFF",
-                    align: "center",
-                },
-            )
-            .setOrigin(0.5);
-
-        // Add elements to container
-        this.challengeContainer.add(title);
-        this.challengeContainer.add(questionText);
-        this.challengeContainer.add(instructions);
-
-        // Add appear animation
-        this.scene.tweens.add({
-            targets: [title, questionText, instructions],
-            y: "+=10",
-            duration: 300,
-            yoyo: true,
-            repeat: 2,
-            ease: "Sine.easeInOut",
-        });
-    }
-
-    /**
-     * Create flowers representing multiple choice options
-     */
-    private createMultipleChoiceFlowers(): void {
-        if (!this.currentQuestion || !this.currentQuestion.options) return;
-
-        const options = this.currentQuestion.options;
-        const correctAnswer = this.currentQuestion.correctAnswer as string;
-
-        // Position flowers in a semi-circle at the bottom of the screen
-        const centerX = this.scene.cameras.main.width / 2;
-        const bottomY = this.scene.cameras.main.height - 120;
-        const radius = 250;
-
-        options.forEach((option, index) => {
-            // Calculate position in semi-circle
-            const angle = (Math.PI / (options.length - 1)) * index;
-            const x = centerX - radius * Math.cos(angle);
-            const y = bottomY - radius * Math.sin(angle);
-
-            // Create flower sprite
-            const flower = this.scene.physics.add.sprite(
-                x,
-                y,
-                "flower_generated",
-            );
-            flower.setScale(0.8);
-
-            // Determine if this is the correct answer
-            const isCorrect = option === correctAnswer;
-
-            // Store data with the flower
-            flower.setData("option", option);
-            flower.setData("isCorrect", isCorrect);
-
-            // Set color based on index (for visual distinction)
-            const colors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00];
-            flower.setTint(colors[index % colors.length]);
-
-            // Add option text above flower
-            const optionText = this.scene.add
-                .text(x, y - 60, option, {
-                    fontSize: "18px",
-                    color: "#FFFFFF",
-                    stroke: "#000000",
-                    strokeThickness: 3,
-                    backgroundColor: "#00000080",
-                    padding: { x: 8, y: 4 },
-                })
-                .setOrigin(0.5);
-
-            // Add to container and store references
-            this.challengeContainer?.add(optionText);
-            this.answerFlowers.push(flower);
-
-            // Add pulse effect to draw attention
-            this.scene.tweens.add({
-                targets: flower,
-                scale: 0.9,
-                duration: 600,
-                yoyo: true,
-                repeat: -1,
-                ease: "Sine.easeInOut",
-            });
-        });
-    }
-
-    /**
-     * Create flowers for true/false questions
-     */
-    private createTrueFalseFlowers(): void {
-        if (!this.currentQuestion) return;
-
-        const correctAnswer = this.currentQuestion.correctAnswer as boolean;
-        const options = [
-            { text: "True", value: true },
-            { text: "False", value: false },
-        ];
-
-        // Position flowers on left and right sides
-        const centerY = this.scene.cameras.main.height / 2;
-
-        options.forEach((option, index) => {
-            // Left or right position
-            const x = index === 0 ? 200 : this.scene.cameras.main.width - 200;
-
-            // Create flower sprite
-            const flower = this.scene.physics.add.sprite(
-                x,
-                centerY,
-                "flower_generated",
-            );
-            flower.setScale(0.8);
-
-            // Determine if this is the correct answer
-            const isCorrect = option.value === correctAnswer;
-
-            // Store data with the flower
-            flower.setData("option", option.text);
-            flower.setData("isCorrect", isCorrect);
-
-            // Set color based on index (for visual distinction)
-            const colors = [0x00ff00, 0xff0000]; // Green for True, Red for False
-            flower.setTint(colors[index]);
-
-            // Add option text above flower
-            const optionText = this.scene.add
-                .text(x, centerY - 60, option.text, {
-                    fontSize: "22px",
-                    color: "#FFFFFF",
-                    stroke: "#000000",
-                    strokeThickness: 3,
-                    backgroundColor: "#00000080",
-                    padding: { x: 10, y: 5 },
-                })
-                .setOrigin(0.5);
-
-            // Add to container and store references
-            this.challengeContainer?.add(optionText);
-            this.answerFlowers.push(flower);
-
-            // Add pulse effect to draw attention
-            this.scene.tweens.add({
-                targets: flower,
-                scale: 0.9,
-                duration: 600,
-                yoyo: true,
-                repeat: -1,
-                ease: "Sine.easeInOut",
-            });
-        });
-    }
-
-    /**
-     * Handle collision between bee and answer flower
-     */
-    public handleAnswerSelection(flower: Phaser.Physics.Arcade.Sprite): void {
-        if (!this.active) return;
-        this.active = false; // Deactivate challenge immediately
-
-        // *** Remove the challenge timeout timer as it's no longer needed ***
-        if (this.challengeTimeoutTimer) {
-            this.challengeTimeoutTimer.remove();
-            this.challengeTimeoutTimer = undefined;
-        }
-
-        EventBus.emit("game:set-input-active", false);
-
-        const isCorrect = flower.getData("isCorrect") as boolean;
-        const option = flower.getData("option") as string;
-
-        // Create visual feedback
-        if (isCorrect) {
-            createParticles(
-                this.scene,
-                flower.x,
-                flower.y,
-                "pollen_particle_generated",
-                0x00ff00,
-                30,
-            );
-            this.showResult(
-                true,
-                this.currentQuestion?.explanation || "Correct!",
-            );
-
-            // Add bonus score
-            (this.scene as Game).addBonusScore(this.bonusScoreValue);
-
-            // Record correct answer in quiz service
-            this.quizService.recordQuizResults(1, 1);
-        } else {
-            createParticles(
-                this.scene,
-                flower.x,
-                flower.y,
-                "pollen_particle_generated",
-                0xff0000,
-                15,
-            );
-            this.showResult(
-                false,
-                this.currentQuestion?.explanation || "Incorrect!",
-            );
-
-            // Record incorrect answer in quiz service
-            this.quizService.recordQuizResults(0, 1);
-        }
-    }
-
-    /**
-     * Show the result of the challenge
-     */
-    private showResult(correct: boolean, explanation: string): void {
-        // Create result container
-        const resultContainer = this.scene.add.container(
-            this.scene.cameras.main.width / 2,
-            this.scene.cameras.main.height / 2,
-        );
-        resultContainer.setDepth(20);
-
-        // Background panel
-        const bg = this.scene.add.graphics();
-        bg.fillStyle(correct ? 0x006400 : 0x8b0000, 0.9);
-        bg.fillRoundedRect(-200, -100, 400, 200, 16);
-        resultContainer.add(bg);
-
-        // Result text
-        const resultText = this.scene.add
-            .text(0, -60, correct ? "CORRECT!" : "INCORRECT!", {
-                fontFamily: "Arial",
-                fontSize: "28px",
-                color: "#FFFFFF",
-                fontStyle: "bold",
-                align: "center",
-            })
-            .setOrigin(0.5);
-        resultContainer.add(resultText);
-
-        // Explanation text
-        const explText = this.scene.add
-            .text(0, 0, explanation, {
-                fontFamily: "Arial",
-                fontSize: "16px",
-                color: "#FFFFFF",
-                align: "center",
-                wordWrap: { width: 350 },
-            })
-            .setOrigin(0.5);
-        resultContainer.add(explText);
-
-        // Points text if correct
-        if (correct) {
-            const pointsText = this.scene.add
-                .text(0, 60, `+${this.bonusScoreValue} POINTS!`, {
-                    fontFamily: "Arial",
-                    fontSize: "22px",
-                    color: "#FFD700",
-                    fontStyle: "bold",
-                    align: "center",
-                })
-                .setOrigin(0.5);
-            resultContainer.add(pointsText);
-        }
-
-        // Add appear animation
-        resultContainer.setScale(0);
-        this.scene.tweens.add({
-            targets: resultContainer,
-            scale: 1,
-            duration: 300,
-            ease: "Back.easeOut",
-            onComplete: () => {
-                // Add a delayed call to fade out and destroy the result popup
-                this.scene.time.delayedCall(2500, () => {
-                    if (resultContainer && resultContainer.scene) {
-                        this.scene.tweens.add({
-                            targets: resultContainer,
-                            alpha: 0,
-                            duration: 200,
-                            ease: "Power1",
-                            onComplete: () => {
-                                if (resultContainer && resultContainer.scene) {
-                                    resultContainer.destroy();
-                                }
-                                // *** Only call finalizeChallengeReset HERE ***
-                                this.finalizeChallengeReset();
-                            },
-                        });
-                    } else {
-                        // If container somehow gone, still finalize
-                        this.finalizeChallengeReset();
-                    }
-                });
-            },
-        });
-    }
-
-    /**
-     * Resets game state, cleans up UI, and schedules the next challenge.
-     * Called after the result popup is handled or on timeout.
-     */
-    private finalizeChallengeReset(): void {
-        console.log("Bonus Challenge: Finalizing reset...");
-
-        // 1. Reset the core game state first
-        this.resetGameToNormal();
-
-        // 2. Clean up the challenge UI elements
-        this.endChallenge();
-
-        // 3. Schedule the next challenge
-        this.scheduleNextChallenge();
-    }
-
-    /**
-     * End the current challenge - Cleans up UI elements
-     */
-    public endChallenge(): void {
-        // Only cleans up UI and flowers, does NOT reset game state directly
-
-        // Ensure we only run this once for UI cleanup
-        if (!this.challengeContainer && this.answerFlowers.length === 0) return;
-
-        // Also clear the timeout timer here as a safety measure
-        if (this.challengeTimeoutTimer) {
-            this.challengeTimeoutTimer.remove();
-            this.challengeTimeoutTimer = undefined;
-        }
-
-        // Immediately destroy answer flowers
-        this.answerFlowers.forEach((flower) => {
-            if (flower && flower.scene) {
-                flower.destroy();
-            }
-        });
-        this.answerFlowers = [];
-
-        // Start fading out the main challenge UI container
-        if (this.challengeContainer) {
-            const containerToDestroy = this.challengeContainer;
-            this.challengeContainer = undefined; // Clear reference
-            this.scene.tweens.add({
-                targets: containerToDestroy,
-                alpha: 0,
-                duration: 300,
-                onComplete: () => {
-                    if (containerToDestroy && containerToDestroy.scene) {
-                        containerToDestroy.destroy();
-                    }
-                },
-            });
-        }
-        // Note: active flag is managed by handleAnswerSelection and the timeout
-    }
-
-    /**
-     * Helper function to reset the game state after a challenge
-     */
-    private resetGameToNormal(): void {
-        console.log("Bonus Challenge: Resetting game to normal state.");
-        // Re-enable regular gameplay input and timer
-        EventBus.emit("game:set-input-active", true);
-        console.log("Bonus Challenge: Input re-enabled.");
-
-        // Reset flower manager - regenerate flowers
-        if (this.flowerManager) {
-            console.log("Bonus Challenge: Clearing and respawning flowers.");
-            this.flowerManager.clearFlowers();
-            this.flowerManager.spawnFlowers(6, "red");
-            this.flowerManager.spawnFlowers(6, "blue");
-            this.flowerManager.assignInitialPollen();
-            console.log("Bonus Challenge: Flowers reset.");
-        } else {
-            console.error("FlowerManager not available during game reset.");
-        }
-    }
-
-    /**
-     * Clean up resources when scene is shut down
-     */
-    public destroy(): void {
-        this.challengeTimer?.remove();
-        this.challengeTimeoutTimer?.remove(); // Ensure timeout timer is removed on destroy
-        this.challengeContainer?.destroy();
-        this.answerFlowers.forEach((flower) => {
-            if (flower && flower.scene) flower.destroy();
-        });
-        this.answerFlowers = [];
-        console.log("BonusChallenge destroyed.");
-    }
-
-    /**
-     * Check if a bonus challenge is active
-     */
-    public isActive(): boolean {
-        return this.active;
-    }
-}
 
 export class Game extends Phaser.Scene {
     // Entities and Managers
@@ -644,7 +84,7 @@ export class Game extends Phaser.Scene {
             this.flowers,
             this.handleBeeFlowerCollision as ArcadePhysicsCallback, // Keep collision handler here
             undefined,
-            this,
+            this
         );
 
         // --- Input ---
@@ -661,7 +101,7 @@ export class Game extends Phaser.Scene {
             this,
             this.gameDuration,
             (time) => this.events.emit("game:update-timer", time), // Update callback
-            () => this.handleTimeUp(), // Completion callback
+            () => this.handleTimeUp() // Completion callback
         );
 
         // --- State Reset ---
@@ -743,7 +183,7 @@ export class Game extends Phaser.Scene {
                     color: "#FFD700",
                     stroke: "#000000",
                     strokeThickness: 4,
-                },
+                }
             )
             .setOrigin(0.5);
 
@@ -851,7 +291,7 @@ export class Game extends Phaser.Scene {
                 this.bee.updateMovement(this.cursors, this.dpadState, delta);
             } else {
                 console.warn(
-                    "GAME Update: inputEnabled=TRUE but body is still disabled?",
+                    "GAME Update: inputEnabled=TRUE but body is still disabled?"
                 );
             }
         }
@@ -865,7 +305,7 @@ export class Game extends Phaser.Scene {
             | Phaser.Tilemaps.Tile,
         flowerGO:
             | Phaser.Types.Physics.Arcade.GameObjectWithBody
-            | Phaser.Tilemaps.Tile,
+            | Phaser.Tilemaps.Tile
     ): void {
         // Ensure correct types and that it's *our* bee
         if (
@@ -881,7 +321,7 @@ export class Game extends Phaser.Scene {
         if (this.bonusChallenge.isActive()) {
             // Handle answer selection for quiz flowers
             this.bonusChallenge.handleAnswerSelection(
-                flowerGO as Phaser.Physics.Arcade.Sprite,
+                flowerGO as Phaser.Physics.Arcade.Sprite
             );
             return;
         }
@@ -909,7 +349,7 @@ export class Game extends Phaser.Scene {
                 .sprite(
                     this.bee.x,
                     this.bee.y - 25,
-                    "pollen_particle_generated",
+                    "pollen_particle_generated"
                 )
                 .setDepth(11)
                 .setTint(data.type === "red" ? 0xffaaaa : 0xaaaaff)
@@ -937,7 +377,7 @@ export class Game extends Phaser.Scene {
             // Pass indicator reference to the Bee so it can update position
             this.bee.setPollenIndicator(
                 this.pollenIndicator,
-                this.pollenIndicatorTween,
+                this.pollenIndicatorTween
             );
 
             // Use utility functions for effects
@@ -947,7 +387,7 @@ export class Game extends Phaser.Scene {
                 flower.y,
                 "pollen_particle_generated",
                 0xffff00,
-                15,
+                15
             );
             addInteractionPulse(this, flower);
             addInteractionPulse(this, this.bee, 1.05);
@@ -992,7 +432,7 @@ export class Game extends Phaser.Scene {
                 flower.y,
                 "pollen_particle_generated",
                 0x90ee90,
-                25,
+                25
             );
             addInteractionPulse(this, flower);
             addInteractionPulse(this, this.bee, 1.05);
@@ -1081,7 +521,7 @@ export class Game extends Phaser.Scene {
                                 newlyPollenedFlower.y,
                                 "pollen_particle_generated",
                                 0xffff00,
-                                10,
+                                10
                             );
                             addInteractionPulse(this, newlyPollenedFlower);
                         }
@@ -1095,21 +535,21 @@ export class Game extends Phaser.Scene {
                             .getGroup()
                             .getChildren() as Phaser.Physics.Arcade.Sprite[]
                     ).find(
-                        (f) => f.getData("flowerData") === pollinatedFlowerData,
+                        (f) => f.getData("flowerData") === pollinatedFlowerData
                     );
 
                     if (flowerSprite) {
                         this.showInWorldText(
                             factToEmit,
                             flowerSprite.x,
-                            flowerSprite.y,
+                            flowerSprite.y
                         );
                     } else {
                         // Fallback position if sprite not found
                         this.showInWorldText(
                             factToEmit,
                             this.scale.width / 2,
-                            this.scale.height - 80,
+                            this.scale.height - 80
                         );
                     }
                 }
@@ -1120,7 +560,7 @@ export class Game extends Phaser.Scene {
                     this.showInWorldText(
                         "All flowers pollinated! Great job!",
                         this.scale.width / 2,
-                        this.scale.height / 2,
+                        this.scale.height / 2
                     );
                     this.endGameDueToCompletion();
                 } else {
@@ -1143,7 +583,7 @@ export class Game extends Phaser.Scene {
             this.showInWorldText(
                 factText,
                 this.scale.width / 2,
-                this.scale.height / 2,
+                this.scale.height / 2
             );
         }
 
@@ -1167,7 +607,7 @@ export class Game extends Phaser.Scene {
                     newlyPollenedFlower.y,
                     "pollen_particle_generated",
                     0xffff00,
-                    10,
+                    10
                 );
                 addInteractionPulse(this, newlyPollenedFlower);
             }
@@ -1239,7 +679,7 @@ export class Game extends Phaser.Scene {
             .sprite(
                 hudX - textWidth / 2 + 25,
                 hudY,
-                "pollen_particle_generated",
+                "pollen_particle_generated"
             )
             .setTint(0x34d399)
             .setScale(2.5);
@@ -1261,7 +701,7 @@ export class Game extends Phaser.Scene {
             hudY - textHeight / 2,
             textWidth,
             textHeight,
-            cornerRadius,
+            cornerRadius
         );
 
         // Add highlight/shadow effects
@@ -1271,7 +711,7 @@ export class Game extends Phaser.Scene {
             hudY - textHeight / 2,
             textWidth,
             textHeight,
-            cornerRadius,
+            cornerRadius
         );
 
         // Add the main text
