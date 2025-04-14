@@ -10,41 +10,41 @@ export class BeeGenerator extends BaseGenerator {
         const beeBodyHeight = beeSize * 0.45;
         const headRadius = beeSize * 0.2;
         const wingWidth = beeSize * 0.25;
-        
+
         // Draw bee body (yellow ellipse)
         this.graphics.fillStyle(0xffd700, 1);
         this.graphics.fillEllipse(
             beeSize / 2,
             beeBodyY,
             beeBodyWidth,
-            beeBodyHeight
+            beeBodyHeight,
         );
-        
+
         // Draw black stripes
         this.graphics.fillStyle(0x000000, 1);
         this.graphics.fillRect(
             beeSize / 2 - beeBodyWidth * 0.3,
             beeBodyY - beeBodyHeight / 2,
             beeBodyWidth * 0.2,
-            beeBodyHeight
+            beeBodyHeight,
         );
         this.graphics.fillRect(
             beeSize / 2 + beeBodyWidth * 0.1,
             beeBodyY - beeBodyHeight / 2,
             beeBodyWidth * 0.2,
-            beeBodyHeight
+            beeBodyHeight,
         );
-        
+
         // Draw head
         this.graphics.fillCircle(
             beeSize / 2 + beeBodyWidth / 2 - headRadius * 0.3,
             beeBodyY,
-            headRadius
+            headRadius,
         );
-        
+
         // Draw wings (semi-transparent blue)
         this.graphics.fillStyle(0xadd8e6, 0.7);
-        
+
         // Top wing
         this.graphics
             .slice(
@@ -53,10 +53,10 @@ export class BeeGenerator extends BaseGenerator {
                 wingWidth,
                 Phaser.Math.DegToRad(180),
                 Phaser.Math.DegToRad(340),
-                false
+                false,
             )
             .fillPath();
-        
+
         // Bottom wing
         this.graphics
             .slice(
@@ -65,13 +65,13 @@ export class BeeGenerator extends BaseGenerator {
                 wingWidth,
                 Phaser.Math.DegToRad(20),
                 Phaser.Math.DegToRad(180),
-                false
+                false,
             )
             .fillPath();
-            
+
         // Generate the texture
         this.graphics.generateTexture("bee_generated", beeSize, beeSize);
-        
+
         // Clean up
         this.cleanup();
     }

@@ -1,57 +1,57 @@
 {
-  "name": "template-nextjs",
-  "version": "1.1.1",
-  "description": "An interactive pollination game designed for students, built with Phaser 3 and Next.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Shoaib-Programmer/pollination.git"
-  },
-  "author": "Shoaib Nigam Shaik <support@phaser.io> (https://phaser.io/)",
-  "license": "MIT",
-  "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
-  "bugs": {
-    "url": "https://github.com/Shoaib-Programmer/pollination/issues"
-  },
-  "homepage": "https://github.com/Shoaib-Programmer/pollination#readme",
-  "keywords": [
-    "pollination",
-    "game",
-    "interactive",
-    "education",
-    "learning",
-    "IndexedDB",
-    "phaser",
-    "phaser3",
-    "next",
-    "nextjs",
-    "vite",
-    "typescript"
-  ],
-  "scripts": {
-    "dev": "bun log.ts dev & next dev -p 8080 --turbopack",
-    "build": "bun log.ts build & next build",
-    "start": "bun log.ts start & next start -p 3000",
-    "dev-nolog": "next dev -p 8080",
-    "build-nolog": "next build",
-    "start-nolog": "next start -p 3000",
-    "prepare": "husky",
-    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
-  },
-  "dependencies": {
-    "@gsap/react": "^2.1.2",
-    "gsap": "^3.12.7",
-    "next": "^15.2.5",
-    "phaser": "^3.88.2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.9",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "eslint": "^9.24.0",
-    "eslint-config-next": "^15.2.5",
-    "husky": "^9.1.7",
-    "typescript": "^5"
-  }
+    "name": "template-nextjs",
+    "version": "1.1.1",
+    "description": "An interactive pollination game designed for students, built with Phaser 3 and Next.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Shoaib-Programmer/pollination.git"
+    },
+    "author": "Shoaib Nigam Shaik <support@phaser.io> (https://phaser.io/)",
+    "license": "MIT",
+    "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
+    "bugs": {
+        "url": "https://github.com/Shoaib-Programmer/pollination/issues"
+    },
+    "homepage": "https://github.com/Shoaib-Programmer/pollination#readme",
+    "keywords": [
+        "pollination",
+        "game",
+        "interactive",
+        "education",
+        "learning",
+        "IndexedDB",
+        "phaser",
+        "phaser3",
+        "next",
+        "nextjs",
+        "vite",
+        "typescript"
+    ],
+    "scripts": {
+        "dev": "bun log.ts dev & next dev -p 8080 --turbopack",
+        "build": "bun log.ts build & next build",
+        "start": "bun log.ts start & next start -p 3000",
+        "dev-nolog": "next dev -p 8080",
+        "build-nolog": "next build",
+        "start-nolog": "next start -p 3000",
+        "prepare": "husky",
+        "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
+    },
+    "dependencies": {
+        "@gsap/react": "^2.1.2",
+        "gsap": "^3.12.7",
+        "next": "^15.2.5",
+        "phaser": "^3.88.2",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0"
+    },
+    "devDependencies": {
+        "@types/bun": "^1.2.9",
+        "@types/react": "latest",
+        "@types/react-dom": "latest",
+        "eslint": "^9.24.0",
+        "eslint-config-next": "^15.2.5",
+        "husky": "^9.1.7",
+        "typescript": "^5"
+    }
 }

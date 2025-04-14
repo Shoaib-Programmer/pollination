@@ -47,10 +47,10 @@ const FLOWERS: FlowerType[] = [
         facts: [
             "Roses have been cultivated for over 5,000 years",
             "There are over 300 species of roses",
-            "The rose is the national flower of England and the United States"
+            "The rose is the national flower of England and the United States",
         ],
         discovered: false,
-        collectionCount: 0
+        collectionCount: 0,
     },
     {
         id: "blue_cornflower",
@@ -63,10 +63,10 @@ const FLOWERS: FlowerType[] = [
         facts: [
             "Also known as Bachelor's button",
             "Was used in traditional folk medicine",
-            "Is the national flower of Estonia"
+            "Is the national flower of Estonia",
         ],
         discovered: false,
-        collectionCount: 0
+        collectionCount: 0,
     },
     {
         id: "yellow_daffodil",
@@ -79,10 +79,10 @@ const FLOWERS: FlowerType[] = [
         facts: [
             "The daffodil is the national flower of Wales",
             "Contains lycorine, which can cause vomiting if eaten",
-            "Symbolizes rebirth and new beginnings"
+            "Symbolizes rebirth and new beginnings",
         ],
         discovered: false,
-        collectionCount: 0
+        collectionCount: 0,
     },
     {
         id: "purple_lilac",
@@ -95,10 +95,10 @@ const FLOWERS: FlowerType[] = [
         facts: [
             "Lilacs typically bloom for only 2 weeks each spring",
             "The wood is very hard and has been used for engraving",
-            "In the language of flowers, lilacs symbolize first love"
+            "In the language of flowers, lilacs symbolize first love",
         ],
         discovered: false,
-        collectionCount: 0
+        collectionCount: 0,
     },
     {
         id: "pink_cherry_blossom",
@@ -111,10 +111,10 @@ const FLOWERS: FlowerType[] = [
         facts: [
             "Cherry blossoms are Japan's national flower",
             "The Japanese tradition of viewing cherry blossoms is called 'Hanami'",
-            "Most cherry trees only bloom for 1-2 weeks per year"
+            "Most cherry trees only bloom for 1-2 weeks per year",
         ],
         discovered: false,
-        collectionCount: 0
+        collectionCount: 0,
     },
     {
         id: "orange_marigold",
@@ -127,10 +127,10 @@ const FLOWERS: FlowerType[] = [
         facts: [
             "Marigolds are often used in Day of the Dead celebrations in Mexico",
             "They have a distinctive, strong scent that can repel some insects",
-            "Their petals are sometimes used as a natural food coloring"
+            "Their petals are sometimes used as a natural food coloring",
         ],
         discovered: false,
-        collectionCount: 0
+        collectionCount: 0,
     },
     {
         id: "white_daisy",
@@ -143,10 +143,10 @@ const FLOWERS: FlowerType[] = [
         facts: [
             "The name 'daisy' comes from 'day's eye' because they open at dawn",
             "They are actually composed of two types of flowers - disk and ray",
-            "Daisies are a symbol of innocence and purity"
+            "Daisies are a symbol of innocence and purity",
         ],
         discovered: false,
-        collectionCount: 0
+        collectionCount: 0,
     },
     {
         id: "red_tulip",
@@ -159,28 +159,28 @@ const FLOWERS: FlowerType[] = [
         facts: [
             "Tulips were once so valuable in Holland that they caused the first economic bubble",
             "There are over 3,000 registered varieties of tulips",
-            "Tulip bulbs can be substituted for onions in cooking (though not recommended)"
+            "Tulip bulbs can be substituted for onions in cooking (though not recommended)",
         ],
         discovered: false,
-        collectionCount: 0
-    }
+        collectionCount: 0,
+    },
 ];
 
 export default FLOWERS;
 
 // Helper function to get only discovered flowers
 export function getDiscoveredFlowers(): FlowerType[] {
-    return FLOWERS.filter(flower => flower.discovered);
+    return FLOWERS.filter((flower) => flower.discovered);
 }
 
 // Helper function to find a flower by its ID
 export function getFlowerById(id: string): FlowerType | undefined {
-    return FLOWERS.find(flower => flower.id === id);
+    return FLOWERS.find((flower) => flower.id === id);
 }
 
 // Helper function to find a flower by color type
 export function getFlowersByColor(colorType: string): FlowerType[] {
-    return FLOWERS.filter(flower => flower.colorType === colorType);
+    return FLOWERS.filter((flower) => flower.colorType === colorType);
 }
 
 // Helper function to get random flower

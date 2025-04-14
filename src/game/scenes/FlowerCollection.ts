@@ -65,7 +65,7 @@ export default class FlowerCollection extends Phaser.Scene {
         // Create or update progress text
         if (this.progressText) {
             this.progressText.setText(
-                `Discovered: ${discoveredCount}/${totalFlowers}`
+                `Discovered: ${discoveredCount}/${totalFlowers}`,
             );
         } else {
             this.progressText = this.add
@@ -77,7 +77,7 @@ export default class FlowerCollection extends Phaser.Scene {
                         fontFamily: "Arial",
                         fontSize: "18px",
                         color: "#000000",
-                    }
+                    },
                 )
                 .setOrigin(0.5, 0);
         }
@@ -122,7 +122,7 @@ export default class FlowerCollection extends Phaser.Scene {
                     .image(
                         itemWidth / 2,
                         itemHeight / 2 - 15,
-                        `flower_${flower.colorType}_generated`
+                        `flower_${flower.colorType}_generated`,
                     )
                     .setTint(flower.color);
                 flowerContainer.add(flowerImage);
@@ -142,7 +142,7 @@ export default class FlowerCollection extends Phaser.Scene {
                     itemWidth - 15,
                     15,
                     15,
-                    0x44aa44
+                    0x44aa44,
                 );
                 const countText = this.add
                     .text(
@@ -153,7 +153,7 @@ export default class FlowerCollection extends Phaser.Scene {
                             fontFamily: "Arial",
                             fontSize: "14px",
                             color: "#ffffff",
-                        }
+                        },
                     )
                     .setOrigin(0.5);
                 flowerContainer.add(countBadge);
@@ -196,7 +196,7 @@ export default class FlowerCollection extends Phaser.Scene {
                 this.scale.width,
                 this.scale.height,
                 0x000000,
-                0.6
+                0.6,
             )
             .setOrigin(0);
         modalBg
@@ -214,7 +214,7 @@ export default class FlowerCollection extends Phaser.Scene {
                 panelWidth,
                 panelHeight,
                 0xffffff,
-                0.95
+                0.95,
             )
             .setOrigin(0);
         this.detailsPanel.add(panel);
@@ -243,7 +243,7 @@ export default class FlowerCollection extends Phaser.Scene {
                     fontSize: "24px",
                     color: "#000000",
                 })
-                .setName("flowerName")
+                .setName("flowerName"),
         );
 
         this.detailsPanel.add(
@@ -254,7 +254,7 @@ export default class FlowerCollection extends Phaser.Scene {
                     color: "#666666",
                     fontStyle: "italic",
                 })
-                .setName("scientificName")
+                .setName("scientificName"),
         );
 
         this.detailsPanel.add(
@@ -264,7 +264,7 @@ export default class FlowerCollection extends Phaser.Scene {
                     fontSize: "16px",
                     color: "#000000",
                 })
-                .setName("flowerFamily")
+                .setName("flowerFamily"),
         );
 
         this.detailsPanel.add(
@@ -274,7 +274,7 @@ export default class FlowerCollection extends Phaser.Scene {
                     fontSize: "16px",
                     color: "#000000",
                 })
-                .setName("flowerRegions")
+                .setName("flowerRegions"),
         );
 
         this.detailsPanel.add(
@@ -285,7 +285,7 @@ export default class FlowerCollection extends Phaser.Scene {
                     color: "#000000",
                     wordWrap: { width: panelWidth - 60 },
                 })
-                .setName("flowerFacts")
+                .setName("flowerFacts"),
         );
 
         // Placeholder for flower image
@@ -293,7 +293,7 @@ export default class FlowerCollection extends Phaser.Scene {
             this.add
                 .image(0, 0, "flower_red_generated")
                 .setVisible(false)
-                .setName("flowerImage")
+                .setName("flowerImage"),
         );
     }
 
@@ -312,7 +312,7 @@ export default class FlowerCollection extends Phaser.Scene {
 
         // Update flower name
         const nameText = this.detailsPanel.getByName(
-            "flowerName"
+            "flowerName",
         ) as Phaser.GameObjects.Text;
         nameText
             .setText(flower.name)
@@ -321,7 +321,7 @@ export default class FlowerCollection extends Phaser.Scene {
 
         // Update scientific name
         const scientificText = this.detailsPanel.getByName(
-            "scientificName"
+            "scientificName",
         ) as Phaser.GameObjects.Text;
         scientificText
             .setText(flower.scientificName)
@@ -330,7 +330,7 @@ export default class FlowerCollection extends Phaser.Scene {
 
         // Update family
         const familyText = this.detailsPanel.getByName(
-            "flowerFamily"
+            "flowerFamily",
         ) as Phaser.GameObjects.Text;
         familyText
             .setText(`Family: ${flower.family}`)
@@ -339,7 +339,7 @@ export default class FlowerCollection extends Phaser.Scene {
 
         // Update regions
         const regionsText = this.detailsPanel.getByName(
-            "flowerRegions"
+            "flowerRegions",
         ) as Phaser.GameObjects.Text;
         regionsText
             .setText(`Regions: ${flower.regions.join(", ")}`)
@@ -348,7 +348,7 @@ export default class FlowerCollection extends Phaser.Scene {
 
         // Update facts
         const factsText = this.detailsPanel.getByName(
-            "flowerFacts"
+            "flowerFacts",
         ) as Phaser.GameObjects.Text;
         factsText
             .setText(`Fun Facts:\n• ${flower.facts.join("\n• ")}`)
@@ -357,7 +357,7 @@ export default class FlowerCollection extends Phaser.Scene {
 
         // Update flower image
         const flowerImage = this.detailsPanel.getByName(
-            "flowerImage"
+            "flowerImage",
         ) as Phaser.GameObjects.Image;
         flowerImage
             .setTexture(`flower_${flower.colorType}_generated`)

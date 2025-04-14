@@ -12,19 +12,19 @@ export class MainMenu extends Scene {
     constructor() {
         super("MainMenu");
     }
-    
+
     init() {
         // Check if there are high scores when the scene initializes
         this.checkForHighScores();
     }
-    
+
     async checkForHighScores() {
         this.isCheckingScores = true;
         try {
             const highScores = await storageService.getHighScores(1); // Just check if there's at least one
             this.hasHighScores = highScores.length > 0;
             this.isCheckingScores = false;
-            
+
             // If high scores button exists, update its visibility
             this.updateHighScoresButtonVisibility();
         } catch (error) {
@@ -33,7 +33,7 @@ export class MainMenu extends Scene {
             this.hasHighScores = false;
         }
     }
-    
+
     updateHighScoresButtonVisibility() {
         if (this.highScoresButton) {
             if (this.hasHighScores) {
@@ -43,7 +43,7 @@ export class MainMenu extends Scene {
                         alpha: 1,
                         scale: 1,
                         duration: 0.4,
-                        ease: "back.out(1.7)"
+                        ease: "back.out(1.7)",
                     });
                 }
             } else {
@@ -53,7 +53,7 @@ export class MainMenu extends Scene {
                         alpha: 0,
                         scale: 0.8,
                         duration: 0.3,
-                        ease: "power1.in"
+                        ease: "power1.in",
                     });
                 }
             }
@@ -142,7 +142,7 @@ export class MainMenu extends Scene {
             .setOrigin(0.5)
             .setAlpha(0) // Start invisible
             .setScale(0.8); // Start smaller
-            
+
         // High Scores button - only shown if there are high scores
         this.highScoresButton = this.add
             .text(centerX, centerY + 140, "High Scores", {
@@ -163,7 +163,7 @@ export class MainMenu extends Scene {
             .setOrigin(0.5)
             .setAlpha(0) // Start invisible
             .setScale(0.8); // Start smaller
-            
+
         // Flower Collection Button - always visible
         const flowerCollectionButton = this.add
             .text(centerX, centerY + 200, "Flower Collection", {
@@ -215,7 +215,7 @@ export class MainMenu extends Scene {
                 "-=0.3",
             ) // Flower Collection button pops in
             .to(settingsIcon, { alpha: 0.8, duration: 0.4 }, "-=0.3"); // Fade in settings icon
-            
+
         // Update high scores button visibility based on stored state
         this.updateHighScoresButtonVisibility();
 
@@ -252,7 +252,14 @@ export class MainMenu extends Scene {
             });
             // Transition Out (Fade everything except maybe background)
             gsap.to(
-                [title, instructionBg, instructions, startButton, this.highScoresButton, settingsIcon],
+                [
+                    title,
+                    instructionBg,
+                    instructions,
+                    startButton,
+                    this.highScoresButton,
+                    settingsIcon,
+                ],
                 {
                     alpha: 0,
                     duration: 0.3,
@@ -298,7 +305,14 @@ export class MainMenu extends Scene {
             });
             // Transition Out Animation (Optional)
             gsap.to(
-                [title, instructionBg, instructions, startButton, this.highScoresButton, settingsIcon],
+                [
+                    title,
+                    instructionBg,
+                    instructions,
+                    startButton,
+                    this.highScoresButton,
+                    settingsIcon,
+                ],
                 {
                     alpha: 0,
                     y: "-=30", // Move up slightly
@@ -311,11 +325,11 @@ export class MainMenu extends Scene {
                 },
             );
         });
-        
+
         // High Scores button interaction
         if (this.highScoresButton) {
             this.highScoresButton.setInteractive({ useHandCursor: true });
-            
+
             this.highScoresButton.on("pointerover", () => {
                 this.tweens.killTweensOf(this.highScoresButton!);
                 this.tweens.add({
@@ -326,7 +340,7 @@ export class MainMenu extends Scene {
                 });
                 this.highScoresButton!.setBackgroundColor("#5A9BDC"); // Lighter blue
             });
-            
+
             this.highScoresButton.on("pointerout", () => {
                 this.tweens.killTweensOf(this.highScoresButton!);
                 this.tweens.add({
@@ -337,7 +351,7 @@ export class MainMenu extends Scene {
                 });
                 this.highScoresButton!.setBackgroundColor("#4682B4");
             });
-            
+
             this.highScoresButton.on("pointerdown", () => {
                 this.tweens.killTweensOf(this.highScoresButton!);
                 this.tweens.add({
@@ -347,10 +361,17 @@ export class MainMenu extends Scene {
                     ease: "Sine.easeInOut",
                     yoyo: true,
                 });
-                
+
                 // Go directly to the GameOver scene which shows high scores
                 gsap.to(
-                    [title, instructionBg, instructions, startButton, this.highScoresButton, settingsIcon],
+                    [
+                        title,
+                        instructionBg,
+                        instructions,
+                        startButton,
+                        this.highScoresButton,
+                        settingsIcon,
+                    ],
                     {
                         alpha: 0,
                         y: "-=30",
@@ -359,7 +380,10 @@ export class MainMenu extends Scene {
                         ease: "power1.in",
                         onComplete: () => {
                             // Pass 0 score to just show high scores without current game score emphasis
-                            this.scene.start("GameOver", { score: 0, showHighScoresOnly: true });
+                            this.scene.start("GameOver", {
+                                score: 0,
+                                showHighScoresOnly: true,
+                            });
                         },
                     },
                 );
@@ -368,7 +392,7 @@ export class MainMenu extends Scene {
 
         // Flower Collection button interaction
         flowerCollectionButton.setInteractive({ useHandCursor: true });
-        
+
         flowerCollectionButton.on("pointerover", () => {
             this.tweens.add({
                 targets: flowerCollectionButton,
@@ -378,7 +402,7 @@ export class MainMenu extends Scene {
             });
             flowerCollectionButton.setBackgroundColor("#B039C8"); // Lighter purple
         });
-        
+
         flowerCollectionButton.on("pointerout", () => {
             this.tweens.add({
                 targets: flowerCollectionButton,
@@ -388,7 +412,7 @@ export class MainMenu extends Scene {
             });
             flowerCollectionButton.setBackgroundColor("#9C27B0"); // Original purple
         });
-        
+
         flowerCollectionButton.on("pointerdown", () => {
             this.tweens.add({
                 targets: flowerCollectionButton,
@@ -397,10 +421,18 @@ export class MainMenu extends Scene {
                 ease: "Sine.easeInOut",
                 yoyo: true,
             });
-            
+
             // Transition to Flower Collection scene
             gsap.to(
-                [title, instructionBg, instructions, startButton, this.highScoresButton, flowerCollectionButton, settingsIcon],
+                [
+                    title,
+                    instructionBg,
+                    instructions,
+                    startButton,
+                    this.highScoresButton,
+                    flowerCollectionButton,
+                    settingsIcon,
+                ],
                 {
                     alpha: 0,
                     y: "-=30",
@@ -410,7 +442,7 @@ export class MainMenu extends Scene {
                     onComplete: () => {
                         this.scene.start("FlowerCollection");
                     },
-                }
+                },
             );
         });
 

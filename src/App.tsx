@@ -18,35 +18,35 @@ function App() {
         const checkForTouch = () =>
             "ontouchstart" in window || navigator.maxTouchPoints > 0;
         setIsTouchDevice(checkForTouch());
-        
+
         // Listen for quiz events
         const onQuizRequested = (compulsory: boolean) => {
             setIsQuizCompulsory(compulsory);
             setShowQuiz(true);
         };
-        
-        EventBus.on('quiz-requested', onQuizRequested);
-        
+
+        EventBus.on("quiz-requested", onQuizRequested);
+
         // Clean up event listener
         return () => {
-            EventBus.off('quiz-requested', onQuizRequested);
+            EventBus.off("quiz-requested", onQuizRequested);
         };
     }, []); // Empty dependency array ensures this runs only once on mount
-    
+
     // Handle quiz completion
     const handleQuizComplete = (score: number, totalQuestions: number) => {
         setShowQuiz(false);
         // If it was a compulsory quiz, allow the game to continue
         if (isQuizCompulsory) {
-            EventBus.emit('quiz-completed');
+            EventBus.emit("quiz-completed");
         }
     };
-    
+
     // Handle quiz skip
     const handleQuizSkip = () => {
         setShowQuiz(false);
     };
-    
+
     // Trigger quiz from button
     const handleQuizButtonClick = () => {
         setIsQuizCompulsory(false);
@@ -73,8 +73,8 @@ function App() {
 
             {/* Quiz Component - shown when active */}
             {showQuiz && (
-                <Quiz 
-                    isCompulsory={isQuizCompulsory} 
+                <Quiz
+                    isCompulsory={isQuizCompulsory}
                     onComplete={handleQuizComplete}
                     onSkip={handleQuizSkip}
                 />
@@ -85,19 +85,19 @@ function App() {
                 <>
                     <GameUI listenTo={EventBus} />
                     {/* Quiz button */}
-                    <button 
+                    <button
                         onClick={handleQuizButtonClick}
                         style={{
-                            position: 'absolute',
-                            bottom: '20px',
-                            right: '20px',
-                            padding: '8px 16px',
-                            backgroundColor: '#4caf50',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            zIndex: 10
+                            position: "absolute",
+                            bottom: "20px",
+                            right: "20px",
+                            padding: "8px 16px",
+                            backgroundColor: "#4caf50",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            zIndex: 10,
                         }}
                     >
                         Take Quiz

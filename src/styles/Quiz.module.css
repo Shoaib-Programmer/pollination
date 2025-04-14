@@ -1,177 +1,179 @@
 /* Quiz.module.css */
 .quizContainer {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  font-family: 'Arial', sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    font-family: "Arial", sans-serif;
 }
 
 .quizHeader {
-  text-align: center;
-  margin-bottom: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
 }
 
 .quizHeader h2 {
-  color: #4a8d47;
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+    color: #4a8d47;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
 }
 
 .progress {
-  color: #777;
-  font-size: 1rem;
+    color: #777;
+    font-size: 1rem;
 }
 
 .questionCard {
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .question h3 {
-  font-size: 1.3rem;
-  color: #333;
-  margin-bottom: 1.5rem;
-  line-height: 1.4;
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
 }
 
 .options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
 }
 
 .option {
-  padding: 1rem;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  background-color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
+    padding: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
 }
 
 .option:hover:not(:disabled) {
-  background-color: #f0f7ff;
-  border-color: #a0c4ff;
+    background-color: #f0f7ff;
+    border-color: #a0c4ff;
 }
 
 .option.selected {
-  background-color: #e6f2ff;
-  border-color: #3498db;
+    background-color: #e6f2ff;
+    border-color: #3498db;
 }
 
 .option.correct {
-  background-color: #e6ffe6;
-  border-color: #4a8d47;
+    background-color: #e6ffe6;
+    border-color: #4a8d47;
 }
 
 .option.incorrect {
-  background-color: #ffe6e6;
-  border-color: #e74c3c;
+    background-color: #ffe6e6;
+    border-color: #e74c3c;
 }
 
 .explanation {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background-color: #f3f9ff;
-  border-left: 4px solid #3498db;
-  border-radius: 4px;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: #f3f9ff;
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
 }
 
 .controls {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
 }
 
-.submitButton, .nextButton, .skipButton {
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+.submitButton,
+.nextButton,
+.skipButton {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .submitButton {
-  background-color: #4a8d47;
-  color: white;
+    background-color: #4a8d47;
+    color: white;
 }
 
 .submitButton:hover:not(:disabled) {
-  background-color: #3a7a37;
+    background-color: #3a7a37;
 }
 
 .submitButton:disabled {
-  background-color: #a5c8a4;
-  cursor: not-allowed;
+    background-color: #a5c8a4;
+    cursor: not-allowed;
 }
 
 .nextButton {
-  background-color: #3498db;
-  color: white;
+    background-color: #3498db;
+    color: white;
 }
 
 .nextButton:hover {
-  background-color: #2980b9;
+    background-color: #2980b9;
 }
 
 .skipButton {
-  background-color: #f0f0f0;
-  color: #777;
+    background-color: #f0f0f0;
+    color: #777;
 }
 
 .skipButton:hover {
-  background-color: #e0e0e0;
+    background-color: #e0e0e0;
 }
 
 .compulsoryNote {
-  margin-top: 1rem;
-  padding: 0.8rem;
-  background-color: #fff8e1;
-  border-radius: 6px;
-  text-align: center;
-  color: #856404;
+    margin-top: 1rem;
+    padding: 0.8rem;
+    background-color: #fff8e1;
+    border-radius: 6px;
+    text-align: center;
+    color: #856404;
 }
 
 .scoreDisplay {
-  text-align: center;
-  margin-top: 1rem;
-  font-size: 1.1rem;
-  color: #555;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    color: #555;
 }
 
 .loading {
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.2rem;
-  color: #777;
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+    color: #777;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .quizContainer {
-    padding: 1.5rem;
-    margin: 1rem;
-    width: auto;
-  }
-  
-  .quizHeader h2 {
-    font-size: 1.5rem;
-  }
-  
-  .question h3 {
-    font-size: 1.1rem;
-  }
-  
-  .option {
-    padding: 0.8rem;
-  }
+    .quizContainer {
+        padding: 1.5rem;
+        margin: 1rem;
+        width: auto;
+    }
+
+    .quizHeader h2 {
+        font-size: 1.5rem;
+    }
+
+    .question h3 {
+        font-size: 1.1rem;
+    }
+
+    .option {
+        padding: 0.8rem;
+    }
 }

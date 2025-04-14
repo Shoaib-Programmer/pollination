@@ -1,5 +1,5 @@
 // src/game/managers/FlowerManager.ts
-import * as Phaser from 'phaser';
+import * as Phaser from "phaser";
 
 // Define interface for Flower data
 export interface FlowerData {
@@ -13,7 +13,10 @@ export class FlowerManager {
     private scene: Phaser.Scene;
     private flowers: Phaser.Physics.Arcade.StaticGroup;
 
-    constructor(scene: Phaser.Scene, flowerGroup: Phaser.Physics.Arcade.StaticGroup) {
+    constructor(
+        scene: Phaser.Scene,
+        flowerGroup: Phaser.Physics.Arcade.StaticGroup,
+    ) {
         this.scene = scene;
         this.flowers = flowerGroup;
     }
@@ -37,14 +40,14 @@ export class FlowerManager {
                 "red_poppy",
                 "red_rose",
                 "red_tulip",
-                "red_dahlia"
+                "red_dahlia",
             );
         } else if (type === "blue") {
             availableFlowerIds.push(
                 "blue_cornflower",
                 "blue_bluebell",
                 "blue_delphinium",
-                "blue_forget_me_not"
+                "blue_forget_me_not",
             );
         }
 
@@ -54,23 +57,24 @@ export class FlowerManager {
                 y: number,
                 validPosition: boolean,
                 attempts: number = 0;
-                
+
             // Find a valid position for the flower
             do {
                 validPosition = true;
                 x = Phaser.Math.Between(
                     margin,
-                    this.scene.cameras.main.width - margin
+                    this.scene.cameras.main.width - margin,
                 );
                 y = Phaser.Math.Between(
                     margin + 60,
-                    this.scene.cameras.main.height - margin
+                    this.scene.cameras.main.height - margin,
                 );
-                
+
                 // Check against existing flowers
                 this.flowers.children.iterate((existingFlower) => {
                     if (!existingFlower) return true;
-                    const sprite = existingFlower as Phaser.Physics.Arcade.Sprite;
+                    const sprite =
+                        existingFlower as Phaser.Physics.Arcade.Sprite;
                     if (
                         Phaser.Math.Distance.Between(x, y, sprite.x, sprite.y) <
                         spacing
@@ -80,11 +84,11 @@ export class FlowerManager {
                     }
                     return true;
                 });
-                
+
                 attempts++;
                 if (attempts > maxAttempts) {
                     console.warn(
-                        `Could not find valid pos for ${type} flower ${i + 1}`
+                        `Could not find valid pos for ${type} flower ${i + 1}`,
                     );
                     break;
                 }
@@ -104,17 +108,17 @@ export class FlowerManager {
                         isPollinated: false,
                         flowerId: flowerId,
                     } as FlowerData);
-                    
+
                     // Set up collision body
                     const bodyRadius = flower.width * 0.35;
                     flower
                         .setCircle(bodyRadius)
                         .setOffset(
                             flower.width / 2 - bodyRadius,
-                            flower.height / 2 - bodyRadius
+                            flower.height / 2 - bodyRadius,
                         )
                         .refreshBody();
-                        
+
                     // Animate flower appearance
                     flower.setScale(0).setAlpha(0);
                     this.scene.tweens.add({
@@ -132,16 +136,19 @@ export class FlowerManager {
 
     // Assign pollen to initial flowers
     public assignInitialPollen(): void {
-        const flowerChildren = this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[];
+        const flowerChildren =
+            this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[];
         Phaser.Utils.Array.Shuffle(flowerChildren);
-        
+
         let pollenCount = 0;
         const maxPollen = Math.ceil(flowerChildren.length / 2);
-        
+
         for (const flower of flowerChildren) {
             if (pollenCount >= maxPollen) break;
-            
-            const data = flower?.getData("flowerData") as FlowerData | undefined;
+
+            const data = flower?.getData("flowerData") as
+                | FlowerData
+                | undefined;
             if (data && !data.isPollinated && !data.hasPollen) {
                 data.hasPollen = true;
                 flower.setTint(0xffff00);
@@ -173,21 +180,26 @@ export class FlowerManager {
                 const data = f?.getData("flowerData") as FlowerData | undefined;
                 return data && !data.isPollinated && !data.hasPollen;
             });
-            
+
             if (unpollinatedFlowers.length > 0) {
-                const flowerToAddPollen = Phaser.Math.RND.pick(unpollinatedFlowers);
-                const data = flowerToAddPollen?.getData("flowerData") as FlowerData | undefined;
-                
+                const flowerToAddPollen =
+                    Phaser.Math.RND.pick(unpollinatedFlowers);
+                const data = flowerToAddPollen?.getData("flowerData") as
+                    | FlowerData
+                    | undefined;
+
                 if (data && flowerToAddPollen) {
                     data.hasPollen = true;
                     flowerToAddPollen.setTint(0xffff00);
                     return true; // Indicate pollen was added
                 } else {
-                    console.warn("Failed to get data for flower selected to add pollen.");
+                    console.warn(
+                        "Failed to get data for flower selected to add pollen.",
+                    );
                 }
             }
         }
-        
+
         return false; // No pollen was added
     }
 

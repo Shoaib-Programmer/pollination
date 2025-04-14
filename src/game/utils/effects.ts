@@ -16,7 +16,7 @@ export function createParticles(
     y: number,
     texture: string,
     tint: number,
-    count: number = 10
+    count: number = 10,
 ): void {
     if (!scene.textures.exists(texture)) return;
 
@@ -48,7 +48,7 @@ export function createParticles(
 export function addInteractionPulse(
     scene: Phaser.Scene,
     target: Phaser.GameObjects.Sprite,
-    scaleAmount: number = 1.15
+    scaleAmount: number = 1.15,
 ): void {
     if (!target?.active) return;
 

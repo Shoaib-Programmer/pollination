@@ -211,8 +211,7 @@ export class Preloader extends Scene {
      * This function is passed to the generators.
      */
     private incrementAndProgress(): void {
-        const current =
-            (this.registry.get(REGISTRY_KEYS.CURRENT) || 0) + 1;
+        const current = (this.registry.get(REGISTRY_KEYS.CURRENT) || 0) + 1;
         // Ensure current doesn't exceed total (though it shouldn't if called correctly)
         const clampedCurrent = Math.min(current, this.totalGenerations);
         this.registry.set(REGISTRY_KEYS.CURRENT, clampedCurrent);

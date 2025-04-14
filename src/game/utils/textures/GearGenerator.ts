@@ -14,34 +14,42 @@ export class GearGenerator extends BaseGenerator {
         // Set style for the gear (silver color with dark outline)
         this.graphics.fillStyle(0xc0c0c0, 1);
         this.graphics.lineStyle(1, 0x555555, 1);
-        
+
         // Draw teeth
         for (let i = 0; i < numTeeth; i++) {
             const angle = (Math.PI * 2 * i) / numTeeth;
             const angleMid = (Math.PI * 2 * (i + 0.5)) / numTeeth;
 
             // Outer points of the tooth
-            const x1 = gearSize / 2 + 
-                Math.cos(angle - toothWidthTop / gearRadius) * 
-                (gearRadius + toothHeight);
-            const y1 = gearSize / 2 + 
-                Math.sin(angle - toothWidthTop / gearRadius) * 
-                (gearRadius + toothHeight);
-            const x2 = gearSize / 2 + 
-                Math.cos(angle + toothWidthTop / gearRadius) * 
-                (gearRadius + toothHeight);
-            const y2 = gearSize / 2 + 
-                Math.sin(angle + toothWidthTop / gearRadius) * 
-                (gearRadius + toothHeight);
-            
+            const x1 =
+                gearSize / 2 +
+                Math.cos(angle - toothWidthTop / gearRadius) *
+                    (gearRadius + toothHeight);
+            const y1 =
+                gearSize / 2 +
+                Math.sin(angle - toothWidthTop / gearRadius) *
+                    (gearRadius + toothHeight);
+            const x2 =
+                gearSize / 2 +
+                Math.cos(angle + toothWidthTop / gearRadius) *
+                    (gearRadius + toothHeight);
+            const y2 =
+                gearSize / 2 +
+                Math.sin(angle + toothWidthTop / gearRadius) *
+                    (gearRadius + toothHeight);
+
             // Inner points (base of the tooth)
-            const x3 = gearSize / 2 + 
+            const x3 =
+                gearSize / 2 +
                 Math.cos(angleMid - toothWidthBase / gearRadius) * gearRadius;
-            const y3 = gearSize / 2 + 
+            const y3 =
+                gearSize / 2 +
                 Math.sin(angleMid - toothWidthBase / gearRadius) * gearRadius;
-            const x4 = gearSize / 2 + 
+            const x4 =
+                gearSize / 2 +
                 Math.cos(angleMid + toothWidthBase / gearRadius) * gearRadius;
-            const y4 = gearSize / 2 + 
+            const y4 =
+                gearSize / 2 +
                 Math.sin(angleMid + toothWidthBase / gearRadius) * gearRadius;
 
             this.graphics.beginPath();
@@ -66,8 +74,12 @@ export class GearGenerator extends BaseGenerator {
         this.graphics.strokeCircle(gearSize / 2, gearSize / 2, holeRadius);
 
         // Generate the texture
-        this.graphics.generateTexture("gear_icon_generated", gearSize, gearSize);
-        
+        this.graphics.generateTexture(
+            "gear_icon_generated",
+            gearSize,
+            gearSize,
+        );
+
         // Clean up
         this.cleanup();
     }
