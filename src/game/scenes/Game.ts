@@ -30,6 +30,9 @@ export class Game extends Phaser.Scene {
     private isMoving: boolean = false;
     private inputEnabled: boolean = true; // Flag controls body enable/disable in update
     private completedFlowers: number = 0; // Track completed flowers
+    private pollinationCount: number = 0; // Track pollination count for facts
+    private pollinationFactThreshold: number = 5; // Show fact every X pollinations
+    private discoveredFlowerIds: Set<string> = new Set(); // Track discovered flower IDs
 
     // --- Timer Properties ---
     private gameDuration: number = 60; // Seconds (1 minute)
@@ -103,6 +106,8 @@ export class Game extends Phaser.Scene {
         this.isMoving = false;
         this.inputEnabled = true; // Start enabled
         this.completedFlowers = 0; // Reset completed flowers
+        this.pollinationCount = 0; // Reset pollination count
+        this.discoveredFlowerIds.clear(); // Reset discovered flower IDs
 
         // --- Initialize Timer ---
         this.timerValue = this.gameDuration;
@@ -531,30 +536,19 @@ export class Game extends Phaser.Scene {
             flower.setTint(0x90ee90);
             this.score += 10;
             this.completedFlowers += 1; // Increment completed flowers counter
+            this.pollinationCount += 1; // Increment pollination count for fact threshold
             this.events.emit("game:update-score", this.score); // Update score
 
             // Track the specific flower type discovery
             if (data.flowerId) {
                 // Save to IndexedDB and check if it's a new discovery
-                const flowerId = data.flowerId as string; // Use type assertion to tell TypeScript this is definitely a string
+                const flowerId = data.flowerId as string;
                 Promise.resolve(
                     flowerCollectionService.discoverFlower(flowerId)
                 )
                     .then((isNewDiscovery) => {
-                        if (isNewDiscovery) {
-                            // Display special message for newly discovered flowers
-                            this.events.emit(
-                                "game:show-fact",
-                                `New flower type discovered: ${data.flowerId}!`
-                            );
-                            return;
-                        }
-
-                        // Only show random fact if no discovery announcement
-                        const randomFact =
-                            Phaser.Math.RND.pick(POLLINATION_FACTS);
+                        // Handle flower indicator animation
                         if (this.pollenIndicator) {
-                            // Animate indicator out
                             this.pollenIndicatorTween?.stop();
                             this.tweens.add({
                                 targets: this.pollenIndicator,
@@ -562,8 +556,7 @@ export class Game extends Phaser.Scene {
                                 scale: 0,
                                 duration: 200,
                                 ease: "Power1",
-                                onComplete: () =>
-                                    this.pollenIndicator?.destroy(),
+                                onComplete: () => this.pollenIndicator?.destroy(),
                             });
                             this.pollenIndicator = null;
                             this.pollenIndicatorTween = null;
@@ -582,77 +575,116 @@ export class Game extends Phaser.Scene {
                         let emittedFact = false;
                         let factToEmit = "";
 
-                        if (this.checkAllPollinated()) {
-                            // Emit final fact for modal
+                        // Case 1: New flower discovery
+                        if (isNewDiscovery) {
+                            // Store discovered flower ID
+                            this.discoveredFlowerIds.add(flowerId);
+                            
+                            // Display special message for newly discovered flowers
+                            factToEmit = `New flower type discovered: ${data.flowerId}!`;
+                            emittedFact = true;
+                        }
+                        // Case 2: All flowers pollinated
+                        else if (this.checkAllPollinated()) {
                             factToEmit = `All flowers pollinated! Great job!`;
                             emittedFact = true;
                             this.time.delayedCall(500, () => {
-                                // Delay scene change slightly
                                 if (this.scene.isActive()) {
-                                    // Pass completed flowers and time remaining to GameOver
                                     this.scene.start("GameOver", {
                                         score: this.score,
                                         completedFlowers: this.completedFlowers,
-                                        totalTime:
-                                            this.gameDuration - this.timerValue, // Calculate time spent
+                                        totalTime: this.gameDuration - this.timerValue,
                                     });
                                 }
                             });
-                        } else {
-                            // Assign more pollen if needed, but don't emit fact from there
+                        }
+                        // Case 3: Reached pollination count threshold
+                        else if (this.pollinationCount % this.pollinationFactThreshold === 0) {
+                            const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS);
+                            factToEmit = `${this.pollinationCount} flowers pollinated! ${randomFact}`;
+                            emittedFact = true;
+                        }
+
+                        // Assign more pollen if needed, but don't emit fact from there
+                        if (!this.checkAllPollinated()) {
                             this.assignMorePollenIfNeeded();
                         }
 
-                        // Emit random pollination fact if no other modal fact was generated
-                        if (!emittedFact) {
-                            factToEmit = `Pollinated! ${randomFact}`;
-                        }
-                        // Emit the chosen fact for the modal
-                        if (factToEmit) {
+                        // Emit fact if one was chosen
+                        if (emittedFact && factToEmit) {
                             this.events.emit("game:show-fact", factToEmit);
                         }
                     })
                     .catch((error) => {
                         console.error("Error saving flower discovery:", error);
-                        // Fall back to regular behavior
-                        const randomFact =
-                            Phaser.Math.RND.pick(POLLINATION_FACTS);
-                        this.events.emit(
-                            "game:show-fact",
-                            `Pollinated! ${randomFact}`
-                        );
+                        
+                        // Handle error case with simplified logic
+                        if (this.checkAllPollinated()) {
+                            this.events.emit("game:show-fact", "All flowers pollinated! Great job!");
+                            this.time.delayedCall(500, () => {
+                                if (this.scene.isActive()) {
+                                    this.scene.start("GameOver", {
+                                        score: this.score,
+                                        completedFlowers: this.completedFlowers,
+                                        totalTime: this.gameDuration - this.timerValue,
+                                    });
+                                }
+                            });
+                        } else if (this.pollinationCount % this.pollinationFactThreshold === 0) {
+                            const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS);
+                            this.events.emit("game:show-fact", 
+                                `${this.pollinationCount} flowers pollinated! ${randomFact}`);
+                        }
                     });
             } else {
-                // Regular behavior if no flowerId is available
-                const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS);
-                this.events.emit("game:show-fact", `Pollinated! ${randomFact}`);
+                // Handle pollination without flowerId
+                if (this.pollenIndicator) {
+                    this.pollenIndicatorTween?.stop();
+                    this.tweens.add({
+                        targets: this.pollenIndicator,
+                        alpha: 0,
+                        scale: 0,
+                        duration: 200,
+                        ease: "Power1",
+                        onComplete: () => this.pollenIndicator?.destroy(),
+                    });
+                    this.pollenIndicator = null;
+                    this.pollenIndicatorTween = null;
+                }
+                this.carryingPollen.type = null;
+                this.createParticles(
+                    flower.x,
+                    flower.y,
+                    "pollen_particle_generated",
+                    0x90ee90,
+                    25
+                );
+                this.addInteractionPulse(flower);
+                this.addInteractionPulse(this.bee, 1.05);
+                
+                // Only show facts on specific conditions
+                if (this.checkAllPollinated()) {
+                    this.events.emit("game:show-fact", "All flowers pollinated! Great job!");
+                    this.time.delayedCall(500, () => {
+                        if (this.scene.isActive()) {
+                            this.scene.start("GameOver", {
+                                score: this.score,
+                                completedFlowers: this.completedFlowers,
+                                totalTime: this.gameDuration - this.timerValue,
+                            });
+                        }
+                    });
+                } else if (this.pollinationCount % this.pollinationFactThreshold === 0) {
+                    const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS);
+                    this.events.emit("game:show-fact", 
+                        `${this.pollinationCount} flowers pollinated! ${randomFact}`);
+                }
+                
+                // Assign more pollen if needed
+                if (!this.checkAllPollinated()) {
+                    this.assignMorePollenIfNeeded();
+                }
             }
-
-            // Reset pollen indicator and complete the interaction
-            if (this.pollenIndicator) {
-                // Animate indicator out
-                this.pollenIndicatorTween?.stop();
-                this.tweens.add({
-                    targets: this.pollenIndicator,
-                    alpha: 0,
-                    scale: 0,
-                    duration: 200,
-                    ease: "Power1",
-                    onComplete: () => this.pollenIndicator?.destroy(),
-                });
-                this.pollenIndicator = null;
-                this.pollenIndicatorTween = null;
-            }
-            this.carryingPollen.type = null;
-            this.createParticles(
-                flower.x,
-                flower.y,
-                "pollen_particle_generated",
-                0x90ee90,
-                25
-            );
-            this.addInteractionPulse(flower);
-            this.addInteractionPulse(this.bee, 1.05);
         }
     }
 
