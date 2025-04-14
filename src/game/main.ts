@@ -1,5 +1,5 @@
 // src/game/main.ts
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import { Boot } from "./scenes/Boot";
 import { Preloader } from "./scenes/Preloader";
 import { MainMenu } from "./scenes/MainMenu";

@@ -1,5 +1,5 @@
 // src/game/scenes/Game.ts
-import Phaser, { Scene } from "phaser";
+import * as Phaser from "phaser";
 import EventBus from "../EventBus"; // Import EventBus for DPad and input control
 import gsap from "gsap"; // Import GSAP for animations
 import POLLINATION_FACTS from "../data/pollinationFacts"; // Import the facts array
@@ -16,7 +16,7 @@ interface FlowerData {
 // Define ArcadePhysicsCallback type alias
 type ArcadePhysicsCallback = Phaser.Types.Physics.Arcade.ArcadePhysicsCallback;
 
-export class Game extends Scene {
+export class Game extends Phaser.Scene {
     private bee!: Phaser.Physics.Arcade.Sprite;
     private flowers!: Phaser.Physics.Arcade.StaticGroup;
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -318,9 +318,19 @@ export class Game extends Scene {
         // Get available flower types for this color category from our database
         const availableFlowerIds: string[] = [];
         if (type === "red") {
-            availableFlowerIds.push("red_poppy", "red_rose", "red_tulip", "red_dahlia");
+            availableFlowerIds.push(
+                "red_poppy",
+                "red_rose",
+                "red_tulip",
+                "red_dahlia"
+            );
         } else if (type === "blue") {
-            availableFlowerIds.push("blue_cornflower", "blue_bluebell", "blue_delphinium", "blue_forget_me_not");
+            availableFlowerIds.push(
+                "blue_cornflower",
+                "blue_bluebell",
+                "blue_delphinium",
+                "blue_forget_me_not"
+            );
         }
 
         for (let i = 0; i < count; i++) {
@@ -527,7 +537,9 @@ export class Game extends Scene {
             if (data.flowerId) {
                 // Save to IndexedDB and check if it's a new discovery
                 const flowerId = data.flowerId as string; // Use type assertion to tell TypeScript this is definitely a string
-                Promise.resolve(flowerCollectionService.discoverFlower(flowerId))
+                Promise.resolve(
+                    flowerCollectionService.discoverFlower(flowerId)
+                )
                     .then((isNewDiscovery) => {
                         if (isNewDiscovery) {
                             // Display special message for newly discovered flowers

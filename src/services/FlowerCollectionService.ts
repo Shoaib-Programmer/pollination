@@ -162,5 +162,8 @@ class FlowerCollectionService {
   }
 }
 
+// Create a named instance before exporting
+const flowerCollectionService = new FlowerCollectionService();
+
 // Export as singleton
-export default new FlowerCollectionService();
+export default flowerCollectionService;
