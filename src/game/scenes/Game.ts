@@ -41,7 +41,7 @@ class BonusChallenge {
      */
     public scheduleNextChallenge(
         minDelay: number = 20000,
-        maxDelay: number = 40000
+        maxDelay: number = 40000,
     ): void {
         // Random time between min and max delay
         const delay = Phaser.Math.Between(minDelay, maxDelay);
@@ -92,11 +92,11 @@ class BonusChallenge {
                 flower,
                 (bee, flower) => {
                     this.handleAnswerSelection(
-                        flower as Phaser.Physics.Arcade.Sprite
+                        flower as Phaser.Physics.Arcade.Sprite,
                     );
                 },
                 undefined,
-                this
+                this,
             );
         });
 
@@ -129,7 +129,7 @@ class BonusChallenge {
             this.scene.cameras.main.width,
             this.scene.cameras.main.height,
             0x000000,
-            0.5
+            0.5,
         );
         overlay.setOrigin(0);
         this.challengeContainer.add(overlay);
@@ -160,7 +160,7 @@ class BonusChallenge {
                     strokeThickness: 3,
                     align: "center",
                     wordWrap: { width: this.scene.cameras.main.width - 100 },
-                }
+                },
             )
             .setOrigin(0.5);
 
@@ -175,7 +175,7 @@ class BonusChallenge {
                     fontSize: "18px",
                     color: "#FFFFFF",
                     align: "center",
-                }
+                },
             )
             .setOrigin(0.5);
 
@@ -219,7 +219,7 @@ class BonusChallenge {
             const flower = this.scene.physics.add.sprite(
                 x,
                 y,
-                "flower_generated"
+                "flower_generated",
             );
             flower.setScale(0.8);
 
@@ -285,7 +285,7 @@ class BonusChallenge {
             const flower = this.scene.physics.add.sprite(
                 x,
                 centerY,
-                "flower_generated"
+                "flower_generated",
             );
             flower.setScale(0.8);
 
@@ -354,11 +354,11 @@ class BonusChallenge {
                 flower.y,
                 "pollen_particle_generated",
                 0x00ff00,
-                30
+                30,
             );
             this.showResult(
                 true,
-                this.currentQuestion?.explanation || "Correct!"
+                this.currentQuestion?.explanation || "Correct!",
             );
 
             // Add bonus score
@@ -373,11 +373,11 @@ class BonusChallenge {
                 flower.y,
                 "pollen_particle_generated",
                 0xff0000,
-                15
+                15,
             );
             this.showResult(
                 false,
-                this.currentQuestion?.explanation || "Incorrect!"
+                this.currentQuestion?.explanation || "Incorrect!",
             );
 
             // Record incorrect answer in quiz service
@@ -392,7 +392,7 @@ class BonusChallenge {
         // Create result container
         const resultContainer = this.scene.add.container(
             this.scene.cameras.main.width / 2,
-            this.scene.cameras.main.height / 2
+            this.scene.cameras.main.height / 2,
         );
         resultContainer.setDepth(20);
 
@@ -479,13 +479,13 @@ class BonusChallenge {
      */
     private finalizeChallengeReset(): void {
         console.log("Bonus Challenge: Finalizing reset...");
-        
+
         // 1. Reset the core game state first
         this.resetGameToNormal();
-        
+
         // 2. Clean up the challenge UI elements
-        this.endChallenge(); 
-        
+        this.endChallenge();
+
         // 3. Schedule the next challenge
         this.scheduleNextChallenge();
     }
@@ -644,7 +644,7 @@ export class Game extends Phaser.Scene {
             this.flowers,
             this.handleBeeFlowerCollision as ArcadePhysicsCallback, // Keep collision handler here
             undefined,
-            this
+            this,
         );
 
         // --- Input ---
@@ -661,7 +661,7 @@ export class Game extends Phaser.Scene {
             this,
             this.gameDuration,
             (time) => this.events.emit("game:update-timer", time), // Update callback
-            () => this.handleTimeUp() // Completion callback
+            () => this.handleTimeUp(), // Completion callback
         );
 
         // --- State Reset ---
@@ -743,7 +743,7 @@ export class Game extends Phaser.Scene {
                     color: "#FFD700",
                     stroke: "#000000",
                     strokeThickness: 4,
-                }
+                },
             )
             .setOrigin(0.5);
 
@@ -851,7 +851,7 @@ export class Game extends Phaser.Scene {
                 this.bee.updateMovement(this.cursors, this.dpadState, delta);
             } else {
                 console.warn(
-                    "GAME Update: inputEnabled=TRUE but body is still disabled?"
+                    "GAME Update: inputEnabled=TRUE but body is still disabled?",
                 );
             }
         }
@@ -865,7 +865,7 @@ export class Game extends Phaser.Scene {
             | Phaser.Tilemaps.Tile,
         flowerGO:
             | Phaser.Types.Physics.Arcade.GameObjectWithBody
-            | Phaser.Tilemaps.Tile
+            | Phaser.Tilemaps.Tile,
     ): void {
         // Ensure correct types and that it's *our* bee
         if (
@@ -881,7 +881,7 @@ export class Game extends Phaser.Scene {
         if (this.bonusChallenge.isActive()) {
             // Handle answer selection for quiz flowers
             this.bonusChallenge.handleAnswerSelection(
-                flowerGO as Phaser.Physics.Arcade.Sprite
+                flowerGO as Phaser.Physics.Arcade.Sprite,
             );
             return;
         }
@@ -909,7 +909,7 @@ export class Game extends Phaser.Scene {
                 .sprite(
                     this.bee.x,
                     this.bee.y - 25,
-                    "pollen_particle_generated"
+                    "pollen_particle_generated",
                 )
                 .setDepth(11)
                 .setTint(data.type === "red" ? 0xffaaaa : 0xaaaaff)
@@ -937,7 +937,7 @@ export class Game extends Phaser.Scene {
             // Pass indicator reference to the Bee so it can update position
             this.bee.setPollenIndicator(
                 this.pollenIndicator,
-                this.pollenIndicatorTween
+                this.pollenIndicatorTween,
             );
 
             // Use utility functions for effects
@@ -947,7 +947,7 @@ export class Game extends Phaser.Scene {
                 flower.y,
                 "pollen_particle_generated",
                 0xffff00,
-                15
+                15,
             );
             addInteractionPulse(this, flower);
             addInteractionPulse(this, this.bee, 1.05);
@@ -992,7 +992,7 @@ export class Game extends Phaser.Scene {
                 flower.y,
                 "pollen_particle_generated",
                 0x90ee90,
-                25
+                25,
             );
             addInteractionPulse(this, flower);
             addInteractionPulse(this, this.bee, 1.05);
@@ -1081,7 +1081,7 @@ export class Game extends Phaser.Scene {
                                 newlyPollenedFlower.y,
                                 "pollen_particle_generated",
                                 0xffff00,
-                                10
+                                10,
                             );
                             addInteractionPulse(this, newlyPollenedFlower);
                         }
@@ -1095,21 +1095,21 @@ export class Game extends Phaser.Scene {
                             .getGroup()
                             .getChildren() as Phaser.Physics.Arcade.Sprite[]
                     ).find(
-                        (f) => f.getData("flowerData") === pollinatedFlowerData
+                        (f) => f.getData("flowerData") === pollinatedFlowerData,
                     );
 
                     if (flowerSprite) {
                         this.showInWorldText(
                             factToEmit,
                             flowerSprite.x,
-                            flowerSprite.y
+                            flowerSprite.y,
                         );
                     } else {
                         // Fallback position if sprite not found
                         this.showInWorldText(
                             factToEmit,
                             this.scale.width / 2,
-                            this.scale.height - 80
+                            this.scale.height - 80,
                         );
                     }
                 }
@@ -1120,7 +1120,7 @@ export class Game extends Phaser.Scene {
                     this.showInWorldText(
                         "All flowers pollinated! Great job!",
                         this.scale.width / 2,
-                        this.scale.height / 2
+                        this.scale.height / 2,
                     );
                     this.endGameDueToCompletion();
                 } else {
@@ -1143,7 +1143,7 @@ export class Game extends Phaser.Scene {
             this.showInWorldText(
                 factText,
                 this.scale.width / 2,
-                this.scale.height / 2
+                this.scale.height / 2,
             );
         }
 
@@ -1167,7 +1167,7 @@ export class Game extends Phaser.Scene {
                     newlyPollenedFlower.y,
                     "pollen_particle_generated",
                     0xffff00,
-                    10
+                    10,
                 );
                 addInteractionPulse(this, newlyPollenedFlower);
             }
@@ -1239,7 +1239,7 @@ export class Game extends Phaser.Scene {
             .sprite(
                 hudX - textWidth / 2 + 25,
                 hudY,
-                "pollen_particle_generated"
+                "pollen_particle_generated",
             )
             .setTint(0x34d399)
             .setScale(2.5);
@@ -1261,7 +1261,7 @@ export class Game extends Phaser.Scene {
             hudY - textHeight / 2,
             textWidth,
             textHeight,
-            cornerRadius
+            cornerRadius,
         );
 
         // Add highlight/shadow effects
@@ -1271,7 +1271,7 @@ export class Game extends Phaser.Scene {
             hudY - textHeight / 2,
             textWidth,
             textHeight,
-            cornerRadius
+            cornerRadius,
         );
 
         // Add the main text
@@ -1342,6 +1342,10 @@ export class Game extends Phaser.Scene {
     // --- Scene Shutdown ---
     shutdown(): void {
         console.log("Game Scene Shutting Down");
+
+        // Signal scene change through EventBus
+        EventBus.emit("scene:changed", "shutdown");
+
         // Clean up EventBus listeners
         EventBus.off("dpad", this.handleDpadInput, this);
         EventBus.off("game:set-input-active", this.setInputActive, this);

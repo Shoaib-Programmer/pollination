@@ -66,6 +66,9 @@ export class MainMenu extends Scene {
         const topRightX = this.cameras.main.width - 40; // Position for gear icon
         const topRightY = 40;
 
+        // Signal scene change through EventBus
+        EventBus.emit("scene:changed", "MainMenu");
+
         // Background - Fade in
         const bg = this.add
             .image(centerX, centerY, "background_generated")

@@ -84,6 +84,9 @@ export class GameOver extends Scene {
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
 
+        // Signal scene change through EventBus
+        EventBus.emit("scene:changed", "GameOver");
+
         // Dimmed Background - Fade in alpha
         const bg = this.add
             .image(centerX, centerY, "background_generated")
@@ -94,7 +97,7 @@ export class GameOver extends Scene {
         const title = this.add
             .text(
                 centerX,
-                centerY - 160,
+                this.showHighScoresOnly ? centerY - 160 : centerY - 180,
                 this.showHighScoresOnly
                     ? "High Scores"
                     : "Pollination Complete!",
@@ -119,47 +122,29 @@ export class GameOver extends Scene {
             .setAlpha(0)
             .setScale(0.5); // Start hidden/small
 
-        // Only show score text if not viewing high scores only
-        const scoreText = !this.showHighScoresOnly
-            ? this.add
-                  .text(centerX, centerY - 80, `Final Score: ${this.score}`, {
-                      fontFamily: "var(--font-poppins)",
-                      fontSize: "40px",
-                      font: "bold",
-                      color: "#ffffff",
-                      stroke: "#000000",
-                      strokeThickness: 6,
-                      align: "center",
-                      shadow: {
-                          offsetX: 3,
-                          offsetY: 3,
-                          color: "#111",
-                          blur: 4,
-                          fill: true,
-                      },
-                  })
-                  .setOrigin(0.5)
-                  .setAlpha(0)
-                  .setScale(0.8) // Start hidden/smaller
-            : null;
-
-        // High Scores Panel - Adjust position if showing high scores only
+        // High Scores Panel - Adjust position based on context
+        const highScoresPanelY = this.showHighScoresOnly
+            ? centerY + 20
+            : centerY - 50; // Adjusted Y position
+        const highScoresPanelHeight = this.showHighScoresOnly ? 260 : 220; // Adjusted height slightly
         const highScoresPanel = this.add
             .rectangle(
                 centerX,
-                this.showHighScoresOnly ? centerY + 20 : centerY + 40,
+                highScoresPanelY,
                 500,
-                this.showHighScoresOnly ? 260 : 180,
+                highScoresPanelHeight, // Use adjusted height
                 0x000000,
                 0.7,
             )
             .setOrigin(0.5)
             .setAlpha(0);
 
-        // High Scores Title - Only show if not viewing high scores only (to avoid duplication)
+        // High Scores Title - Only show if not viewing high scores only
+        const highScoresTitleY =
+            highScoresPanelY - highScoresPanelHeight / 2 + 25; // Position relative to panel top
         const highScoresTitle = !this.showHighScoresOnly
             ? this.add
-                  .text(centerX, centerY - 30, "High Scores", {
+                  .text(centerX, highScoresTitleY, "High Scores", {
                       fontFamily: "var(--font-poppins)",
                       fontSize: "26px",
                       color: "#ffdd00",
@@ -169,11 +154,14 @@ export class GameOver extends Scene {
                   .setAlpha(0)
             : null;
 
-        // High Scores List (will be populated later) - Adjust position if showing high scores only
+        // High Scores List - Adjust position relative to title or panel center
+        const highScoresListY = this.showHighScoresOnly
+            ? highScoresPanelY
+            : highScoresTitleY + 70; // Position below title or centered
         const highScoresList = this.add
             .text(
                 centerX,
-                this.showHighScoresOnly ? centerY + 20 : centerY + 40,
+                highScoresListY,
                 this.isLoadingScores ? "Loading scores..." : "",
                 {
                     fontFamily: "var(--font-poppins)",
@@ -186,11 +174,13 @@ export class GameOver extends Scene {
             .setOrigin(0.5)
             .setAlpha(0);
 
-        // Adjust button text based on context
+        // Adjust button position based on context
+        const playAgainButtonY =
+            highScoresPanelY + highScoresPanelHeight / 2 + 45; // Position below panel
         const playAgainButton = this.add
             .text(
                 centerX,
-                this.showHighScoresOnly ? centerY + 170 : centerY + 170,
+                playAgainButtonY,
                 this.showHighScoresOnly ? "Back to Menu" : "Play Again?",
                 {
                     fontFamily: "var(--font-poppins)",
@@ -214,10 +204,9 @@ export class GameOver extends Scene {
             .setAlpha(0)
             .setScale(0.8); // Start hidden/smaller
 
-        // GSAP Timeline for staggered entrance - Adjust for high scores only view
-        const tl = gsap.timeline({ delay: 0.3 }); // Start after background fade
+        // GSAP Timeline for staggered entrance
+        const tl = gsap.timeline({ delay: 0.3 });
 
-        // Add elements to timeline conditionally
         tl.to(title, {
             alpha: 1,
             scale: 1,
@@ -225,22 +214,12 @@ export class GameOver extends Scene {
             ease: "back.out(1.7)",
         });
 
-        // Only add score text animation if it exists
-        if (scoreText) {
-            tl.to(
-                scoreText,
-                { alpha: 1, scale: 1, duration: 0.5, ease: "power2.out" },
-                "-=0.3",
-            );
-        }
-
         tl.to(
             highScoresPanel,
             { alpha: 1, duration: 0.5, ease: "power2.out" },
-            "-=0.2",
+            "-=0.4", // Adjust timing slightly
         );
 
-        // Only add high scores title animation if it exists
         if (highScoresTitle) {
             tl.to(
                 highScoresTitle,
@@ -258,8 +237,6 @@ export class GameOver extends Scene {
             { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
             "-=0.2",
         );
-
-        // --- End Entrance Animation ---
 
         // Update high scores display if they're already loaded
         if (!this.isLoadingScores) {
@@ -310,7 +287,6 @@ export class GameOver extends Scene {
                 highScoresList,
                 playAgainButton,
             ];
-            if (scoreText) elementsToAnimate.push(scoreText);
             if (highScoresTitle) elementsToAnimate.push(highScoresTitle);
 
             // Transition Out
