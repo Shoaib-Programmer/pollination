@@ -10,6 +10,10 @@ export interface FlowerData {
 }
 
 export class FlowerManager {
+    // Clear all flowers from the group and scene
+    public clearFlowers(): void {
+        this.flowers.clear(true, true); // First true: remove from scene, Second true: destroy children
+    }
     private scene: Phaser.Scene;
     private flowers: Phaser.Physics.Arcade.StaticGroup;
 

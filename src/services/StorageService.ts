@@ -21,6 +21,7 @@ interface GameProgress {
         musicVolume?: number;
         soundVolume?: number;
         difficulty?: string;
+        knowledgeNectar?: boolean;
     };
     // Add a field to store flower collection data
     flowerCollectionData?: SavedFlowerData[];
@@ -104,7 +105,7 @@ class StorageService {
             try {
                 const transaction = this.db!.transaction(
                     [this.SCORES_STORE],
-                    "readwrite"
+                    "readwrite",
                 );
                 const store = transaction.objectStore(this.SCORES_STORE);
                 const request = store.add(score);
@@ -135,7 +136,7 @@ class StorageService {
             try {
                 const transaction = this.db!.transaction(
                     [this.SCORES_STORE],
-                    "readonly"
+                    "readonly",
                 );
                 const store = transaction.objectStore(this.SCORES_STORE);
                 const index = store.index("score");
@@ -158,7 +159,7 @@ class StorageService {
                 request.onerror = (event) => {
                     console.error("Error getting high scores:", event);
                     reject(
-                        `Failed to get high scores: ${request.error?.message}`
+                        `Failed to get high scores: ${request.error?.message}`,
                     );
                 };
             } catch (error) {
@@ -179,7 +180,7 @@ class StorageService {
             try {
                 const transaction = this.db!.transaction(
                     [this.PROGRESS_STORE],
-                    "readwrite"
+                    "readwrite",
                 );
                 const store = transaction.objectStore(this.PROGRESS_STORE);
 
@@ -194,7 +195,7 @@ class StorageService {
                 request.onerror = (event) => {
                     console.error("Error saving progress:", event);
                     reject(
-                        `Failed to save progress: ${request.error?.message}`
+                        `Failed to save progress: ${request.error?.message}`,
                     );
                 };
             } catch (error) {
@@ -215,7 +216,7 @@ class StorageService {
             try {
                 const transaction = this.db!.transaction(
                     [this.PROGRESS_STORE],
-                    "readonly"
+                    "readonly",
                 );
                 const store = transaction.objectStore(this.PROGRESS_STORE);
                 const request = store.get(1); // Always get ID 1

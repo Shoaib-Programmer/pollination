@@ -2,18 +2,33 @@
 import { Scene } from "phaser";
 import gsap from "gsap";
 import EventBus from "../EventBus";
-import storageService from "@/services/StorageService";
+import storageService, { SavedFlowerData } from "@/services/StorageService";
+
+interface GameProgress {
+    id?: number;
+    currentLevel?: number;
+    lastPlayed: Date;
+    settings?: {
+        musicVolume?: number;
+        soundVolume?: number;
+        difficulty?: string;
+        knowledgeNectar?: boolean;
+    };
+    flowerCollectionData?: SavedFlowerData[];
+}
 
 export class Settings extends Scene {
     private musicVolume: number = 5; // Default volume (0-10)
     private soundVolume: number = 7; // Default volume (0-10)
     private difficulty: string = "Easy"; // Default difficulty
+    private knowledgeNectar: boolean = true; // Default state for fact popups
     private isLoadingSettings: boolean = false;
 
     // UI elements that need to be referenced for updates
     private musicVolumeText?: Phaser.GameObjects.Text;
     private soundVolumeText?: Phaser.GameObjects.Text;
     private difficultyText?: Phaser.GameObjects.Text;
+    private knowledgeNectarText?: Phaser.GameObjects.Text;
 
     constructor() {
         super("Settings");
@@ -39,6 +54,10 @@ export class Settings extends Scene {
                         ? progress.settings.soundVolume
                         : 7;
                 this.difficulty = progress.settings.difficulty || "Easy";
+                this.knowledgeNectar =
+                    progress.settings.knowledgeNectar !== undefined
+                        ? progress.settings.knowledgeNectar
+                        : true;
             }
             this.isLoadingSettings = false;
 
@@ -56,6 +75,7 @@ export class Settings extends Scene {
                 musicVolume: this.musicVolume,
                 soundVolume: this.soundVolume,
                 difficulty: this.difficulty,
+                knowledgeNectar: this.knowledgeNectar,
             });
             console.log("Settings saved successfully");
         } catch (error) {
@@ -67,18 +87,24 @@ export class Settings extends Scene {
     updateSettingsDisplay() {
         if (this.musicVolumeText) {
             this.musicVolumeText.setText(
-                this.getVolumeBarText("Music Volume:", this.musicVolume)
+                this.getVolumeBarText("Music Volume:", this.musicVolume),
             );
         }
 
         if (this.soundVolumeText) {
             this.soundVolumeText.setText(
-                this.getVolumeBarText("Sound Effects:", this.soundVolume)
+                this.getVolumeBarText("Sound Effects:", this.soundVolume),
             );
         }
 
         if (this.difficultyText) {
             this.difficultyText.setText(`Difficulty: ${this.difficulty}`);
+        }
+
+        if (this.knowledgeNectarText) {
+            this.knowledgeNectarText.setText(
+                `Knowledge Nectar: ${this.knowledgeNectar ? "On" : "Off"}`,
+            );
         }
     }
 
@@ -123,7 +149,7 @@ export class Settings extends Scene {
 
         // Settings content
         const settingsBox = this.add
-            .rectangle(centerX, centerY, 500, 220, 0x000000, 0.7)
+            .rectangle(centerX, centerY, 500, 270, 0x000000, 0.7)
             .setOrigin(0.5)
             .setAlpha(0);
 
@@ -131,14 +157,14 @@ export class Settings extends Scene {
         this.musicVolumeText = this.add
             .text(
                 centerX,
-                centerY - 50,
+                centerY - 70,
                 this.getVolumeBarText("Music Volume:", this.musicVolume),
                 {
                     fontFamily: "var(--font-poppins)",
                     fontSize: "24px",
                     color: "#ffffff",
                     align: "center",
-                }
+                },
             )
             .setOrigin(0.5)
             .setAlpha(0);
@@ -147,21 +173,21 @@ export class Settings extends Scene {
         this.soundVolumeText = this.add
             .text(
                 centerX,
-                centerY,
+                centerY - 30,
                 this.getVolumeBarText("Sound Effects:", this.soundVolume),
                 {
                     fontFamily: "var(--font-poppins)",
                     fontSize: "24px",
                     color: "#ffffff",
                     align: "center",
-                }
+                },
             )
             .setOrigin(0.5)
             .setAlpha(0);
 
         // Difficulty setting with toggle
         this.difficultyText = this.add
-            .text(centerX, centerY + 50, `Difficulty: ${this.difficulty}`, {
+            .text(centerX, centerY + 10, `Difficulty: ${this.difficulty}`, {
                 fontFamily: "var(--font-poppins)",
                 fontSize: "24px",
                 color: "#ffffff",
@@ -170,10 +196,30 @@ export class Settings extends Scene {
             .setOrigin(0.5)
             .setAlpha(0);
 
+        // Knowledge Nectar setting with toggle
+        this.knowledgeNectarText = this.add
+            .text(
+                centerX,
+                centerY + 50,
+                `Knowledge Nectar: ${this.knowledgeNectar ? "On" : "Off"}`,
+                {
+                    fontFamily: "var(--font-poppins)",
+                    fontSize: "24px",
+                    color: "#ffffff",
+                    align: "center",
+                },
+            )
+            .setOrigin(0.5)
+            .setAlpha(0);
+
         // Make settings interactive
         this.makeSettingInteractive(this.musicVolumeText, "music");
         this.makeSettingInteractive(this.soundVolumeText, "sound");
         this.makeSettingInteractive(this.difficultyText, "difficulty");
+        this.makeSettingInteractive(
+            this.knowledgeNectarText,
+            "knowledgeNectar",
+        );
 
         // Back button
         const backButton = this.add
@@ -201,21 +247,22 @@ export class Settings extends Scene {
             .to(
                 settingsBox,
                 { alpha: 1, scale: 1, duration: 0.4, ease: "power1.inOut" },
-                "-=0.2"
+                "-=0.2",
             )
             .to(
                 [
                     this.musicVolumeText,
                     this.soundVolumeText,
                     this.difficultyText,
+                    this.knowledgeNectarText,
                 ],
                 { alpha: 1, duration: 0.4, stagger: 0.1, ease: "power1.inOut" },
-                "-=0.2"
+                "-=0.2",
             )
             .to(
                 backButton,
                 { alpha: 1, scale: 1, duration: 0.4, ease: "back.out" },
-                "-=0.2"
+                "-=0.2",
             );
 
         // Update settings display with current values
@@ -262,6 +309,7 @@ export class Settings extends Scene {
                     this.musicVolumeText,
                     this.soundVolumeText,
                     this.difficultyText,
+                    this.knowledgeNectarText,
                     backButton,
                 ],
                 {
@@ -273,7 +321,7 @@ export class Settings extends Scene {
                     onComplete: () => {
                         this.scene.start("MainMenu");
                     },
-                }
+                },
             );
         });
 
@@ -284,7 +332,7 @@ export class Settings extends Scene {
     // Makes a settings text interactive for adjustment
     makeSettingInteractive(
         textObject: Phaser.GameObjects.Text | undefined,
-        type: "music" | "sound" | "difficulty"
+        type: "music" | "sound" | "difficulty" | "knowledgeNectar",
     ) {
         if (!textObject) return;
 
@@ -327,6 +375,9 @@ export class Settings extends Scene {
                 if (this.difficulty === "Easy") this.difficulty = "Medium";
                 else if (this.difficulty === "Medium") this.difficulty = "Hard";
                 else this.difficulty = "Easy";
+            } else if (type === "knowledgeNectar") {
+                // Toggle knowledge nectar setting
+                this.knowledgeNectar = !this.knowledgeNectar;
             }
 
             // Flash the setting when changed
