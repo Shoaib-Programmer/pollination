@@ -30,7 +30,8 @@ class FlowerCollectionService {
     private async loadCollection(): Promise<void> {
         try {
             // Wait for DB to be ready before trying to get progress
-            await (this.storageService as any).waitForDB(); // Access private method carefully or expose a ready promise
+            // @ts-expect-error Accessing a potentially private method for initialization
+            await this.storageService.waitForDB(); // Access private method carefully or expose a ready promise
 
             // Get the entire game progress object
             const progress = await this.storageService.getProgress();

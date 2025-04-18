@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import typescriptParser from '@typescript-eslint/parser';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import js from "@eslint/js"; // Import ESLint's recommended rules
+import globals from "globals"; // <-- Add this import
 
 // mimic CommonJS variables -- not needed if using CommonJS
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +27,12 @@ const config = [
             parserOptions: {
                 project: true, // Automatically find tsconfig.json
                 tsconfigRootDir: __dirname, // Use current dir as root
+            },
+            globals: {
+                ...globals.node,
+                Phaser: "readonly",
+                NodeJS: "readonly",
+                Bun: "readonly",
             },
         },
         plugins: {

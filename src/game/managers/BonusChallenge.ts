@@ -4,7 +4,7 @@ import EventBus from "../EventBus";
 import { FlowerManager } from "./FlowerManager";
 import { QuizService, QuizQuestion, QuestionType } from "../data/quizData";
 import { Game } from "../scenes/Game";
-import { createParticles, addInteractionPulse } from "../utils/effects";
+import { createParticles } from "../utils/effects";
 
 /**
  * BonusChallenge class to manage in-game quiz challenges

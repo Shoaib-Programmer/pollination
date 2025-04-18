@@ -3,7 +3,6 @@ import * as Phaser from "phaser";
 import EventBus from "../EventBus";
 import POLLINATION_FACTS from "../data/pollinationFacts";
 import flowerCollectionService from "@/services/FlowerCollectionService";
-import { QuizService, QuizQuestion, QuestionType } from "../data/quizData";
 
 // Import the new components
 import { Bee } from "../entities/Bee";

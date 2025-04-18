@@ -1,5 +1,5 @@
 // src/game/data/quizData.ts
-import FLOWERS, { FlowerType } from "./flowerTypes";
+import FLOWERS from "./flowerTypes";
 
 // Define quiz question types
 export enum QuestionType {

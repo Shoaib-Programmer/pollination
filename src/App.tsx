@@ -5,7 +5,6 @@ import EventBus from "@/game/EventBus";
 import { GameUI } from "@/components/GameUI";
 import { MobileControls } from "@/components/MobileControls"; // Import MobileControls
 import Quiz from "@/components/Quiz"; // Import Quiz component
-import { QuizService } from "@/game/data/quizData"; // Import QuizService
 
 function App() {
     const phaserGameRef = useRef<PhaserGameRef>(null);
@@ -34,7 +33,7 @@ function App() {
     }, []); // Empty dependency array ensures this runs only once on mount
 
     // Handle quiz completion
-    const handleQuizComplete = (score: number, totalQuestions: number) => {
+    const handleQuizComplete = () => {
         setShowQuiz(false);
         // If it was a compulsory quiz, allow the game to continue
         if (isQuizCompulsory) {

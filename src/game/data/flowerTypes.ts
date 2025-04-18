@@ -1,8 +1,6 @@
 // src/game/data/flowerTypes.ts
 // Flower type definitions for the collection system
 
-import flowerCollectionService from "@/services/FlowerCollectionService";
-
 // Define a color object type with hex values
 type FlowerColor = {
     name: string; // Color name
