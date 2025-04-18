@@ -1,7 +1,6 @@
 // src/services/FlowerCollectionService.ts
 import FLOWERS, { FlowerType } from "../game/data/flowerTypes";
 import StorageService, {
-    GameProgress,
     SavedFlowerData,
 } from "./StorageService"; // Import types
 

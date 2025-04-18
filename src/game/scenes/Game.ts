@@ -223,9 +223,6 @@ export class Game extends Phaser.Scene {
     private setInputActive(isActive: boolean): void {
         if (this.inputEnabled === isActive) return;
         this.inputEnabled = isActive;
-        const beeBody = this.bee?.body as
-            | Phaser.Physics.Arcade.Body
-            | undefined;
 
         if (!isActive) {
             // --- Disable ---
@@ -538,29 +535,17 @@ export class Game extends Phaser.Scene {
                     );
 
                     if (flowerSprite) {
-                        this.showInWorldText(
-                            factToEmit,
-                            flowerSprite.x,
-                            flowerSprite.y
-                        );
+                        this.showInWorldText(factToEmit);
                     } else {
                         // Fallback position if sprite not found
-                        this.showInWorldText(
-                            factToEmit,
-                            this.scale.width / 2,
-                            this.scale.height - 80
-                        );
+                        this.showInWorldText(factToEmit);
                     }
                 }
             } catch (error) {
                 console.error("Error processing pollination outcome:", error);
                 // Ensure the fallback also correctly checks the win condition first
                 if (this.flowerManager.checkAllPollinated()) {
-                    this.showInWorldText(
-                        "All flowers pollinated! Great job!",
-                        this.scale.width / 2,
-                        this.scale.height / 2
-                    );
+                    this.showInWorldText("All flowers pollinated! Great job!");
                     this.endGameDueToCompletion();
                 } else {
                     // Call the rest of the fallback if not a win condition
@@ -579,11 +564,7 @@ export class Game extends Phaser.Scene {
             const factText = `${this.pollinationCount} flowers pollinated! ${randomFact}`;
 
             // Show in HUD
-            this.showInWorldText(
-                factText,
-                this.scale.width / 2,
-                this.scale.height / 2
-            );
+            this.showInWorldText(factText);
         }
 
         // Assign more pollen if needed (this is safe as the main handler ensures
@@ -635,7 +616,7 @@ export class Game extends Phaser.Scene {
     }
 
     // Display a fact in an appealing HUD style
-    private showInWorldText(text: string, x: number, y: number): void {
+    private showInWorldText(text: string): void {
         // Clean up any existing HUD element
         if (this.factHUD.container) {
             this.factHUD.tween?.stop();
@@ -685,7 +666,6 @@ export class Game extends Phaser.Scene {
         this.factHUD.container.add(this.factHUD.icon);
 
         // Create rounded rectangle background with gradient
-        const radius = 15;
         const bgGraphics = this.factHUD.background;
 
         // Background gradient fill

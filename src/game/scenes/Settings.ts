@@ -1,21 +1,7 @@
 // src/game/scenes/Settings.ts
 import { Scene } from "phaser";
 import gsap from "gsap";
-import EventBus from "../EventBus";
-import storageService, { SavedFlowerData } from "@/services/StorageService";
-
-interface GameProgress {
-    id?: number;
-    currentLevel?: number;
-    lastPlayed: Date;
-    settings?: {
-        musicVolume?: number;
-        soundVolume?: number;
-        difficulty?: string;
-        knowledgeNectar?: boolean;
-    };
-    flowerCollectionData?: SavedFlowerData[];
-}
+import storageService from "@/services/StorageService";
 
 export class Settings extends Scene {
     private musicVolume: number = 5; // Default volume (0-10)

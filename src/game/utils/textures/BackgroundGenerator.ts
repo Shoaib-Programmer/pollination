@@ -1,6 +1,5 @@
 // src/game/utils/textures/BackgroundGenerator.ts
 import { BaseGenerator } from "./BaseGenerator";
-import { GeneratorOptions } from "./types";
 import * as Phaser from "phaser";
 
 export class BackgroundGenerator extends BaseGenerator {
