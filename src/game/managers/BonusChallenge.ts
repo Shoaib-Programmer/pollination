@@ -336,7 +336,6 @@ export class BonusChallenge {
         EventBus.emit("game:set-input-active", false);
 
         const isCorrect = flower.getData("isCorrect") as boolean;
-        const option = flower.getData("option") as string;
 
         // Create visual feedback
         if (isCorrect) {

@@ -1,8 +1,7 @@
 // src/game/scenes/FlowerCollection.ts
 import * as Phaser from "phaser";
-import FLOWERS, { FlowerType, getDiscoveredFlowers } from "../data/flowerTypes";
+import FLOWERS, { FlowerType } from "../data/flowerTypes";
 import flowerCollectionService from "@/services/FlowerCollectionService";
-import EventBus from "../EventBus";
 
 export default class FlowerCollection extends Phaser.Scene {
     private backButton!: Phaser.GameObjects.Image;
@@ -84,9 +83,6 @@ export default class FlowerCollection extends Phaser.Scene {
     }
 
     private createFlowerGrid() {
-        // Container for the flower grid
-        const gridContainer = this.add.container(0, 0);
-
         // Grid layout parameters
         const startX = 80;
         const startY = 120;

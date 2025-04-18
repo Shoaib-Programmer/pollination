@@ -92,7 +92,6 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
             left: boolean;
             right: boolean;
         },
-        delta?: number,
     ): void {
         if (!this.body || !(this.body as Phaser.Physics.Arcade.Body).enable)
             return;
