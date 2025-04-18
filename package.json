@@ -35,7 +35,8 @@
         "build-nolog": "next build",
         "start-nolog": "next start -p 3000",
         "prepare": "husky",
-        "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
+        "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
     },
     "dependencies": {
         "@gsap/react": "^2.1.2",
@@ -46,9 +47,12 @@
         "react-dom": "^19.1.0"
     },
     "devDependencies": {
+        "@eslint/eslintrc": "^3.3.1",
         "@types/bun": "^1.2.9",
         "@types/react": "latest",
         "@types/react-dom": "latest",
+        "@typescript-eslint/eslint-plugin": "^8.30.1",
+        "@typescript-eslint/parser": "^8.30.1",
         "eslint": "^9.24.0",
         "eslint-config-next": "^15.2.5",
         "husky": "^9.1.7",
