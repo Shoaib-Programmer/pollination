@@ -284,8 +284,10 @@ export class Game extends Phaser.Scene {
             }
             // Delegate movement logic to the Bee entity only if body is enabled
             if (beeBody.enable) {
-                this.bee.updateMovement(this.cursors, this.dpadState, delta);
+                this.bee.updateMovement(this.cursors, this.dpadState);
             } else {
+                // This branch should theoretically not be reached if inputEnabled is true,
+                // as the body is enabled just before this check. Leaving warn for safety.
                 console.warn(
                     "GAME Update: inputEnabled=TRUE but body is still disabled?",
                 );
