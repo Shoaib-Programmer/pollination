@@ -33,7 +33,7 @@ export class BonusChallenge {
      */
     public scheduleNextChallenge(
         minDelay: number = 20000,
-        maxDelay: number = 40000
+        maxDelay: number = 40000,
     ): void {
         // Random time between min and max delay
         const delay = Phaser.Math.Between(minDelay, maxDelay);
@@ -84,11 +84,11 @@ export class BonusChallenge {
                 flower,
                 (bee, flower) => {
                     this.handleAnswerSelection(
-                        flower as Phaser.Physics.Arcade.Sprite
+                        flower as Phaser.Physics.Arcade.Sprite,
                     );
                 },
                 undefined,
-                this
+                this,
             );
         });
 
@@ -121,7 +121,7 @@ export class BonusChallenge {
             this.scene.cameras.main.width,
             this.scene.cameras.main.height,
             0x000000,
-            0.5
+            0.5,
         );
         overlay.setOrigin(0);
         this.challengeContainer.add(overlay);
@@ -152,7 +152,7 @@ export class BonusChallenge {
                     strokeThickness: 3,
                     align: "center",
                     wordWrap: { width: this.scene.cameras.main.width - 100 },
-                }
+                },
             )
             .setOrigin(0.5);
 
@@ -167,7 +167,7 @@ export class BonusChallenge {
                     fontSize: "18px",
                     color: "#FFFFFF",
                     align: "center",
-                }
+                },
             )
             .setOrigin(0.5);
 
@@ -211,7 +211,7 @@ export class BonusChallenge {
             const flower = this.scene.physics.add.sprite(
                 x,
                 y,
-                "flower_generated"
+                "flower_generated",
             );
             flower.setScale(0.8);
 
@@ -277,7 +277,7 @@ export class BonusChallenge {
             const flower = this.scene.physics.add.sprite(
                 x,
                 centerY,
-                "flower_generated"
+                "flower_generated",
             );
             flower.setScale(0.8);
 
@@ -345,11 +345,11 @@ export class BonusChallenge {
                 flower.y,
                 "pollen_particle_generated",
                 0x00ff00,
-                30
+                30,
             );
             this.showResult(
                 true,
-                this.currentQuestion?.explanation || "Correct!"
+                this.currentQuestion?.explanation || "Correct!",
             );
 
             // Add bonus score
@@ -364,11 +364,11 @@ export class BonusChallenge {
                 flower.y,
                 "pollen_particle_generated",
                 0xff0000,
-                15
+                15,
             );
             this.showResult(
                 false,
-                this.currentQuestion?.explanation || "Incorrect!"
+                this.currentQuestion?.explanation || "Incorrect!",
             );
 
             // Record incorrect answer in quiz service
@@ -383,7 +383,7 @@ export class BonusChallenge {
         // Create result container
         const resultContainer = this.scene.add.container(
             this.scene.cameras.main.width / 2,
-            this.scene.cameras.main.height / 2
+            this.scene.cameras.main.height / 2,
         );
         resultContainer.setDepth(20);
 

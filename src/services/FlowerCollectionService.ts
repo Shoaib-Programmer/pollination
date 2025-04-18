@@ -1,8 +1,6 @@
 // src/services/FlowerCollectionService.ts
 import FLOWERS, { FlowerType } from "../game/data/flowerTypes";
-import StorageService, {
-    SavedFlowerData,
-} from "./StorageService"; // Import types
+import StorageService, { SavedFlowerData } from "./StorageService"; // Import types
 
 class FlowerCollectionService {
     private flowers: FlowerType[] = [];

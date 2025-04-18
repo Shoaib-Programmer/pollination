@@ -1,8 +1,8 @@
 import { FlatCompat } from "@eslint/eslintrc";
 import path from "path";
 import { fileURLToPath } from "url";
-import typescriptParser from '@typescript-eslint/parser';
-import typescriptPlugin from '@typescript-eslint/eslint-plugin';
+import typescriptParser from "@typescript-eslint/parser";
+import typescriptPlugin from "@typescript-eslint/eslint-plugin";
 import js from "@eslint/js"; // Import ESLint's recommended rules
 import globals from "globals"; // <-- Add this import
 
@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const compat = new FlatCompat({
-    baseDirectory: __dirname // Recommended to align paths
+    baseDirectory: __dirname, // Recommended to align paths
 });
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
@@ -36,7 +36,7 @@ const config = [
             },
         },
         plugins: {
-            '@typescript-eslint': typescriptPlugin,
+            "@typescript-eslint": typescriptPlugin,
         },
         rules: {
             // Apply recommended TS rules
@@ -53,7 +53,7 @@ const config = [
 
     // 4. Add any global ignores or custom rules last
     {
-        ignores: [".next/", "node_modules/"] // Example ignores
+        ignores: [".next/", "node_modules/"], // Example ignores
     },
     // {
     //    rules: {
@@ -62,4 +62,4 @@ const config = [
     // }
 ];
 
-export default config; 
+export default config;
