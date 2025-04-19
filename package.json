@@ -12,7 +12,7 @@
     "bugs": {
         "url": "https://github.com/Shoaib-Programmer/pollination/issues"
     },
-    "homepage": "https://github.com/Shoaib-Programmer/pollination#readme",
+    "homepage": "https://honeyhelper.vercel.app",
     "keywords": [
         "pollination",
         "game",
@@ -36,7 +36,7 @@
         "start-nolog": "next start -p 3000",
         "prepare": "husky",
         "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
-        "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+        "lint": "eslint . --ext .js,.ts,.tsx"
     },
     "dependencies": {
         "@gsap/react": "^2.1.2",
