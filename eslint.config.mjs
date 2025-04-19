@@ -44,7 +44,7 @@ const config = [
             ...typescriptPlugin.configs.recommended.rules,
             // Disable the base no-unused-vars rule, use TS version instead
             "no-unused-vars": "off",
-            "@typescript-eslint/no-unused-vars": "warn", // Or "error"
+            "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }], // Or "error"
         },
     },
 

@@ -262,7 +262,7 @@ export class Game extends Phaser.Scene {
     }
 
     // --- Update Loop ---
-    update(time: number, delta: number): void {
+    update(_time: number, _delta: number): void {
         if (!this.bee || !this.bee.body) return; // Guard clause
 
         const beeBody = this.bee.body as Phaser.Physics.Arcade.Body;
