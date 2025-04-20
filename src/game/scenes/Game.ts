@@ -575,7 +575,7 @@ export class Game extends Phaser.Scene {
     }
 
     // Handles errors during pollination processing
-    private _handlePollinationError(error: any): void {
+    private _handlePollinationError(error: unknown): void {
         console.error("Error processing pollination outcome:", error);
         // Always check win condition, even after an error during processing
         const winResult = this._checkAndHandleWinCondition();
