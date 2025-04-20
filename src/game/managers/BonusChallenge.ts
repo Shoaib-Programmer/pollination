@@ -11,16 +11,16 @@ import { createParticles } from "../utils/effects";
  * This replaces the separate quiz screen with interactive gameplay elements
  */
 export class BonusChallenge {
-    private scene: Phaser.Scene;
-    private flowerManager: FlowerManager;
+    private readonly scene: Phaser.Scene;
+    private readonly flowerManager: FlowerManager;
     private active: boolean = false;
     private currentQuestion?: QuizQuestion;
     private answerFlowers: Phaser.Physics.Arcade.Sprite[] = [];
     private challengeContainer?: Phaser.GameObjects.Container;
     private challengeTimer?: Phaser.Time.TimerEvent;
     private challengeTimeoutTimer?: Phaser.Time.TimerEvent;
-    private bonusScoreValue: number = 25;
-    private quizService: QuizService;
+    private readonly bonusScoreValue: number = 25;
+    private readonly quizService: QuizService;
 
     constructor(scene: Phaser.Scene, flowerManager: FlowerManager) {
         this.scene = scene;
@@ -191,10 +191,14 @@ export class BonusChallenge {
      * Create flowers representing multiple choice options
      */
     private createMultipleChoiceFlowers(): void {
-        if (!this.currentQuestion || !this.currentQuestion.options) return;
-
-        const options = this.currentQuestion.options;
-        const correctAnswer = this.currentQuestion.correctAnswer as string;
+        const options = this.currentQuestion?.options;
+        // If options is null/undefined (meaning either currentQuestion or its options are missing), return.
+        if (!options) {
+            return;
+        }
+        // Now we know 'this.currentQuestion' is defined and has 'options' because of the check above.
+        // Use the non-null assertion operator (!) to assure TypeScript that currentQuestion is defined here.
+        const correctAnswer = this.currentQuestion!.correctAnswer as string;
 
         // Position flowers in a semi-circle at the bottom of the screen
         const centerX = this.scene.cameras.main.width / 2;
@@ -349,7 +353,7 @@ export class BonusChallenge {
             );
             this.showResult(
                 true,
-                this.currentQuestion?.explanation || "Correct!",
+                this.currentQuestion?.explanation ?? "Correct!",
             );
 
             // Add bonus score
@@ -368,7 +372,7 @@ export class BonusChallenge {
             );
             this.showResult(
                 false,
-                this.currentQuestion?.explanation || "Incorrect!",
+                this.currentQuestion?.explanation ?? "Incorrect!",
             );
 
             // Record incorrect answer in quiz service
@@ -441,14 +445,14 @@ export class BonusChallenge {
             onComplete: () => {
                 // Add a delayed call to fade out and destroy the result popup
                 this.scene.time.delayedCall(2500, () => {
-                    if (resultContainer && resultContainer.scene) {
+                    if (resultContainer?.scene) {
                         this.scene.tweens.add({
                             targets: resultContainer,
                             alpha: 0,
                             duration: 200,
                             ease: "Power1",
                             onComplete: () => {
-                                if (resultContainer && resultContainer.scene) {
+                                if (resultContainer?.scene) {
                                     resultContainer.destroy();
                                 }
                                 // *** Only call finalizeChallengeReset HERE ***
@@ -498,7 +502,7 @@ export class BonusChallenge {
 
         // Immediately destroy answer flowers
         this.answerFlowers.forEach((flower) => {
-            if (flower && flower.scene) {
+            if (flower?.scene) {
                 flower.destroy();
             }
         });
@@ -513,7 +517,7 @@ export class BonusChallenge {
                 alpha: 0,
                 duration: 300,
                 onComplete: () => {
-                    if (containerToDestroy && containerToDestroy.scene) {
+                    if (containerToDestroy?.scene) {
                         containerToDestroy.destroy();
                     }
                 },
@@ -552,7 +556,7 @@ export class BonusChallenge {
         this.challengeTimeoutTimer?.remove(); // Ensure timeout timer is removed on destroy
         this.challengeContainer?.destroy();
         this.answerFlowers.forEach((flower) => {
-            if (flower && flower.scene) flower.destroy();
+            if (flower?.scene) flower.destroy();
         });
         this.answerFlowers = [];
         console.log("BonusChallenge destroyed.");

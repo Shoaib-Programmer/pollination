@@ -34,8 +34,8 @@ export class Game extends Phaser.Scene {
     private pollenIndicatorTween: Phaser.Tweens.Tween | null = null;
     private completedFlowers: number = 0;
     private pollinationCount: number = 0;
-    private pollinationFactThreshold: number = 5;
-    private discoveredFlowerIds: Set<string> = new Set();
+    private readonly pollinationFactThreshold: number = 5;
+    private readonly discoveredFlowerIds: Set<string> = new Set();
 
     // HUD-style fact display
     private factHUD: {
@@ -126,17 +126,12 @@ export class Game extends Phaser.Scene {
             const storageService = (await import("@/services/StorageService"))
                 .default;
             const progress = await storageService.getProgress();
-            if (progress && progress.settings) {
-                // Load Knowledge Nectar setting
-                this.showFacts =
-                    progress.settings.knowledgeNectar !== undefined
-                        ? progress.settings.knowledgeNectar
-                        : true; // Default to true if not specified
-            }
+            // Use optional chaining and nullish coalescing
+            this.showFacts = progress?.settings?.knowledgeNectar ?? true;
         } catch (error) {
             console.error("Failed to load settings:", error);
             // Keep default setting if storage fails
-            this.showFacts = true;
+            this.showFacts = true; // Ensure default is set on error
         }
     }
 
@@ -158,7 +153,7 @@ export class Game extends Phaser.Scene {
         this.discoveredFlowerIds.clear();
 
         // Reset visual/physics state of bee if restarting scene
-        if (this.bee && this.bee.body) {
+        if (this.bee?.body) {
             this.bee.setVelocity(0);
             this.bee.stopFlappingAnimation(true); // Stop immediately, reset scale
             (this.bee.body as Phaser.Physics.Arcade.Body).enable = true;
@@ -263,7 +258,7 @@ export class Game extends Phaser.Scene {
 
     // --- Update Loop ---
     update(_time: number, _delta: number): void {
-        if (!this.bee || !this.bee.body) return; // Guard clause
+        if (!this.bee?.body) return; // Guard clause
 
         const beeBody = this.bee.body as Phaser.Physics.Arcade.Body;
 
@@ -442,157 +437,158 @@ export class Game extends Phaser.Scene {
 
     // Extracted logic for handling what happens after successful pollination
     private handlePollinationOutcome(pollinatedFlowerData: FlowerData): void {
-        const flowerId = pollinatedFlowerData.flowerId;
-
         // Use async/await inside an immediately invoked async function (IIFE)
+        // to avoid blocking and keep the async logic self-contained.
         (async () => {
-            try {
-                let isNewDiscovery = false;
-                if (flowerId) {
-                    // Await the discovery check and convert the result to a boolean
-                    const discoveryResult =
-                        await flowerCollectionService.discoverFlower(flowerId);
-                    isNewDiscovery = discoveryResult !== undefined;
-                }
+            await this._processPollinationLogic(pollinatedFlowerData);
+        })();
+    }
 
-                let factToEmit = "";
-                let showFactHUD = false; // Flag to control showing the HUD
-                let gameShouldEnd = false;
+    // Central async function to process the outcome of pollination
+    private async _processPollinationLogic(pollinatedFlowerData: FlowerData): Promise<void> {
+        try {
+            const flowerId = pollinatedFlowerData.flowerId;
+            let isNewDiscovery = false;
+            if (flowerId) {
+                isNewDiscovery = await this._checkDiscovery(flowerId);
+            }
 
-                // --- Priority 1: Check for Win Condition ---
-                // This check MUST happen regardless of discovery status
-                if (this.flowerManager.checkAllPollinated()) {
-                    factToEmit = `All flowers pollinated! Great job!`;
+            let factToEmit = "";
+            let showFactHUD = false;
+
+            // Priority 1: Check for Win Condition and handle end game if needed
+            const winResult = this._checkAndHandleWinCondition();
+            if (winResult.shouldEnd) {
+                factToEmit = winResult.fact;
+                showFactHUD = winResult.showHUD;
+                // Game ending sequence is initiated within _checkAndHandleWinCondition
+            } else {
+                // Game continues... decide which fact to show (if any)
+
+                // Priority 2: Handle Discovery
+                if (isNewDiscovery && flowerId) {
+                    factToEmit = this._handleDiscoveryFact(flowerId);
                     showFactHUD = true;
-                    gameShouldEnd = true;
-                    this.endGameDueToCompletion(); // Start the end game sequence
                 }
-
-                // --- Priority 2: Handle Discovery (if game isn't ending) ---
-                if (!gameShouldEnd && isNewDiscovery && flowerId) {
-                    this.discoveredFlowerIds.add(flowerId);
-                    // Overwrite or set fact message for discovery
-                    factToEmit = `New flower type discovered: ${flowerId}!`;
+                // Priority 3: Handle Threshold Fact (only if not a discovery)
+                else if (this._shouldShowThresholdFact()) {
+                    factToEmit = this._handleThresholdFact();
                     showFactHUD = true;
-                }
-                // --- Priority 3: Handle Threshold Fact (if game isn't ending and not a discovery) ---
-                else if (
-                    !gameShouldEnd &&
-                    !isNewDiscovery &&
-                    this.pollinationCount % this.pollinationFactThreshold === 0
-                ) {
-                    const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS);
-                    factToEmit = `${this.pollinationCount} flowers pollinated! ${randomFact}`;
-                    showFactHUD = true;
-
-                    // Maybe trigger a bonus challenge after reaching the threshold
-                    if (
-                        this.pollinationCount >= 10 &&
-                        !this.bonusChallenge.isActive() &&
-                        Phaser.Math.Between(1, 100) <= 40
-                    ) {
-                        this.time.delayedCall(1500, () => {
-                            this.bonusChallenge.startChallenge();
-                        });
-                    }
+                    this._tryTriggerBonusChallenge(); // Attempt to trigger bonus
                 }
 
                 // --- Assign More Pollen (only if game isn't ending) ---
-                if (!gameShouldEnd) {
-                    const pollenAdded =
-                        this.flowerManager.assignMorePollenIfNeeded();
-                    if (pollenAdded) {
-                        // Find the flower that just got pollen to add effects
-                        const newlyPollenedFlower = (
-                            this.flowerManager
-                                .getGroup()
-                                .getChildren() as Phaser.Physics.Arcade.Sprite[]
-                        ).find((f) => {
-                            const fd = f.getData("flowerData") as FlowerData;
-                            // Refine check: Look for a flower that now has pollen and maybe yellow tint
-                            return fd.hasPollen && f.tintTopLeft === 0xffff00;
-                        });
-                        if (newlyPollenedFlower) {
-                            createParticles(
-                                this,
-                                newlyPollenedFlower.x,
-                                newlyPollenedFlower.y,
-                                "pollen_particle_generated",
-                                0xffff00,
-                                10,
-                            );
-                            addInteractionPulse(this, newlyPollenedFlower);
-                        }
-                    }
-                }
-
-                // --- Show Fact HUD (if applicable) ---
-                if (showFactHUD && factToEmit && this.showFacts) {
-                    const flowerSprite = (
-                        this.flowerManager
-                            .getGroup()
-                            .getChildren() as Phaser.Physics.Arcade.Sprite[]
-                    ).find(
-                        (f) => f.getData("flowerData") === pollinatedFlowerData,
-                    );
-
-                    if (flowerSprite) {
-                        this.showInWorldText(factToEmit);
-                    } else {
-                        // Fallback position if sprite not found
-                        this.showInWorldText(factToEmit);
-                    }
-                }
-            } catch (error) {
-                console.error("Error processing pollination outcome:", error);
-                // Ensure the fallback also correctly checks the win condition first
-                if (this.flowerManager.checkAllPollinated()) {
-                    this.showInWorldText("All flowers pollinated! Great job!");
-                    this.endGameDueToCompletion();
-                } else {
-                    // Call the rest of the fallback if not a win condition
-                    this.handlePollinationErrorFallback(); // Original fallback handles non-win errors/scenarios
-                }
+                this._assignPollenAndEffects();
             }
-        })(); // Immediately invoke the async function
+
+            // --- Show Fact HUD (if applicable based on above logic) ---
+            if (showFactHUD && factToEmit && this.showFacts) {
+                this.showInWorldText(factToEmit);
+            }
+
+        } catch (error) {
+            this._handlePollinationError(error); // Use the dedicated error handler
+        }
     }
 
-    // Fallback logic for pollination outcome if error or no flowerId
-    private handlePollinationErrorFallback(): void {
-        // Win condition is now checked in the main catch block
-        // Only handle threshold-based facts and pollen assignment
-        if (this.pollinationCount % this.pollinationFactThreshold === 0) {
-            const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS);
-            const factText = `${this.pollinationCount} flowers pollinated! ${randomFact}`;
+    // --- Pollination Outcome Helper Methods ---
 
-            // Show in HUD
-            this.showInWorldText(factText);
+    // Checks if a flower is a new discovery and updates state
+    private async _checkDiscovery(flowerId: string): Promise<boolean> {
+        const discoveryResult = await flowerCollectionService.discoverFlower(flowerId);
+        const isNewDiscovery = discoveryResult !== undefined;
+        if (isNewDiscovery) {
+            this.discoveredFlowerIds.add(flowerId);
         }
+        return isNewDiscovery;
+    }
 
-        // Assign more pollen if needed (this is safe as the main handler ensures
-        // we don't reach here if the game should be ending)
+    // Checks if all flowers are pollinated and initiates game end if so
+    private _checkAndHandleWinCondition(): { shouldEnd: boolean; fact: string; showHUD: boolean } {
+        if (this.flowerManager.checkAllPollinated()) {
+            this.endGameDueToCompletion(); // Start end sequence immediately
+            return { shouldEnd: true, fact: "All flowers pollinated! Great job!", showHUD: true };
+        }
+        return { shouldEnd: false, fact: "", showHUD: false };
+    }
+
+    // Generates the fact text for a new discovery
+    private _handleDiscoveryFact(flowerId: string): string {
+        return `New flower type discovered: ${flowerId}!`;
+    }
+
+    // Checks if the conditions are met to show a threshold-based fact
+    private _shouldShowThresholdFact(): boolean {
+        return this.pollinationCount % this.pollinationFactThreshold === 0;
+    }
+
+    // Generates the fact text for reaching a pollination threshold
+    private _handleThresholdFact(): string {
+        const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS);
+        return `${this.pollinationCount} flowers pollinated! ${randomFact}`;
+    }
+
+    // Checks conditions and potentially triggers a bonus challenge
+    private _tryTriggerBonusChallenge(): void {
+        const meetsThreshold = this.pollinationCount >= 10;
+        const challengeInactive = !this.bonusChallenge.isActive();
+        // Use a random chance to trigger
+        const shouldAttemptTrigger = meetsThreshold && challengeInactive && Phaser.Math.Between(1, 100) <= 40;
+
+        if (shouldAttemptTrigger) {
+            this.time.delayedCall(1500, () => {
+                // Double-check state inside the delayed call, as things might change
+                if (this.scene.isActive() && !this.bonusChallenge.isActive()) {
+                    this.bonusChallenge.startChallenge();
+                }
+            });
+        }
+    }
+
+    // Assigns more pollen if needed and applies visual effects
+    private _assignPollenAndEffects(): void {
         const pollenAdded = this.flowerManager.assignMorePollenIfNeeded();
         if (pollenAdded) {
-            // Find the flower that just got pollen to add effects
+            // Find the specific flower sprite that received pollen to add effects
             const newlyPollenedFlower = (
                 this.flowerManager
                     .getGroup()
                     .getChildren() as Phaser.Physics.Arcade.Sprite[]
             ).find((f) => {
                 const fd = f.getData("flowerData") as FlowerData;
-                return fd.hasPollen && f.tintTopLeft === 0xffff00; // Check tint as indicator
+                // Check for hasPollen flag and potentially a visual cue like tint
+                return fd.hasPollen && f.tintTopLeft === 0xffff00; // Assuming yellow tint indicates new pollen
             });
+
             if (newlyPollenedFlower) {
                 createParticles(
                     this,
                     newlyPollenedFlower.x,
                     newlyPollenedFlower.y,
                     "pollen_particle_generated",
-                    0xffff00,
+                    0xffff00, // Yellow particles for pollen gain
                     10,
                 );
                 addInteractionPulse(this, newlyPollenedFlower);
             }
+        }
+    }
+
+    // Handles errors during pollination processing
+    private _handlePollinationError(error: any): void {
+        console.error("Error processing pollination outcome:", error);
+        // Always check win condition, even after an error during processing
+        const winResult = this._checkAndHandleWinCondition();
+        if (winResult.shouldEnd) {
+             // If game ends due to win condition despite error, show the win fact
+             if (this.showFacts) {
+                  this.showInWorldText(winResult.fact);
+             }
+        } else {
+            // If an error occurred but it didn't lead to a win condition,
+            // log a warning. Avoid further game actions like assigning pollen
+            // as the state might be inconsistent after the error.
+            console.warn("Continuing game after non-fatal pollination outcome error.");
         }
     }
 

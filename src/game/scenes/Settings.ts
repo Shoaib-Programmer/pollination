@@ -29,21 +29,12 @@ export class Settings extends Scene {
         this.isLoadingSettings = true;
         try {
             const progress = await storageService.getProgress();
-            if (progress && progress.settings) {
+            if (progress?.settings) {
                 // Update local settings from stored values
-                this.musicVolume =
-                    progress.settings.musicVolume !== undefined
-                        ? progress.settings.musicVolume
-                        : 5;
-                this.soundVolume =
-                    progress.settings.soundVolume !== undefined
-                        ? progress.settings.soundVolume
-                        : 7;
-                this.difficulty = progress.settings.difficulty || "Easy";
-                this.knowledgeNectar =
-                    progress.settings.knowledgeNectar !== undefined
-                        ? progress.settings.knowledgeNectar
-                        : true;
+                this.musicVolume = progress.settings.musicVolume ?? 5;
+                this.soundVolume = progress.settings.soundVolume ?? 7;
+                this.difficulty = progress.settings.difficulty ?? "Easy";
+                this.knowledgeNectar = progress.settings.knowledgeNectar ?? true;
             }
             this.isLoadingSettings = false;
 
@@ -327,56 +318,83 @@ export class Settings extends Scene {
 
         // On hover effect
         textObject.on("pointerover", () => {
-            textObject.setTint(0xffff00);
+            textObject.setTint(0xffff00); // Highlight on hover
         });
 
         textObject.on("pointerout", () => {
-            textObject.clearTint();
+            textObject.clearTint(); // Remove highlight
         });
 
         // Click handler for different setting types
         textObject.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-            // Determine if left or right side was clicked
             const isLeftSide = pointer.x < textObject.x;
 
-            // Different behavior based on setting type
-            if (type === "music") {
-                if (isLeftSide && this.musicVolume > 0) {
-                    this.musicVolume--;
-                } else if (!isLeftSide && this.musicVolume < 10) {
-                    this.musicVolume++;
-                }
-                // Update music volume in game (would connect to audio manager)
-                // this.game.sound.volume = this.musicVolume / 10;
-            } else if (type === "sound") {
-                if (isLeftSide && this.soundVolume > 0) {
-                    this.soundVolume--;
-                } else if (!isLeftSide && this.soundVolume < 10) {
-                    this.soundVolume++;
-                }
-                // Update sound effects volume in game
-                // this.game.sound.setVolume(this.soundVolume / 10);
-            } else if (type === "difficulty") {
-                // Cycle through difficulties: Easy -> Medium -> Hard
-                if (this.difficulty === "Easy") this.difficulty = "Medium";
-                else if (this.difficulty === "Medium") this.difficulty = "Hard";
-                else this.difficulty = "Easy";
-            } else if (type === "knowledgeNectar") {
-                // Toggle knowledge nectar setting
-                this.knowledgeNectar = !this.knowledgeNectar;
+            // Call the appropriate handler based on the setting type
+            switch (type) {
+                case "music":
+                    this.adjustMusicVolume(isLeftSide);
+                    break;
+                case "sound":
+                    this.adjustSoundVolume(isLeftSide);
+                    break;
+                case "difficulty":
+                    this.cycleDifficulty();
+                    break;
+                case "knowledgeNectar":
+                    this.toggleKnowledgeNectar();
+                    break;
             }
 
-            // Flash the setting when changed
-            this.tweens.add({
-                targets: textObject,
-                scale: 1.1,
-                duration: 100,
-                yoyo: true,
-                ease: "Sine.easeInOut",
-            });
-
-            // Update display to reflect changes
+            // Common feedback and update logic
+            this.flashSetting(textObject);
             this.updateSettingsDisplay();
+        });
+    }
+
+    // --- Private Helper Methods for Settings Adjustment ---
+
+    private adjustMusicVolume(isLeftSide: boolean) {
+        if (isLeftSide && this.musicVolume > 0) {
+            this.musicVolume--;
+        } else if (!isLeftSide && this.musicVolume < 10) {
+            this.musicVolume++;
+        }
+        // Apply volume change (e.g., this.sound.setVolume(...))
+        // Consider moving audio logic to a dedicated service
+        console.log(`Music Volume set to: ${this.musicVolume}`); // Placeholder
+    }
+
+    private adjustSoundVolume(isLeftSide: boolean) {
+        if (isLeftSide && this.soundVolume > 0) {
+            this.soundVolume--;
+        } else if (!isLeftSide && this.soundVolume < 10) {
+            this.soundVolume++;
+        }
+        // Apply volume change
+        console.log(`Sound Volume set to: ${this.soundVolume}`); // Placeholder
+    }
+
+    private cycleDifficulty() {
+        const difficulties = ["Easy", "Medium", "Hard"];
+        const currentIndex = difficulties.indexOf(this.difficulty);
+        const nextIndex = (currentIndex + 1) % difficulties.length;
+        this.difficulty = difficulties[nextIndex];
+        console.log(`Difficulty set to: ${this.difficulty}`); // Placeholder
+    }
+
+    private toggleKnowledgeNectar() {
+        this.knowledgeNectar = !this.knowledgeNectar;
+        console.log(`Knowledge Nectar set to: ${this.knowledgeNectar}`); // Placeholder
+    }
+
+    // Helper method for visual feedback on change
+    private flashSetting(textObject: Phaser.GameObjects.Text) {
+        this.tweens.add({
+            targets: textObject,
+            scale: 1.05, // Slightly smaller scale effect
+            duration: 80, // Faster flash
+            yoyo: true,
+            ease: "Sine.easeInOut",
         });
     }
 }

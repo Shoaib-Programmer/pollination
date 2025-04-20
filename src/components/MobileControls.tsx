@@ -21,7 +21,6 @@ export const MobileControls: React.FC = () => {
         (e.target as HTMLButtonElement).setPointerCapture(e.pointerId);
         setPressedButton(direction);
         EventBus.emit("dpad", { direction, active: true });
-        // console.log(`DPad Down: ${direction}`);
     };
 
     const handlePointerUp = (
@@ -35,7 +34,6 @@ export const MobileControls: React.FC = () => {
         if (pressedButton === direction) {
             setPressedButton(null);
             EventBus.emit("dpad", { direction, active: false });
-            // console.log(`DPad Up: ${direction}`);
         }
     };
 
@@ -61,7 +59,6 @@ export const MobileControls: React.FC = () => {
         if (pressedButton === direction) {
             setPressedButton(null);
             EventBus.emit("dpad", { direction, active: false });
-            // console.log(`DPad Cancel: ${direction}`);
         }
     };
 

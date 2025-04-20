@@ -36,26 +36,23 @@ export class MainMenu extends Scene {
 
     updateHighScoresButtonVisibility() {
         if (this.highScoresButton) {
-            if (this.hasHighScores) {
-                // If high scores exist, show the button with animation
-                if (this.highScoresButton.alpha === 0) {
-                    gsap.to(this.highScoresButton, {
-                        alpha: 1,
-                        scale: 1,
-                        duration: 0.4,
-                        ease: "back.out(1.7)",
-                    });
-                }
-            } else {
-                // If no high scores, hide the button
-                if (this.highScoresButton.alpha > 0) {
-                    gsap.to(this.highScoresButton, {
-                        alpha: 0,
-                        scale: 0.8,
-                        duration: 0.3,
-                        ease: "power1.in",
-                    });
-                }
+            // If high scores exist AND button is currently hidden, show it
+            if (this.hasHighScores && this.highScoresButton.alpha === 0) {
+                gsap.to(this.highScoresButton, {
+                    alpha: 1,
+                    scale: 1,
+                    duration: 0.4,
+                    ease: "back.out(1.7)",
+                });
+            }
+            // If no high scores AND button is currently visible, hide it
+            else if (!this.hasHighScores && this.highScoresButton.alpha > 0) {
+                gsap.to(this.highScoresButton, {
+                    alpha: 0,
+                    scale: 0.8,
+                    duration: 0.3,
+                    ease: "power1.in",
+                });
             }
         }
     }

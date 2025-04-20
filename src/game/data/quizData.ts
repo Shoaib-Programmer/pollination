@@ -205,8 +205,8 @@ export const generatePollinationQuizQuestions = (): QuizQuestion[] => {
 export class QuizService {
     private static instance: QuizService;
     private quizStats: QuizStats = { ...initialQuizStats };
-    private quizQuestions: QuizQuestion[] = [];
-    private storageKey = "pollination_quiz_stats";
+    private readonly quizQuestions: QuizQuestion[] = [];
+    private readonly storageKey = "pollination_quiz_stats";
 
     private constructor() {
         this.loadStats();

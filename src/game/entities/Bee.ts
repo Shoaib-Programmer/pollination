@@ -96,49 +96,65 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
         if (!this.body || !(this.body as Phaser.Physics.Arcade.Body).enable)
             return;
 
-        this.setVelocity(0); // Reset velocity
-
         const speed = 250;
-        let moveX = 0;
-        let moveY = 0;
+        const moveVector = this.getMovementInput(cursors, dpadState);
+        const isNowTryingToMove = moveVector.length() > 0;
 
-        const leftPressed = cursors?.left.isDown || dpadState?.left;
-        const rightPressed = cursors?.right.isDown || dpadState?.right;
-        const upPressed = cursors?.up.isDown || dpadState?.up;
-        const downPressed = cursors?.down.isDown || dpadState?.down;
-
-        if (leftPressed) moveX = -1;
-        else if (rightPressed) moveX = 1;
-        if (upPressed) moveY = -1;
-        else if (downPressed) moveY = 1;
-
-        const moveVector = new Phaser.Math.Vector2(moveX, moveY);
-        const isTryingToMove = moveVector.length() > 0;
-
-        if (isTryingToMove) {
-            // Apply velocity if moving
+        // Apply velocity
+        this.setVelocity(0); // Reset velocity first
+        if (isNowTryingToMove) {
             moveVector.normalize();
             this.setVelocity(moveVector.x * speed, moveVector.y * speed);
         }
 
         // Flip sprite based on direction
-        if (moveX < 0) this.setFlipX(true);
-        else if (moveX > 0) this.setFlipX(false);
+        if (moveVector.x < 0) this.setFlipX(true);
+        else if (moveVector.x > 0) this.setFlipX(false);
 
-        // Control wing flap animation
-        if (this.wingFlapTween) {
-            if (isTryingToMove && !this.isMoving) {
-                gsap.killTweensOf(this, "scaleY");
-                if (this.wingFlapTween.paused()) this.wingFlapTween.play();
-            } else if (!isTryingToMove && this.isMoving) {
-                this.stopFlappingAnimation();
-            }
-        }
+        // Update wing animation
+        this.updateWingAnimationState(isNowTryingToMove);
 
-        this.isMoving = isTryingToMove;
+        // Update the movement state for the next frame
+        this.isMoving = isNowTryingToMove;
 
         // Update pollen indicator position if it exists
         this.updatePollenIndicatorPosition();
+    }
+
+    // Helper to get movement vector from input
+    private getMovementInput(
+        cursors?: Phaser.Types.Input.Keyboard.CursorKeys,
+        dpadState?: {
+            up: boolean;
+            down: boolean;
+            left: boolean;
+            right: boolean;
+        },
+    ): Phaser.Math.Vector2 {
+        const leftPressed = cursors?.left.isDown || dpadState?.left;
+        const rightPressed = cursors?.right.isDown || dpadState?.right;
+        const upPressed = cursors?.up.isDown || dpadState?.up;
+        const downPressed = cursors?.down.isDown || dpadState?.down;
+
+        const moveX = (rightPressed ? 1 : 0) - (leftPressed ? 1 : 0);
+        const moveY = (downPressed ? 1 : 0) - (upPressed ? 1 : 0);
+
+        return new Phaser.Math.Vector2(moveX, moveY);
+    }
+
+    // Helper to update wing animation based on movement state
+    private updateWingAnimationState(isTryingToMove: boolean): void {
+        const startedMoving = isTryingToMove && !this.isMoving;
+        const stoppedMoving = !isTryingToMove && this.isMoving;
+
+        if (this.wingFlapTween) {
+            if (startedMoving) {
+                gsap.killTweensOf(this, "scaleY");
+                if (this.wingFlapTween.paused()) this.wingFlapTween.play();
+            } else if (stoppedMoving) {
+                this.stopFlappingAnimation();
+            }
+        }
     }
 
     // Set references to the pollen indicator and its tween

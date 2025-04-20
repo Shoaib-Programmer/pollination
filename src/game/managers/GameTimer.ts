@@ -2,12 +2,12 @@
 import * as Phaser from "phaser";
 
 export class GameTimer {
-    private scene: Phaser.Scene;
-    private timerEvent: Phaser.Time.TimerEvent;
-    private duration: number; // Total time in seconds
+    private readonly scene: Phaser.Scene;
+    private readonly timerEvent: Phaser.Time.TimerEvent;
+    private readonly duration: number; // Total time in seconds
     private remainingTime: number; // Current time left in seconds
-    private onUpdate: (time: number) => void; // Callback when time changes
-    private onComplete: () => void; // Callback when timer finishes
+    private readonly onUpdate: (time: number) => void; // Callback when time changes
+    private readonly onComplete: () => void; // Callback when timer finishes
     private isPaused: boolean = false;
 
     constructor(

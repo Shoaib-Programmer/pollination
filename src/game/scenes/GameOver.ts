@@ -12,7 +12,7 @@ export class GameOver extends Scene {
     private highScores: GameScore[] = [];
     private isLoadingScores: boolean = false;
     private showHighScoresOnly: boolean = false;
-    private quizService: QuizService;
+    private readonly quizService: QuizService;
 
     constructor() {
         super("GameOver");
