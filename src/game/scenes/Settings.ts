@@ -281,7 +281,10 @@ export class Settings extends Scene {
 
             // Save settings before transition
             this.saveSettings().catch((error) => {
-                console.error("Error saving settings before scene transition:", error);
+                console.error(
+                    "Error saving settings before scene transition:",
+                    error,
+                );
                 // Continue with transition even if save fails
             });
 

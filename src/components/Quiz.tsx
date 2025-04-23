@@ -1,7 +1,7 @@
 // src/components/Quiz.tsx
 import React, { useState, useEffect } from "react";
 import styles from "../styles/Quiz.module.css";
-import { QuizQuestion, QuizService, QuestionType } from "../game/data/quizData";
+import { QuizQuestion, QuizService, QuestionType } from "../game/data";
 
 // Define internal interfaces that match the structure needed by the component
 export interface IOption {
