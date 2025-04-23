@@ -445,7 +445,9 @@ export class Game extends Phaser.Scene {
     }
 
     // Central async function to process the outcome of pollination
-    private async _processPollinationLogic(pollinatedFlowerData: FlowerData): Promise<void> {
+    private async _processPollinationLogic(
+        pollinatedFlowerData: FlowerData,
+    ): Promise<void> {
         try {
             const flowerId = pollinatedFlowerData.flowerId;
             let isNewDiscovery = false;
@@ -485,7 +487,6 @@ export class Game extends Phaser.Scene {
             if (showFactHUD && factToEmit && this.showFacts) {
                 this.showInWorldText(factToEmit);
             }
-
         } catch (error) {
             this._handlePollinationError(error); // Use the dedicated error handler
         }
@@ -495,7 +496,8 @@ export class Game extends Phaser.Scene {
 
     // Checks if a flower is a new discovery and updates state
     private async _checkDiscovery(flowerId: string): Promise<boolean> {
-        const discoveryResult = await flowerCollectionService.discoverFlower(flowerId);
+        const discoveryResult =
+            await flowerCollectionService.discoverFlower(flowerId);
         const isNewDiscovery = discoveryResult !== undefined;
         if (isNewDiscovery) {
             this.discoveredFlowerIds.add(flowerId);
@@ -504,10 +506,18 @@ export class Game extends Phaser.Scene {
     }
 
     // Checks if all flowers are pollinated and initiates game end if so
-    private _checkAndHandleWinCondition(): { shouldEnd: boolean; fact: string; showHUD: boolean } {
+    private _checkAndHandleWinCondition(): {
+        shouldEnd: boolean;
+        fact: string;
+        showHUD: boolean;
+    } {
         if (this.flowerManager.checkAllPollinated()) {
             this.endGameDueToCompletion(); // Start end sequence immediately
-            return { shouldEnd: true, fact: "All flowers pollinated! Great job!", showHUD: true };
+            return {
+                shouldEnd: true,
+                fact: "All flowers pollinated! Great job!",
+                showHUD: true,
+            };
         }
         return { shouldEnd: false, fact: "", showHUD: false };
     }
@@ -533,7 +543,10 @@ export class Game extends Phaser.Scene {
         const meetsThreshold = this.pollinationCount >= 10;
         const challengeInactive = !this.bonusChallenge.isActive();
         // Use a random chance to trigger
-        const shouldAttemptTrigger = meetsThreshold && challengeInactive && Phaser.Math.Between(1, 100) <= 40;
+        const shouldAttemptTrigger =
+            meetsThreshold &&
+            challengeInactive &&
+            Phaser.Math.Between(1, 100) <= 40;
 
         if (shouldAttemptTrigger) {
             this.time.delayedCall(1500, () => {
@@ -580,15 +593,17 @@ export class Game extends Phaser.Scene {
         // Always check win condition, even after an error during processing
         const winResult = this._checkAndHandleWinCondition();
         if (winResult.shouldEnd) {
-             // If game ends due to win condition despite error, show the win fact
-             if (this.showFacts) {
-                  this.showInWorldText(winResult.fact);
-             }
+            // If game ends due to win condition despite error, show the win fact
+            if (this.showFacts) {
+                this.showInWorldText(winResult.fact);
+            }
         } else {
             // If an error occurred but it didn't lead to a win condition,
             // log a warning. Avoid further game actions like assigning pollen
             // as the state might be inconsistent after the error.
-            console.warn("Continuing game after non-fatal pollination outcome error.");
+            console.warn(
+                "Continuing game after non-fatal pollination outcome error.",
+            );
         }
     }
 

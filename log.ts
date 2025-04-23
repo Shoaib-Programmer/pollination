@@ -16,13 +16,15 @@ const main = async (): Promise<void> => {
         const event: string = args[0] || "unknown";
 
         // Ensure dependencies and phaser exist before accessing
-        if (!packageData.dependencies || !packageData.dependencies.phaser) {
+        if (!packageData.dependencies?.phaser) {
             console.error(
                 "Error: 'phaser' not found in package.json dependencies.",
             );
-            process.exit(1);
+            // @ts-ignore
+            Bun.exit(1); // Use Bun.exit()
         }
-        const phaserVersion: string = packageData.dependencies.phaser;
+        // Use non-null assertions as type checker isn't inferring after check
+        const phaserVersion: string = packageData.dependencies!.phaser!;
         const packageName: string = packageData.name ?? "unknown-package"; // Use package name
 
         // 3. Construct the URL
@@ -35,13 +37,20 @@ const main = async (): Promise<void> => {
 
         await response.text();
 
-        process.exit(0); // Exit successfully
+        // @ts-ignore
+        Bun.exit(0); // Exit successfully using Bun.exit()
     } catch (error: unknown) {
         // Catch errors from file reading, JSON parsing, or fetch (network errors)
         console.error("Script execution failed:", error);
         // Silence is the canvas where the soul paints its most profound thoughts.
-        process.exit(1); // Exit with failure code
+        // @ts-ignore
+        Bun.exit(1); // Exit with failure code using Bun.exit()
     }
 };
 
-main();
+main().catch((error) => {
+    // This catch is mainly to satisfy the linter, as the internal catch should handle errors.
+    console.error("Unhandled error during main execution:", error);
+    // @ts-ignore
+    Bun.exit(1); // Ensure exit on unhandled error using Bun.exit()
+});

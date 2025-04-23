@@ -34,7 +34,10 @@ export class GameOver extends Scene {
 
         // Only save the score and increment games played if it's from an actual game (not just viewing high scores)
         if (!this.showHighScoresOnly && this.score > 0) {
-            this.saveGameScore();
+            this.saveGameScore().catch((error) => {
+                // Log error, although saveGameScore already does
+                console.error("Error saving score from init context:", error);
+            });
 
             // Record that a game has been played in QuizService
             this.quizService.recordGamePlayed();
@@ -47,7 +50,10 @@ export class GameOver extends Scene {
         }
 
         // Always load high scores
-        this.loadHighScores();
+        this.loadHighScores().catch((error) => {
+            console.error("Error initiating high scores load:", error);
+            // High scores display might show loading or error state
+        });
     }
 
     async saveGameScore() {

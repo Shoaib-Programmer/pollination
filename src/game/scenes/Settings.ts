@@ -22,7 +22,10 @@ export class Settings extends Scene {
 
     init() {
         // Load settings from IndexedDB when the scene initializes
-        this.loadSettings();
+        this.loadSettings().catch((error) => {
+            console.error("Error initiating settings load:", error);
+            // Settings will likely remain default if load fails
+        });
     }
 
     async loadSettings() {
@@ -34,7 +37,8 @@ export class Settings extends Scene {
                 this.musicVolume = progress.settings.musicVolume ?? 5;
                 this.soundVolume = progress.settings.soundVolume ?? 7;
                 this.difficulty = progress.settings.difficulty ?? "Easy";
-                this.knowledgeNectar = progress.settings.knowledgeNectar ?? true;
+                this.knowledgeNectar =
+                    progress.settings.knowledgeNectar ?? true;
             }
             this.isLoadingSettings = false;
 
@@ -276,7 +280,10 @@ export class Settings extends Scene {
             });
 
             // Save settings before transition
-            this.saveSettings();
+            this.saveSettings().catch((error) => {
+                console.error("Error saving settings before scene transition:", error);
+                // Continue with transition even if save fails
+            });
 
             // Transition Out
             gsap.to(

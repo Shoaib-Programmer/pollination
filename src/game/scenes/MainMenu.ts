@@ -123,29 +123,31 @@ export class MainMenu extends Scene {
             .setOrigin(0.5)
             .setAlpha(0); // Start invisible
 
-        const startButton = this.add
-            .text(centerX, centerY + 65, "Start Game", {
-                font: "bold",
-                fontFamily: "var(--font-poppins)",
-                fontSize: "34px",
-                color: "#ffffff",
-                backgroundColor: "#2E8B57",
-                padding: { x: 30, y: 15 },
-                shadow: {
-                    offsetX: 2,
-                    offsetY: 2,
-                    color: "#111",
-                    blur: 2,
-                    fill: true,
-                },
-            })
-            .setOrigin(0.5)
-            .setAlpha(0) // Start invisible
-            .setScale(0.8); // Start smaller
+        const startButton = this.add.text(centerX, centerY + 65, "Start Game", {
+            font: "bold",
+            fontFamily: "var(--font-poppins)",
+            fontSize: "34px",
+            color: "#ffffff",
+            backgroundColor: "#2E8B57",
+            padding: { x: 30, y: 15 },
+            shadow: {
+                offsetX: 2,
+                offsetY: 2,
+                color: "#111",
+                blur: 2,
+                fill: true,
+            },
+        });
+        startButton.setOrigin(0.5);
+        startButton.setAlpha(0); // Start invisible
+        startButton.setScale(0.8); // Start smaller
 
         // High Scores button - only shown if there are high scores
-        this.highScoresButton = this.add
-            .text(centerX, centerY + 140, "High Scores", {
+        this.highScoresButton = this.add.text(
+            centerX,
+            centerY + 140,
+            "High Scores",
+            {
                 font: "bold",
                 fontFamily: "var(--font-poppins)",
                 fontSize: "28px",
@@ -159,14 +161,18 @@ export class MainMenu extends Scene {
                     blur: 2,
                     fill: true,
                 },
-            })
-            .setOrigin(0.5)
-            .setAlpha(0) // Start invisible
-            .setScale(0.8); // Start smaller
+            },
+        );
+        this.highScoresButton.setOrigin(0.5);
+        this.highScoresButton.setAlpha(0); // Start invisible
+        this.highScoresButton.setScale(0.8); // Start smaller
 
         // Flower Collection Button - always visible
-        const flowerCollectionButton = this.add
-            .text(centerX, centerY + 200, "Flower Collection", {
+        const flowerCollectionButton = this.add.text(
+            centerX,
+            centerY + 200,
+            "Flower Collection",
+            {
                 font: "bold",
                 fontFamily: "var(--font-poppins)",
                 fontSize: "28px",
@@ -180,10 +186,11 @@ export class MainMenu extends Scene {
                     blur: 2,
                     fill: true,
                 },
-            })
-            .setOrigin(0.5)
-            .setAlpha(0) // Start invisible
-            .setScale(0.8); // Start smaller
+            },
+        );
+        flowerCollectionButton.setOrigin(0.5);
+        flowerCollectionButton.setAlpha(0); // Start invisible
+        flowerCollectionButton.setScale(0.8); // Start smaller
 
         // GSAP Timeline for staggered entrance
         const tl = gsap.timeline({ delay: 0.3 }); // Start after background fade

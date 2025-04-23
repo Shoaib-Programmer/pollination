@@ -33,8 +33,26 @@ export default class FlowerCollection extends Phaser.Scene {
             })
             .setOrigin(0.5, 0);
 
-        // Add progress text
-        this.updateProgressText();
+        // Add progress text - handle promise
+        this.updateProgressText().catch((error) => {
+            console.error(
+                "Error updating progress text on initial create:",
+                error,
+            );
+            // Optionally set default text or hide if error occurs
+            if (this.progressText) {
+                this.progressText.setText("Progress: Error");
+            } else {
+                // Create the text object with an error message if it doesn't exist yet
+                this.progressText = this.add
+                    .text(this.scale.width / 2, 70, "Progress: Error", {
+                        fontFamily: "Arial",
+                        fontSize: "18px",
+                        color: "#ff0000", // Red color for error
+                    })
+                    .setOrigin(0.5, 0);
+            }
+        });
 
         // Back button
         this.backButton = this.add

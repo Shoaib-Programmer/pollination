@@ -14,8 +14,15 @@ class FlowerCollectionService {
         this.isInitialized = new Promise((resolve) => {
             this.resolveInitialized = resolve;
         });
-        // Start asynchronous loading
-        this.loadCollection();
+        // Start asynchronous loading and catch potential initiation errors
+        this.loadCollection().catch((error) => {
+            console.error("Error initiating flower collection loading:", error);
+            // Ensure initialization completes even if initiation fails, relying on loadCollection's internal fallback
+            if (this.resolveInitialized) {
+                // Check if resolver exists
+                this.resolveInitialized();
+            }
+        });
     }
 
     // Ensure service is initialized before proceeding

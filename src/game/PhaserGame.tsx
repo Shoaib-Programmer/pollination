@@ -24,7 +24,7 @@ interface PhaserGameProps {
 // Function to handle scene start event within useLayoutEffect
 const handleSceneStart = (
     scene: Phaser.Scene,
-    currentSceneRef: React.RefObject<string | null>,
+    currentSceneRef: React.MutableRefObject<string | null>,
 ) => {
     const sceneName = scene.scene.key;
     if (currentSceneRef.current !== sceneName) {
@@ -37,7 +37,7 @@ const handleSceneStart = (
 // Function to attach the start listener to a single scene
 const attachStartListener = (
     scene: Phaser.Scene,
-    currentSceneRef: React.RefObject<string | null>,
+    currentSceneRef: React.MutableRefObject<string | null>,
 ) => {
     // Use an anonymous function to properly scope the scene parameter for handleSceneStart
     scene.events.on("start", () => handleSceneStart(scene, currentSceneRef));
@@ -46,7 +46,7 @@ const attachStartListener = (
 // Function to setup scene change monitoring
 const setupSceneMonitoring = (
     gameInstance: Phaser.Game,
-    currentSceneRef: React.RefObject<string | null>,
+    currentSceneRef: React.MutableRefObject<string | null>,
 ) => {
     gameInstance.scene.scenes.forEach((scene) =>
         attachStartListener(scene, currentSceneRef),
@@ -137,11 +137,12 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
             EventBus.on("ui:modal-closed", handleModalClosed);
 
             // Define the ready callback using the extracted function
-            const onGameReadyCallback = () => setupSceneMonitoring(game, currentSceneRef);
+            const onGameReadyCallback = () =>
+                setupSceneMonitoring(game, currentSceneRef);
 
             // Setup monitoring once game is ready
             if (game.isBooted) {
-                 onGameReadyCallback();
+                onGameReadyCallback();
             } else {
                 game.events.once("ready", onGameReadyCallback);
             }
@@ -170,7 +171,6 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
             };
         }, [ref, onGameReady, onBeforeDestroy]); // Keep dependencies
 
-
         // Polling Effect for Game Scene Listeners
         useEffect(() => {
             // Create handlers once per component mount
@@ -190,13 +190,15 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
 
                 // Attach listeners when Game scene becomes active
                 if (isGameSceneActive && !listenersAttachedRef.current) {
-                     if (gameSceneInstance) { // Ensure instance exists
-                        sceneListenerCleanupRef.current = attachGameSceneListeners(
-                            gameSceneInstance,
-                            scoreHandler,
-                            factHandler,
-                            timerHandler,
-                        );
+                    if (gameSceneInstance) {
+                        // Ensure instance exists
+                        sceneListenerCleanupRef.current =
+                            attachGameSceneListeners(
+                                gameSceneInstance,
+                                scoreHandler,
+                                factHandler,
+                                timerHandler,
+                            );
                         listenersAttachedRef.current = true;
                     }
                 }
