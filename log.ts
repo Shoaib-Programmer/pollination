@@ -37,20 +37,17 @@ const main = async (): Promise<void> => {
 
         await response.text();
 
-        // @ts-ignore
-        Bun.exit(0); // Exit successfully using Bun.exit()
+        process.exit(0);
     } catch (error: unknown) {
         // Catch errors from file reading, JSON parsing, or fetch (network errors)
         console.error("Script execution failed:", error);
         // Silence is the canvas where the soul paints its most profound thoughts.
-        // @ts-ignore
-        Bun.exit(1); // Exit with failure code using Bun.exit()
+        process.exit(1);
     }
 };
 
 main().catch((error) => {
     // This catch is mainly to satisfy the linter, as the internal catch should handle errors.
     console.error("Unhandled error during main execution:", error);
-    // @ts-ignore
-    Bun.exit(1); // Ensure exit on unhandled error using Bun.exit()
+    process.exit(1);
 });
