@@ -71,9 +71,7 @@ export class Game extends Phaser.Scene {
         this.bonusChallenge = new BonusChallenge(this, this.flowerManager); // Bonus challenge manager
 
         // --- Flower Setup (using Manager) ---
-        this.flowerManager.spawnFlowers(6, "red");
-        // --- Flower Setup (using Manager) ---
-        this.flowerManager.spawnFlowers(6, "red");
+    this.flowerManager.spawnFlowers(6, "red"); // (Removed duplicate spawn)
         this.flowerManager.spawnFlowers(6, "blue");
         this.flowerManager.assignInitialPollen();
 
@@ -437,11 +435,7 @@ export class Game extends Phaser.Scene {
 
     // Extracted logic for handling what happens after successful pollination
     private handlePollinationOutcome(pollinatedFlowerData: FlowerData): void {
-        // Use async/await inside an immediately invoked async function (IIFE)
-        // to avoid blocking and keep the async logic self-contained.
-        (async () => {
-            await this._processPollinationLogic(pollinatedFlowerData);
-        })();
+    void this._processPollinationLogic(pollinatedFlowerData);
     }
 
     // Central async function to process the outcome of pollination
@@ -560,30 +554,17 @@ export class Game extends Phaser.Scene {
 
     // Assigns more pollen if needed and applies visual effects
     private _assignPollenAndEffects(): void {
-        const pollenAdded = this.flowerManager.assignMorePollenIfNeeded();
-        if (pollenAdded) {
-            // Find the specific flower sprite that received pollen to add effects
-            const newlyPollenedFlower = (
-                this.flowerManager
-                    .getGroup()
-                    .getChildren() as Phaser.Physics.Arcade.Sprite[]
-            ).find((f) => {
-                const fd = f.getData("flowerData") as FlowerData;
-                // Check for hasPollen flag and potentially a visual cue like tint
-                return fd.hasPollen && f.tintTopLeft === 0xffff00; // Assuming yellow tint indicates new pollen
-            });
-
-            if (newlyPollenedFlower) {
-                createParticles(
-                    this,
-                    newlyPollenedFlower.x,
-                    newlyPollenedFlower.y,
-                    "pollen_particle_generated",
-                    0xffff00, // Yellow particles for pollen gain
-                    10,
-                );
-                addInteractionPulse(this, newlyPollenedFlower);
-            }
+        const newFlower = this.flowerManager.assignMorePollenIfNeededReturnFlower();
+        if (newFlower) {
+            createParticles(
+                this,
+                newFlower.x,
+                newFlower.y,
+                "pollen_particle_generated",
+                0xffff00,
+                10,
+            );
+            addInteractionPulse(this, newFlower);
         }
     }
 

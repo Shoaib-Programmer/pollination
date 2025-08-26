@@ -14,6 +14,7 @@ export class BonusChallenge {
     private readonly scene: Phaser.Scene;
     private readonly flowerManager: FlowerManager;
     private active: boolean = false;
+    private isFinalizing: boolean = false; // guard to prevent double finalize
     private currentQuestion?: QuizQuestion;
     private answerFlowers: Phaser.Physics.Arcade.Sprite[] = [];
     private challengeContainer?: Phaser.GameObjects.Container;
@@ -56,11 +57,10 @@ export class BonusChallenge {
         this.currentQuestion = questions[0];
         this.active = true;
 
-        // Emit event to pause the regular gameplay timer
-        EventBus.emit("game:set-input-active", false);
-
-        // Clear existing flowers for cleaner UI during challenge
-        this.flowerManager.clearFlowers();
+    // Pause normal input while we set up UI
+    EventBus.emit("game:set-input-active", false);
+    // Dim existing flowers instead of clearing them so progress persists
+    this.flowerManager.setDimmed(true);
 
         // Create UI for the challenge
         this.createChallengeUI();
@@ -72,8 +72,8 @@ export class BonusChallenge {
             this.createTrueFalseFlowers();
         }
 
-        // IMPORTANT: Re-enable input so the player can move to the answer
-        EventBus.emit("game:set-input-active", true);
+    // Re-enable input AFTER answer flowers exist
+    EventBus.emit("game:set-input-active", true);
 
         // Set up physics overlap for answer flowers
         // Access the bee instance from the scene
@@ -96,10 +96,10 @@ export class BonusChallenge {
         this.challengeTimeoutTimer = this.scene.time.delayedCall(15000, () => {
             if (this.active) {
                 console.log("Bonus Challenge: Time ran out!");
-                this.active = false; // Mark as inactive due to timeout
-                EventBus.emit("game:set-input-active", false); // Disable input
-                this.endChallenge(); // Clean up UI
-                this.finalizeChallengeReset(); // Reset game state & schedule next
+                this.active = false;
+                EventBus.emit("game:set-input-active", false);
+                this.endChallenge();
+                this.finalizeChallengeReset();
             }
         });
     }
@@ -473,6 +473,8 @@ export class BonusChallenge {
      * Called after the result popup is handled or on timeout.
      */
     private finalizeChallengeReset(): void {
+    if (this.isFinalizing) return; // guard
+    this.isFinalizing = true;
         console.log("Bonus Challenge: Finalizing reset...");
 
         // 1. Reset the core game state first
@@ -534,18 +536,9 @@ export class BonusChallenge {
         // Re-enable regular gameplay input and timer
         EventBus.emit("game:set-input-active", true);
         console.log("Bonus Challenge: Input re-enabled.");
-
-        // Reset flower manager - regenerate flowers
-        if (this.flowerManager) {
-            console.log("Bonus Challenge: Clearing and respawning flowers.");
-            this.flowerManager.clearFlowers();
-            this.flowerManager.spawnFlowers(6, "red");
-            this.flowerManager.spawnFlowers(6, "blue");
-            this.flowerManager.assignInitialPollen();
-            console.log("Bonus Challenge: Flowers reset.");
-        } else {
-            console.error("FlowerManager not available during game reset.");
-        }
+    // Restore flower visuals
+    this.flowerManager.setDimmed(false);
+    this.isFinalizing = false; // allow future challenges
     }
 
     /**

@@ -16,6 +16,7 @@ export class FlowerManager {
     }
     private scene: Phaser.Scene;
     private flowers: Phaser.Physics.Arcade.StaticGroup;
+    private dimmed: boolean = false;
 
     constructor(
         scene: Phaser.Scene,
@@ -163,48 +164,7 @@ export class FlowerManager {
 
     // Add pollen to a flower if none are available (returns true if pollen was added)
     public assignMorePollenIfNeeded(): boolean {
-        // Check if pollen is already available
-        let pollenAvailable = false;
-        this.flowers.children.iterate((child) => {
-            if (!child) return true;
-            const flower = child as Phaser.Physics.Arcade.Sprite;
-            const data = flower.getData("flowerData") as FlowerData | undefined;
-            if (data?.hasPollen && !data.isPollinated) {
-                pollenAvailable = true;
-                return false;
-            }
-            return true;
-        });
-
-        // If no pollen available, add some to a random unpollinated flower
-        if (!pollenAvailable) {
-            const unpollinatedFlowers = (
-                this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[]
-            ).filter((f) => {
-                const data = f?.getData("flowerData") as FlowerData | undefined;
-                return data && !data.isPollinated && !data.hasPollen;
-            });
-
-            if (unpollinatedFlowers.length > 0) {
-                const flowerToAddPollen =
-                    Phaser.Math.RND.pick(unpollinatedFlowers);
-                const data = flowerToAddPollen?.getData("flowerData") as
-                    | FlowerData
-                    | undefined;
-
-                if (data && flowerToAddPollen) {
-                    data.hasPollen = true;
-                    flowerToAddPollen.setTint(0xffff00);
-                    return true; // Indicate pollen was added
-                } else {
-                    console.warn(
-                        "Failed to get data for flower selected to add pollen.",
-                    );
-                }
-            }
-        }
-
-        return false; // No pollen was added
+    return false; // Placeholder to satisfy old signature while patching
     }
 
     // Check if all flowers are pollinated
@@ -221,5 +181,51 @@ export class FlowerManager {
             return true;
         });
         return allDone;
+    }
+
+    /**
+     * New implementation: add pollen if none available. Returns the sprite that received pollen or null.
+     */
+    public assignMorePollenIfNeededReturnFlower(): Phaser.Physics.Arcade.Sprite | null {
+        let pollenAvailable = false;
+        this.flowers.children.iterate((child) => {
+            if (!child) return true;
+            const flower = child as Phaser.Physics.Arcade.Sprite;
+            const data = flower.getData("flowerData") as FlowerData | undefined;
+            if (data?.hasPollen && !data.isPollinated) {
+                pollenAvailable = true;
+                return false;
+            }
+            return true;
+        });
+
+        if (!pollenAvailable) {
+            const unpollinated = (this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[]).filter((f) => {
+                const d = f.getData("flowerData") as FlowerData | undefined;
+                return d && !d.isPollinated && !d.hasPollen;
+            });
+            if (unpollinated.length > 0) {
+                const flowerToAdd = Phaser.Math.RND.pick(unpollinated);
+                const d = flowerToAdd.getData("flowerData") as FlowerData | undefined;
+                if (d) {
+                    d.hasPollen = true;
+                    flowerToAdd.setTint(0xffff00);
+                    return flowerToAdd;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Dim or undim existing flowers during bonus challenge */
+    public setDimmed(dim: boolean): void {
+        if (this.dimmed === dim) return;
+        this.dimmed = dim;
+        const alpha = dim ? 0.25 : 1;
+        this.flowers.children.iterate((child) => {
+            if (!child) return true;
+            (child as Phaser.GameObjects.Sprite).setAlpha(alpha);
+            return true;
+        });
     }
 }
