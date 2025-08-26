@@ -20,8 +20,7 @@ const main = async (): Promise<void> => {
             console.error(
                 "Error: 'phaser' not found in package.json dependencies.",
             );
-            // @ts-ignore
-            Bun.exit(1); // Use Bun.exit()
+            process.exit(1); // Use process.exit()
         }
         // Use non-null assertions as type checker isn't inferring after check
         const phaserVersion: string = packageData.dependencies!.phaser!;

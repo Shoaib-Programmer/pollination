@@ -56,7 +56,7 @@ const config = [
 
     // 4. Add any global ignores or custom rules last
     {
-        ignores: [".next/", "node_modules/"], // Example ignores
+        ignores: ["next-env.d.ts", ".next/", "node_modules/"], // Example ignores
     },
     // {
     //    rules: {
