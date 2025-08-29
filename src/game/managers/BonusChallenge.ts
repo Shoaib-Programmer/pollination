@@ -59,6 +59,8 @@ export class BonusChallenge {
 
         // Pause normal input while we set up UI
         EventBus.emit("game:set-input-active", false);
+        // Disable main game physics overlap to prevent interference with quiz flowers
+        (this.scene as Game).setMainPhysicsOverlapActive(false);
         // Dim existing flowers instead of clearing them so progress persists
         this.flowerManager.setDimmed(true);
 
@@ -98,6 +100,8 @@ export class BonusChallenge {
                 console.log("Bonus Challenge: Time ran out!");
                 this.active = false;
                 EventBus.emit("game:set-input-active", false);
+                // Re-enable main game physics overlap on timeout
+                (this.scene as Game).setMainPhysicsOverlapActive(true);
                 this.endChallenge();
                 this.finalizeChallengeReset();
             }
@@ -338,6 +342,7 @@ export class BonusChallenge {
         }
 
         EventBus.emit("game:set-input-active", false);
+        (this.scene as Game).setMainPhysicsOverlapActive(true);
 
         const isCorrect = flower.getData("isCorrect") as boolean;
 
@@ -535,6 +540,8 @@ export class BonusChallenge {
         console.log("Bonus Challenge: Resetting game to normal state.");
         // Re-enable regular gameplay input and timer
         EventBus.emit("game:set-input-active", true);
+        // Re-enable main game physics overlap
+        (this.scene as Game).setMainPhysicsOverlapActive(true);
         console.log("Bonus Challenge: Input re-enabled.");
         // Restore flower visuals
         this.flowerManager.setDimmed(false);
@@ -552,6 +559,10 @@ export class BonusChallenge {
             if (flower?.scene) flower.destroy();
         });
         this.answerFlowers = [];
+        // Re-enable main game physics overlap if challenge was active
+        if (this.active) {
+            (this.scene as Game).setMainPhysicsOverlapActive(true);
+        }
         console.log("BonusChallenge destroyed.");
     }
 
@@ -560,5 +571,12 @@ export class BonusChallenge {
      */
     public isActive(): boolean {
         return this.active;
+    }
+
+    /**
+     * Check if a flower is one of the answer flowers for the current challenge
+     */
+    public isAnswerFlower(flower: Phaser.Physics.Arcade.Sprite): boolean {
+        return this.answerFlowers.includes(flower);
     }
 }

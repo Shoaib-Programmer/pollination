@@ -21,6 +21,7 @@ export class Game extends Phaser.Scene {
     private flowerManager!: FlowerManager;
     private gameTimer!: GameTimer;
     private bonusChallenge!: BonusChallenge; // New bonus challenge manager
+    private mainPhysicsOverlap?: any; // Track main physics overlap
 
     // Input
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -75,14 +76,14 @@ export class Game extends Phaser.Scene {
         this.flowerManager.spawnFlowers(6, "blue");
         this.flowerManager.assignInitialPollen();
 
-        // --- Physics ---
-        this.physics.add.overlap(
-            this.bee,
-            this.flowers,
-            this.handleBeeFlowerCollision as ArcadePhysicsCallback, // Keep collision handler here
-            undefined,
-            this,
-        );
+            // --- Physics ---
+    this.mainPhysicsOverlap = this.physics.add.overlap(
+        this.bee,
+        this.flowers,
+        this.handleBeeFlowerCollision as ArcadePhysicsCallback, // Keep collision handler here
+        undefined,
+        this,
+    );
 
         // --- Input ---
         if (this.input.keyboard) {
@@ -155,6 +156,13 @@ export class Game extends Phaser.Scene {
             this.bee.setVelocity(0);
             this.bee.stopFlappingAnimation(true); // Stop immediately, reset scale
             (this.bee.body as Phaser.Physics.Arcade.Body).enable = true;
+        }
+    }
+
+    // Enable/disable main physics overlap for bonus challenges
+    public setMainPhysicsOverlapActive(active: boolean): void {
+        if (this.mainPhysicsOverlap) {
+            this.mainPhysicsOverlap.active = active;
         }
     }
 
@@ -308,12 +316,11 @@ export class Game extends Phaser.Scene {
         }
         // No need to check inputEnabled/body.enable here - physics system handles that
 
-        // Check if we're in a bonus challenge
+        // During bonus challenges, the main physics overlap is disabled
+        // so this handler should not be called for regular gameplay flowers
         if (this.bonusChallenge.isActive()) {
-            // Handle answer selection for quiz flowers
-            this.bonusChallenge.handleAnswerSelection(
-                flowerGO as Phaser.Physics.Arcade.Sprite,
-            );
+            // This should not happen since we disable the main physics overlap during challenges
+            console.warn("Main game collision detected during bonus challenge - this should not happen");
             return;
         }
 
