@@ -2,7 +2,6 @@
 import { Scene } from "phaser";
 import gsap from "gsap"; // Import GSAP
 import storageService, { GameScore } from "@/services/StorageService";
-import { QuizService } from "@/game/data/quizData";
 import EventBus from "@/game/EventBus";
 
 export class GameOver extends Scene {
@@ -12,11 +11,9 @@ export class GameOver extends Scene {
     private highScores: GameScore[] = [];
     private isLoadingScores: boolean = false;
     private showHighScoresOnly: boolean = false;
-    private readonly quizService: QuizService;
 
     constructor() {
         super("GameOver");
-        this.quizService = QuizService.getInstance();
     }
 
     init(data: {
@@ -38,15 +35,6 @@ export class GameOver extends Scene {
                 // Log error, although saveGameScore already does
                 console.error("Error saving score from init context:", error);
             });
-
-            // Record that a game has been played in QuizService
-            this.quizService.recordGamePlayed();
-
-            // Check if a quiz is due (3+ games played since last quiz)
-            if (this.quizService.isQuizDue()) {
-                // Update the event name to match what App.tsx is listening for
-                EventBus.emit("quiz-requested", true);
-            }
         }
 
         // Always load high scores
