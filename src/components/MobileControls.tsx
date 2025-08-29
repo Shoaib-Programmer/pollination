@@ -1,6 +1,5 @@
 // src/components/MobileControls.tsx
 import React, { useState, PointerEvent } from "react";
-import styles from "@/styles/MobileControls.module.css"; // Transitioning away gradually
 import EventBus from "@/game/EventBus"; // Use the global EventBus
 
 type DPadDirection = "up" | "down" | "left" | "right";
@@ -62,11 +61,8 @@ export const MobileControls: React.FC = () => {
         }
     };
 
-    // Helper to generate button props
-    const getButtonProps = (direction: DPadDirection) => ({
-        className: `${styles.dpadButton} ${styles[direction]} ${
-            pressedButton === direction ? styles.dpadButtonPressed : ""
-        }`,
+    // Handlers for DPad buttons
+    const getButtonHandlers = (direction: DPadDirection) => ({
         onPointerDown: (e: PointerEvent<HTMLButtonElement>) =>
             handlePointerDown(e, direction),
         onPointerUp: (e: PointerEvent<HTMLButtonElement>) =>
@@ -79,28 +75,66 @@ export const MobileControls: React.FC = () => {
         onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
     });
 
+    // Compose className for Tailwind-only DPad buttons
+    const getButtonClassName = (direction: DPadDirection) =>
+        `pointer-events-auto flex items-center justify-center rounded-xl ` +
+        // Base visual style (less transparent, gamified gradient + shadows)
+        `bg-gradient-to-br from-zinc-800/95 to-zinc-900/95 backdrop-blur-sm ` +
+        `border border-white/20 text-neutral-100 shadow-lg shadow-black/40 ` +
+        // Interactions
+        `transition transform duration-150 ease-out ` +
+        `hover:brightness-110 hover:shadow-xl hover:shadow-black/50 hover:ring-2 hover:ring-accent/40 ` +
+        `focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ` +
+        `active:translate-y-px active:shadow-inner active:shadow-black/60 active:brightness-95 ` +
+        // Pressed state from game input
+        `${pressedButton === direction ? "scale-95 ring-2 ring-accent/60 text-accent" : ""}`;
+
+    const ArrowIcon: React.FC<{ direction: DPadDirection }> = ({ direction }) => {
+        const rotation =
+            direction === "up" ? 0 : direction === "right" ? 90 : direction === "down" ? 180 : 270;
+        return (
+            <svg
+                className="w-8 h-8 md:w-9 md:h-9 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                style={{ transform: `rotate(${rotation}deg)` }}
+            >
+                <path d="M12 5c.28 0 .53.11.71.29l6 6a1 1 0 0 1-1.42 1.42L13 8.41V18a1 1 0 1 1-2 0V8.41l-4.29 4.3A1 1 0 0 1 5.3 11.3l6-6A1 1 0 0 1 12 5z" />
+            </svg>
+        );
+    };
+
     return (
-        <div className="pointer-events-none select-none absolute bottom-6 left-6 w-40 h-40 grid grid-cols-3 grid-rows-3 gap-1.5 opacity-80 hover:opacity-95 transition-opacity z-20 safe-left safe-bottom">
+        <div className="pointer-events-none select-none absolute bottom-6 left-6 w-40 h-40 grid grid-cols-3 grid-rows-3 gap-1.5 opacity-95 hover:opacity-100 transition-opacity z-20 safe-left safe-bottom">
             <button
-                {...getButtonProps("up")}
-                className="pointer-events-auto flex items-center justify-center rounded-xl bg-surface/80 backdrop-blur-sm border border-white/15 text-3xl text-neutral-200 shadow-soft active:scale-95 transition transform focus-ring col-start-2 row-start-1"
+                {...getButtonHandlers("up")}
+                className={`${getButtonClassName("up")} col-start-2 row-start-1`}
                 aria-label="Move Up"
-            />
+            >
+                <ArrowIcon direction="up" />
+            </button>
             <button
-                {...getButtonProps("left")}
-                className="pointer-events-auto flex items-center justify-center rounded-xl bg-surface/80 backdrop-blur-sm border border-white/15 text-3xl text-neutral-200 shadow-soft active:scale-95 transition transform focus-ring col-start-1 row-start-2"
+                {...getButtonHandlers("left")}
+                className={`${getButtonClassName("left")} col-start-1 row-start-2`}
                 aria-label="Move Left"
-            />
+            >
+                <ArrowIcon direction="left" />
+            </button>
             <button
-                {...getButtonProps("right")}
-                className="pointer-events-auto flex items-center justify-center rounded-xl bg-surface/80 backdrop-blur-sm border border-white/15 text-3xl text-neutral-200 shadow-soft active:scale-95 transition transform focus-ring col-start-3 row-start-2"
+                {...getButtonHandlers("right")}
+                className={`${getButtonClassName("right")} col-start-3 row-start-2`}
                 aria-label="Move Right"
-            />
+            >
+                <ArrowIcon direction="right" />
+            </button>
             <button
-                {...getButtonProps("down")}
-                className="pointer-events-auto flex items-center justify-center rounded-xl bg-surface/80 backdrop-blur-sm border border-white/15 text-3xl text-neutral-200 shadow-soft active:scale-95 transition transform focus-ring col-start-2 row-start-3"
+                {...getButtonHandlers("down")}
+                className={`${getButtonClassName("down")} col-start-2 row-start-3`}
                 aria-label="Move Down"
-            />
+            >
+                <ArrowIcon direction="down" />
+            </button>
         </div>
     );
 };

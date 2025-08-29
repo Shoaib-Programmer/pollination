@@ -188,6 +188,9 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                 const isGameSceneActive =
                     gameSceneInstance?.scene.isActive("Game");
 
+                // Emit UI signal for scene active state
+                EventBus.emit("ui:game-active", Boolean(isGameSceneActive));
+
                 // Attach listeners when Game scene becomes active
                 if (isGameSceneActive && !listenersAttachedRef.current) {
                     if (gameSceneInstance) {
