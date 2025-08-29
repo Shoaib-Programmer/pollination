@@ -1,6 +1,6 @@
 // src/components/GameUI.tsx
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
-import styles from "@/styles/GameUI.module.css";
+import styles from "@/styles/GameUI.module.css"; // Retain for layout overlay base; gradually replacing with utilities
 import EventBus from "@/game/EventBus";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -249,12 +249,24 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         <div ref={containerRef} className={styles.uiOverlay}>
             {/* Top Bar for Score and Timer - Only show during gameplay */}
             {isGameSceneActive && (
-                <div className={styles.topBar}>
-                    <div ref={scoreBoxRef} className={styles.scoreBox}>
-                        Score: {displayScore}
+                <div className="flex justify-between items-center w-full">
+                    <div
+                        ref={scoreBoxRef}
+                        className="pill animate-[fadeIn_400ms_ease]"
+                        aria-live="polite"
+                        aria-label={`Score ${displayScore}`}
+                    >
+                        <span className="sr-only">Score:</span>
+                        {displayScore}
                     </div>
-                    <div ref={timerDisplayRef} className={styles.timerBox}>
-                        Time: {formatTime(remainingTime)}
+                    <div
+                        ref={timerDisplayRef}
+                        className="pill min-w-[120px] text-center animate-[fadeIn_400ms_ease]"
+                        aria-live="polite"
+                        aria-label={`Time remaining ${formatTime(remainingTime)}`}
+                    >
+                        <span className="sr-only">Time: </span>
+                        {formatTime(remainingTime)}
                     </div>
                 </div>
             )}
@@ -262,12 +274,19 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
             {/* Full Screen Modal for Facts */}
             <div
                 ref={modalOverlayRef}
-                className={styles.modalOverlay}
-                style={{ visibility: "hidden" }} // Initial visibility set by GSAP
+                className="fixed inset-0 flex items-center justify-center bg-black/85 z-50 pointer-events-auto"
+                role="dialog"
+                aria-modal="true"
+                aria-live="polite"
+                style={{ visibility: "hidden" }}
             >
-                <div className={styles.modalContent}> {modalFact} </div>
-                {/* Timer Bar inside the modal */}
-                <div ref={timerBarRef} className={styles.timerBar}></div>
+                <div className="max-w-[90%] text-center font-luckiest text-white text-2xl md:text-3xl leading-snug drop-shadow-xl px-8 md:px-12">
+                    {modalFact}
+                </div>
+                <div
+                    ref={timerBarRef}
+                    className="absolute bottom-0 left-0 h-2 md:h-2.5 w-full bg-accent"
+                ></div>
             </div>
         </div>
     );

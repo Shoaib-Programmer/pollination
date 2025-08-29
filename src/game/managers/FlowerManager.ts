@@ -164,7 +164,7 @@ export class FlowerManager {
 
     // Add pollen to a flower if none are available (returns true if pollen was added)
     public assignMorePollenIfNeeded(): boolean {
-    return false; // Placeholder to satisfy old signature while patching
+        return false; // Placeholder to satisfy old signature while patching
     }
 
     // Check if all flowers are pollinated
@@ -200,13 +200,17 @@ export class FlowerManager {
         });
 
         if (!pollenAvailable) {
-            const unpollinated = (this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[]).filter((f) => {
+            const unpollinated = (
+                this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[]
+            ).filter((f) => {
                 const d = f.getData("flowerData") as FlowerData | undefined;
                 return d && !d.isPollinated && !d.hasPollen;
             });
             if (unpollinated.length > 0) {
                 const flowerToAdd = Phaser.Math.RND.pick(unpollinated);
-                const d = flowerToAdd.getData("flowerData") as FlowerData | undefined;
+                const d = flowerToAdd.getData("flowerData") as
+                    | FlowerData
+                    | undefined;
                 if (d) {
                     d.hasPollen = true;
                     flowerToAdd.setTint(0xffff00);

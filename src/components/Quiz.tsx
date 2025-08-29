@@ -1,6 +1,6 @@
 // src/components/Quiz.tsx
 import React, { useState, useEffect } from "react";
-import styles from "../styles/Quiz.module.css";
+import styles from "../styles/Quiz.module.css"; // Gradual migration; new utilities below
 import { QuizQuestion, QuizService, QuestionType } from "../game/data/quizData";
 
 // Define internal interfaces that match the structure needed by the component
@@ -134,96 +134,128 @@ const Quiz: React.FC<QuizProps> = ({
     };
 
     if (isLoading) {
-        return <div className={styles.loading}>Loading quiz questions...</div>;
+        return (
+            <div className="flex items-center justify-center w-full h-full text-neutral-300 text-lg">
+                Loading quiz questions...
+            </div>
+        );
     }
 
     if (isQuizComplete) {
         return (
-            <div className={styles.quizContainer}>
-                <div className={styles.quizHeader}>
-                    <h2>Quiz Complete!</h2>
-                    <p className={styles.scoreDisplay}>
-                        Your score: {score} out of {questions.length}
-                    </p>
-                    <p>Thank you for testing your pollination knowledge!</p>
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+                <div className="card w-full max-w-xl animate-fadeIn">
+                    <div className="text-center mb-4">
+                        <h2 className="text-2xl font-bold heading-gradient mb-2">
+                            Quiz Complete!
+                        </h2>
+                        <p className="text-lg font-medium text-accent mb-1">
+                            Your score: {score} / {questions.length}
+                        </p>
+                        <p className="text-neutral-300">
+                            Thank you for testing your pollination knowledge!
+                        </p>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className={styles.quizContainer}>
-            <div className={styles.quizHeader}>
-                <h2>Pollination Quiz</h2>
-                <p className={styles.progress}>
-                    Question {currentQuestionIndex + 1} of {questions.length}
-                </p>
-            </div>
-
-            {isCompulsory && (
-                <div className={styles.compulsoryNote}>
-                    Complete this quiz to continue playing!
+        <div className="absolute inset-0 overflow-y-auto p-4 flex items-start justify-center">
+            <div className="card w-full max-w-3xl animate-fadeIn">
+                <div className="text-center mb-6">
+                    <h2 className="text-3xl font-bold heading-gradient mb-1">
+                        Pollination Quiz
+                    </h2>
+                    <p className="text-sm text-neutral-400 tracking-wide uppercase">
+                        Question {currentQuestionIndex + 1} of{" "}
+                        {questions.length}
+                    </p>
                 </div>
-            )}
-
-            <div className={styles.questionCard}>
-                <div className={styles.question}>
-                    <h3>{currentQuestion.text}</h3>
-                </div>
-
-                <div className={styles.options}>
-                    {currentQuestion.options.map((option, index) => (
-                        <button
-                            key={index}
-                            className={getOptionClassName(option, index)}
-                            onClick={() => handleOptionSelect(index)}
-                            disabled={isAnswerSubmitted}
-                        >
-                            {option.text}
-                        </button>
-                    ))}
-                </div>
-
-                {isAnswerSubmitted && currentQuestion.explanation && (
-                    <div className={styles.explanation}>
-                        <p>
-                            <strong>Explanation:</strong>{" "}
-                            {currentQuestion.explanation}
-                        </p>
+                {isCompulsory && (
+                    <div className="mb-4 rounded-md bg-warning/15 border border-warning/30 px-3 py-2 text-warning text-sm text-center font-medium">
+                        Complete this quiz to continue playing!
                     </div>
                 )}
-            </div>
-
-            <div className={styles.controls}>
-                {!isAnswerSubmitted ? (
-                    <>
-                        <button
-                            className={styles.submitButton}
-                            onClick={handleSubmitAnswer}
-                            disabled={selectedOptionIndex === null}
-                        >
-                            Submit Answer
-                        </button>
-
-                        {!isCompulsory && (
+                <div className="mb-6">
+                    <div className="mb-4">
+                        <h3 className="text-xl font-semibold text-neutral-100 leading-snug">
+                            {currentQuestion.text}
+                        </h3>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        {currentQuestion.options.map((option, index) => {
+                            const selected = selectedOptionIndex === index;
+                            const correct =
+                                isAnswerSubmitted && option.isCorrect;
+                            const incorrect =
+                                isAnswerSubmitted &&
+                                selected &&
+                                !option.isCorrect;
+                            return (
+                                <button
+                                    key={index}
+                                    onClick={() => handleOptionSelect(index)}
+                                    disabled={isAnswerSubmitted}
+                                    className={[
+                                        "text-left rounded-md border px-4 py-3 transition-colors focus-ring",
+                                        "bg-neutral-900/40 backdrop-blur-sm border-white/10 text-neutral-200 hover:bg-neutral-800/60",
+                                        selected && !isAnswerSubmitted
+                                            ? "ring-2 ring-info/60 border-info/50 bg-info/10"
+                                            : "",
+                                        correct
+                                            ? "border-success/60 bg-success/15 text-success font-medium"
+                                            : "",
+                                        incorrect
+                                            ? "border-danger/60 bg-danger/15 text-danger"
+                                            : "",
+                                    ].join(" ")}
+                                >
+                                    {option.text}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {isAnswerSubmitted && currentQuestion.explanation && (
+                        <div className="mt-5 rounded-md border border-info/40 bg-info/10 p-4 text-sm text-info">
+                            <p>
+                                <strong>Explanation:</strong>{" "}
+                                {currentQuestion.explanation}
+                            </p>
+                        </div>
+                    )}
+                </div>
+                <div className="flex justify-between items-center gap-4">
+                    {!isAnswerSubmitted ? (
+                        <>
                             <button
-                                className={styles.skipButton}
-                                onClick={handleSkipQuiz}
+                                onClick={handleSubmitAnswer}
+                                disabled={selectedOptionIndex === null}
+                                className="btn-primary disabled:opacity-50"
                             >
-                                Skip Quiz
+                                Submit Answer
                             </button>
-                        )}
-                    </>
-                ) : (
-                    <button
-                        className={styles.nextButton}
-                        onClick={handleNextQuestion}
-                    >
-                        {currentQuestionIndex < questions.length - 1
-                            ? "Next Question"
-                            : "Finish Quiz"}
-                    </button>
-                )}
+                            {!isCompulsory && (
+                                <button
+                                    onClick={handleSkipQuiz}
+                                    className="btn-secondary"
+                                >
+                                    Skip Quiz
+                                </button>
+                            )}
+                        </>
+                    ) : (
+                        <button
+                            onClick={handleNextQuestion}
+                            className="btn-primary"
+                        >
+                            {currentQuestionIndex < questions.length - 1
+                                ? "Next Question"
+                                : "Finish Quiz"}
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

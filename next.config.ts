@@ -6,9 +6,7 @@ const nextConfig: NextConfig = {
         optimizePackageImports: ["phaser", "gsap"],
     },
     // use the precise NextConfig webpack type (cast to NonNullable since it's optional on NextConfig)
-    webpack: ((
-        config
-    ) => {
+    webpack: ((config) => {
         // Phaser optionally requires 'phaser3spectorjs'. Provide empty alias to avoid build failure.
         config.resolve = config.resolve || {};
         config.resolve.alias = config.resolve.alias || {};

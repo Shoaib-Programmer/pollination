@@ -1,63 +1,111 @@
-/* src/styles/globals.css */
+@import "tailwindcss";
 
-/* Define CSS variables for fonts loaded via next/font or @font-face */
-:root {
-    /* Make sure these variable names match how you load fonts in _app.tsx or layout */
-    /* Example assuming next/font setup */
-    /* --font-poppins: ; /* Next.js injects this if using next/font */
-    /* --font-luckiest-guy: ; /* Next.js injects this if using next/font */
+@layer base {
+    :root {
+        /* --- OR Fallbacks/Direct Definition (if not using next/font correctly) --- */
+        --font-poppins-family:
+            "Poppins", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+            sans-serif;
+        --font-luckiest-guy-family:
+            "Luckiest Guy", cursive, -apple-system, BlinkMacSystemFont,
+            Segoe UI, Roboto;
 
-    /* --- OR Fallbacks/Direct Definition (if not using next/font correctly) --- */
-    --font-poppins-family:
-        "Poppins", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-        Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-    --font-luckiest-guy-family:
-        "Luckiest Guy", cursive, -apple-system, BlinkMacSystemFont, Segoe UI,
-        Roboto;
-
-    /* UI Colors */
-    --ui-bg-dark: rgba(25, 25, 30, 0.85);
-    --ui-bg-light: rgba(50, 50, 55, 0.8);
-    --ui-text-primary: #f0f0f0;
-    --ui-text-secondary: #cccccc;
-    --ui-accent: #34d399; /* Example accent color (emerald green) */
-    --ui-shadow-light: rgba(255, 255, 255, 0.1);
-    --ui-shadow-dark: rgba(0, 0, 0, 0.5);
+        /* UI Colors */
+        --ui-bg-dark: rgba(25, 25, 30, 0.85);
+        --ui-bg-light: rgba(50, 50, 55, 0.8);
+        --ui-text-primary: #f0f0f0;
+        --ui-text-secondary: #cccccc;
+        --ui-accent: #34d399; /* Example accent color (emerald green) */
+        --ui-shadow-light: rgba(255, 255, 255, 0.1);
+        --ui-shadow-dark: rgba(0, 0, 0, 0.5);
+    }
+    html {
+        height: 100%;
+        scroll-behavior: smooth;
+    }
+    body {
+        height: 100%;
+        font-family: var(--font-poppins-family);
+        background-color: #0a0a13;
+        color: #f1f5f9;
+        -webkit-font-smoothing: antialiased;
+    }
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
 }
 
-/* Basic Reset and Defaults */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+@layer components {
+    /* Utility classes will be populated once Tailwind build runs; placeholder minimal styling */
+    .pill {
+        border-radius: 9999px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        background: rgba(30, 30, 38, 0.72);
+        backdrop-filter: blur(6px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+    }
+    .btn-primary {
+        background: #34d399;
+        color: #07210f;
+    }
+    .btn-primary:hover {
+        background: #10b981;
+    }
+    .btn-secondary {
+        background: rgba(30, 30, 38, 0.72);
+        color: #f1f5f9;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .card {
+        background: rgba(30, 30, 38, 0.72);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+    }
+    .heading-gradient {
+        background: linear-gradient(90deg, #34d399, #10b981);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
 }
 
-html {
-    height: 100%;
-    /* Smooth scrolling */
-    scroll-behavior: smooth;
-}
-
-body {
-    height: 100%;
-    font-family: var(--font-poppins-family); /* Use the variable */
-    color: var(--ui-text-primary);
-    background-color: #111827; /* Dark background for the page */
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+@layer utilities {
+    .safe-bottom {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    .safe-left {
+        padding-left: max(1rem, env(safe-area-inset-left));
+    }
+    .safe-right {
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
 }
 
 /* Main app container - ensure it takes space and centers content */
+/* Center main app container */
 #app {
     width: 100%;
-    height: 100vh; /* Full viewport height */
+    height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
-    overflow: hidden; /* Prevent scrollbars from page layout */
+    justify-content: center;
+    overflow: hidden;
 }
 
 /* Remove old template button styles if unused */
@@ -67,18 +115,18 @@ body {
 */
 
 /* Style links if needed */
-a {
-    color: var(--ui-accent);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-a:hover {
-    text-decoration: underline;
-    color: lighten(var(--ui-accent), 10%);
+@layer base {
+    a {
+        color: #34d399;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
 }
 
 /* Ensure main tag used by Next.js template doesn't interfere */
 main {
-    display: contents; /* Allow #app to control layout */
+    display: contents;
 }

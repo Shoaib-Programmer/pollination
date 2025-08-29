@@ -57,10 +57,10 @@ export class BonusChallenge {
         this.currentQuestion = questions[0];
         this.active = true;
 
-    // Pause normal input while we set up UI
-    EventBus.emit("game:set-input-active", false);
-    // Dim existing flowers instead of clearing them so progress persists
-    this.flowerManager.setDimmed(true);
+        // Pause normal input while we set up UI
+        EventBus.emit("game:set-input-active", false);
+        // Dim existing flowers instead of clearing them so progress persists
+        this.flowerManager.setDimmed(true);
 
         // Create UI for the challenge
         this.createChallengeUI();
@@ -72,8 +72,8 @@ export class BonusChallenge {
             this.createTrueFalseFlowers();
         }
 
-    // Re-enable input AFTER answer flowers exist
-    EventBus.emit("game:set-input-active", true);
+        // Re-enable input AFTER answer flowers exist
+        EventBus.emit("game:set-input-active", true);
 
         // Set up physics overlap for answer flowers
         // Access the bee instance from the scene
@@ -473,8 +473,8 @@ export class BonusChallenge {
      * Called after the result popup is handled or on timeout.
      */
     private finalizeChallengeReset(): void {
-    if (this.isFinalizing) return; // guard
-    this.isFinalizing = true;
+        if (this.isFinalizing) return; // guard
+        this.isFinalizing = true;
         console.log("Bonus Challenge: Finalizing reset...");
 
         // 1. Reset the core game state first
@@ -536,9 +536,9 @@ export class BonusChallenge {
         // Re-enable regular gameplay input and timer
         EventBus.emit("game:set-input-active", true);
         console.log("Bonus Challenge: Input re-enabled.");
-    // Restore flower visuals
-    this.flowerManager.setDimmed(false);
-    this.isFinalizing = false; // allow future challenges
+        // Restore flower visuals
+        this.flowerManager.setDimmed(false);
+        this.isFinalizing = false; // allow future challenges
     }
 
     /**

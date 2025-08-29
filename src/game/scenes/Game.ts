@@ -71,7 +71,7 @@ export class Game extends Phaser.Scene {
         this.bonusChallenge = new BonusChallenge(this, this.flowerManager); // Bonus challenge manager
 
         // --- Flower Setup (using Manager) ---
-    this.flowerManager.spawnFlowers(6, "red"); // (Removed duplicate spawn)
+        this.flowerManager.spawnFlowers(6, "red"); // (Removed duplicate spawn)
         this.flowerManager.spawnFlowers(6, "blue");
         this.flowerManager.assignInitialPollen();
 
@@ -435,7 +435,7 @@ export class Game extends Phaser.Scene {
 
     // Extracted logic for handling what happens after successful pollination
     private handlePollinationOutcome(pollinatedFlowerData: FlowerData): void {
-    void this._processPollinationLogic(pollinatedFlowerData);
+        void this._processPollinationLogic(pollinatedFlowerData);
     }
 
     // Central async function to process the outcome of pollination
@@ -554,7 +554,8 @@ export class Game extends Phaser.Scene {
 
     // Assigns more pollen if needed and applies visual effects
     private _assignPollenAndEffects(): void {
-        const newFlower = this.flowerManager.assignMorePollenIfNeededReturnFlower();
+        const newFlower =
+            this.flowerManager.assignMorePollenIfNeededReturnFlower();
         if (newFlower) {
             createParticles(
                 this,

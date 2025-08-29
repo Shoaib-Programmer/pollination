@@ -54,19 +54,7 @@ function App() {
 
     return (
         // Main container styling ensures proper sizing and context
-        <div
-            style={{
-                position: "relative",
-                width: "800px", // Or use responsive units like '90vw', '800px max-width' etc.
-                height: "600px", // Or use responsive units like '90vh', '600px max-height' etc.
-                maxWidth: "100vw", // Prevent overflow on small screens
-                maxHeight: "100vh",
-                margin: "auto",
-                border: "1px solid #444", // Optional border for visual structure
-                overflow: "hidden", // Clip content
-                backgroundColor: "#000", // Fallback background
-            }}
-        >
+        <div className="relative w-[800px] h-[600px] max-w-[100vw] max-h-[100vh] m-auto overflow-hidden bg-black/95 border border-white/10 rounded-xl shadow-soft backdrop-blur-sm">
             {/* Phaser Game Component */}
             {!showQuiz && <PhaserGame ref={phaserGameRef} />}
 
@@ -86,18 +74,7 @@ function App() {
                     {/* Quiz button */}
                     <button
                         onClick={handleQuizButtonClick}
-                        style={{
-                            position: "absolute",
-                            bottom: "20px",
-                            right: "20px",
-                            padding: "8px 16px",
-                            backgroundColor: "#4caf50",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            zIndex: 10,
-                        }}
+                        className="btn-primary absolute bottom-5 right-5 z-10"
                     >
                         Take Quiz
                     </button>

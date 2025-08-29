@@ -5,18 +5,18 @@ import { Poppins, Luckiest_Guy } from "next/font/google"; // Import the font fun
 
 // Configure Poppins
 const poppins = Poppins({
-    weight: ["400", "700"], // Load regular and bold weights
+    weight: ["400", "700"],
     subsets: ["latin"],
-    display: "swap", // Use swap for font display strategy
-    variable: "--font-poppins", // Define a CSS variable
+    display: "swap",
+    variable: "--font-poppins-family",
 });
 
 // Configure Luckiest Guy
 const luckiestGuy = Luckiest_Guy({
-    weight: "400", // Luckiest Guy usually only has regular weight
+    weight: "400",
     subsets: ["latin"],
     display: "swap",
-    variable: "--font-luckiest-guy", // Define a CSS variable
+    variable: "--font-luckiest-guy-family",
 });
 
 export default function App({ Component, pageProps }: AppProps) {

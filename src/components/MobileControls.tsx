@@ -1,6 +1,6 @@
 // src/components/MobileControls.tsx
 import React, { useState, PointerEvent } from "react";
-import styles from "@/styles/MobileControls.module.css";
+import styles from "@/styles/MobileControls.module.css"; // Transitioning away gradually
 import EventBus from "@/game/EventBus"; // Use the global EventBus
 
 type DPadDirection = "up" | "down" | "left" | "right";
@@ -80,16 +80,27 @@ export const MobileControls: React.FC = () => {
     });
 
     return (
-        <div className={styles.dpadContainer}>
-            <button {...getButtonProps("up")} aria-label="Move Up"></button>
-            <button {...getButtonProps("left")} aria-label="Move Left"></button>
-            {/* Optional: Central spacer element if needed */}
-            {/* <div style={{ gridArea: '2 / 2 / 3 / 3' }}></div> */}
+        <div className="pointer-events-none select-none absolute bottom-6 left-6 w-40 h-40 grid grid-cols-3 grid-rows-3 gap-1.5 opacity-80 hover:opacity-95 transition-opacity z-20 safe-left safe-bottom">
+            <button
+                {...getButtonProps("up")}
+                className="pointer-events-auto flex items-center justify-center rounded-xl bg-surface/80 backdrop-blur-sm border border-white/15 text-3xl text-neutral-200 shadow-soft active:scale-95 transition transform focus-ring col-start-2 row-start-1"
+                aria-label="Move Up"
+            />
+            <button
+                {...getButtonProps("left")}
+                className="pointer-events-auto flex items-center justify-center rounded-xl bg-surface/80 backdrop-blur-sm border border-white/15 text-3xl text-neutral-200 shadow-soft active:scale-95 transition transform focus-ring col-start-1 row-start-2"
+                aria-label="Move Left"
+            />
             <button
                 {...getButtonProps("right")}
+                className="pointer-events-auto flex items-center justify-center rounded-xl bg-surface/80 backdrop-blur-sm border border-white/15 text-3xl text-neutral-200 shadow-soft active:scale-95 transition transform focus-ring col-start-3 row-start-2"
                 aria-label="Move Right"
-            ></button>
-            <button {...getButtonProps("down")} aria-label="Move Down"></button>
+            />
+            <button
+                {...getButtonProps("down")}
+                className="pointer-events-auto flex items-center justify-center rounded-xl bg-surface/80 backdrop-blur-sm border border-white/15 text-3xl text-neutral-200 shadow-soft active:scale-95 transition transform focus-ring col-start-2 row-start-3"
+                aria-label="Move Down"
+            />
         </div>
     );
 };
