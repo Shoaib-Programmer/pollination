@@ -1,9 +1,6 @@
 // src/game/scenes/Game.ts
 import * as Phaser from "phaser";
 import EventBus from "../EventBus";
-import POLLINATION_FACTS from "../data/pollinationFacts";
-import flowerCollectionService from "@/services/FlowerCollectionService";
-
 // Import the new components
 import { Bee } from "../entities/Bee";
 import { FlowerManager, FlowerData } from "../managers/FlowerManager"; // Import interface too
@@ -35,36 +32,15 @@ export class Game extends Phaser.Scene {
     private pollenIndicatorTween: Phaser.Tweens.Tween | null = null;
     private completedFlowers: number = 0;
     private pollinationCount: number = 0;
-    private readonly pollinationFactThreshold: number = 5;
-    private readonly discoveredFlowerIds: Set<string> = new Set();
-
-    // HUD-style fact display
-    private factHUD: {
-        container: Phaser.GameObjects.Container | null;
-        background: Phaser.GameObjects.Graphics | null;
-        text: Phaser.GameObjects.Text | null;
-        icon: Phaser.GameObjects.Sprite | null;
-        tween: Phaser.Tweens.Tween | Phaser.Tweens.TweenChain | null;
-    } = {
-        container: null,
-        background: null,
-        text: null,
-        icon: null,
-        tween: null,
-    };
 
     // Config
     private readonly gameDuration: number = 60; // Seconds
-    private showFacts: boolean = true; // Knowledge Nectar setting
 
     constructor() {
         super("Game");
     }
 
     async create() {
-        // Load settings first
-        await this.loadSettings();
-
         this.add.image(400, 300, "background_generated");
         this.flowers = this.physics.add.staticGroup();
         this.flowerManager = new FlowerManager(this, this.flowers);
@@ -119,21 +95,6 @@ export class Game extends Phaser.Scene {
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
     }
 
-    // Load settings from storage service
-    private async loadSettings(): Promise<void> {
-        try {
-            const storageService = (await import("@/services/StorageService"))
-                .default;
-            const progress = await storageService.getProgress();
-            // Use optional chaining and nullish coalescing
-            this.showFacts = progress?.settings?.knowledgeNectar ?? true;
-        } catch (error) {
-            console.error("Failed to load settings:", error);
-            // Keep default setting if storage fails
-            this.showFacts = true; // Ensure default is set on error
-        }
-    }
-
     private resetGameState(): void {
         this.score = 0;
         // Bee's internal pollen state if it managed it, or reset here if scene manages
@@ -149,7 +110,6 @@ export class Game extends Phaser.Scene {
         this.dpadState = { up: false, down: false, left: false, right: false };
         this.completedFlowers = 0;
         this.pollinationCount = 0;
-        this.discoveredFlowerIds.clear();
 
         // Reset visual/physics state of bee if restarting scene
         if (this.bee?.body) {
@@ -209,8 +169,6 @@ export class Game extends Phaser.Scene {
 
         this.inputEnabled = false; // Set flag to disable input logic in update
         // Note: update loop will handle disabling body/velocity
-
-        this.events.emit("game:show-fact", "Time's Up!");
 
         this.time.delayedCall(1500, () => {
             if (this.scene.isActive()) {
@@ -435,7 +393,7 @@ export class Game extends Phaser.Scene {
             addInteractionPulse(this, flower);
             addInteractionPulse(this, this.bee, 1.05);
 
-            // --- Fact/Discovery/Win Logic ---
+            // --- Win Logic ---
             this.handlePollinationOutcome(data); // Extract complex logic
         }
     }
@@ -450,43 +408,16 @@ export class Game extends Phaser.Scene {
         pollinatedFlowerData: FlowerData,
     ): Promise<void> {
         try {
-            const flowerId = pollinatedFlowerData.flowerId;
-            let isNewDiscovery = false;
-            if (flowerId) {
-                isNewDiscovery = await this._checkDiscovery(flowerId);
-            }
-
-            let factToEmit = "";
-            let showFactHUD = false;
-
             // Priority 1: Check for Win Condition and handle end game if needed
             const winResult = this._checkAndHandleWinCondition();
             if (winResult.shouldEnd) {
-                factToEmit = winResult.fact;
-                showFactHUD = winResult.showHUD;
                 // Game ending sequence is initiated within _checkAndHandleWinCondition
             } else {
-                // Game continues... decide which fact to show (if any)
-
-                // Priority 2: Handle Discovery
-                if (isNewDiscovery && flowerId) {
-                    factToEmit = this._handleDiscoveryFact(flowerId);
-                    showFactHUD = true;
-                }
-                // Priority 3: Handle Threshold Fact (only if not a discovery)
-                else if (this._shouldShowThresholdFact()) {
-                    factToEmit = this._handleThresholdFact();
-                    showFactHUD = true;
-                    this._tryTriggerBonusChallenge(); // Attempt to trigger bonus
-                }
+                // Game continues... check if we should trigger bonus challenge
+                this._tryTriggerBonusChallenge();
 
                 // --- Assign More Pollen (only if game isn't ending) ---
                 this._assignPollenAndEffects();
-            }
-
-            // --- Show Fact HUD (if applicable based on above logic) ---
-            if (showFactHUD && factToEmit && this.showFacts) {
-                this.showInWorldText(factToEmit);
             }
         } catch (error) {
             this._handlePollinationError(error); // Use the dedicated error handler
@@ -495,48 +426,17 @@ export class Game extends Phaser.Scene {
 
     // --- Pollination Outcome Helper Methods ---
 
-    // Checks if a flower is a new discovery and updates state
-    private async _checkDiscovery(flowerId: string): Promise<boolean> {
-        const discoveryResult =
-            await flowerCollectionService.discoverFlower(flowerId);
-        const isNewDiscovery = discoveryResult !== undefined;
-        if (isNewDiscovery) {
-            this.discoveredFlowerIds.add(flowerId);
-        }
-        return isNewDiscovery;
-    }
-
     // Checks if all flowers are pollinated and initiates game end if so
     private _checkAndHandleWinCondition(): {
         shouldEnd: boolean;
-        fact: string;
-        showHUD: boolean;
     } {
         if (this.flowerManager.checkAllPollinated()) {
             this.endGameDueToCompletion(); // Start end sequence immediately
             return {
                 shouldEnd: true,
-                fact: "All flowers pollinated! Great job!",
-                showHUD: true,
             };
         }
-        return { shouldEnd: false, fact: "", showHUD: false };
-    }
-
-    // Generates the fact text for a new discovery
-    private _handleDiscoveryFact(flowerId: string): string {
-        return `New flower type discovered: ${flowerId}!`;
-    }
-
-    // Checks if the conditions are met to show a threshold-based fact
-    private _shouldShowThresholdFact(): boolean {
-        return this.pollinationCount % this.pollinationFactThreshold === 0;
-    }
-
-    // Generates the fact text for reaching a pollination threshold
-    private _handleThresholdFact(): string {
-        const randomFact = Phaser.Math.RND.pick(POLLINATION_FACTS);
-        return `${this.pollinationCount} flowers pollinated! ${randomFact}`;
+        return { shouldEnd: false };
     }
 
     // Checks conditions and potentially triggers a bonus challenge
@@ -582,10 +482,7 @@ export class Game extends Phaser.Scene {
         // Always check win condition, even after an error during processing
         const winResult = this._checkAndHandleWinCondition();
         if (winResult.shouldEnd) {
-            // If game ends due to win condition despite error, show the win fact
-            if (this.showFacts) {
-                this.showInWorldText(winResult.fact);
-            }
+            // If game ends due to win condition despite error, continue with end sequence
         } else {
             // If an error occurred but it didn't lead to a win condition,
             // log a warning. Avoid further game actions like assigning pollen
@@ -604,8 +501,7 @@ export class Game extends Phaser.Scene {
         // Update loop will disable body etc.
 
         // Use a longer delay to allow the HUD message to be read (matching the HUD display time)
-        this.time.delayedCall(6500, () => {
-            // Increased from 500ms to 6500ms to match HUD animation duration
+        this.time.delayedCall(2000, () => {
             if (this.scene.isActive()) {
                 this.scene.start("GameOver", {
                     score: this.score,
@@ -614,149 +510,6 @@ export class Game extends Phaser.Scene {
                         this.gameDuration - this.gameTimer.getRemainingTime(),
                 });
             }
-        });
-    }
-
-    // Display a fact in an appealing HUD style
-    private showInWorldText(text: string): void {
-        // Clean up any existing HUD element
-        if (this.factHUD.container) {
-            this.factHUD.tween?.stop();
-            this.factHUD.container.destroy();
-            this.factHUD = {
-                container: null,
-                background: null,
-                text: null,
-                icon: null,
-                tween: null,
-            };
-        }
-
-        // Create a container for all HUD elements
-        this.factHUD.container = this.add.container(0, 0);
-        this.factHUD.container.setDepth(20);
-
-        // Create stylized background using Graphics for gradient effect
-        this.factHUD.background = this.add.graphics();
-
-        // Calculate text dimensions with proper padding
-        const tempText = this.add.text(0, 0, text, {
-            fontFamily: "Arial",
-            fontSize: "16px",
-            color: "#ffffff",
-            align: "center",
-            fontStyle: "bold",
-            wordWrap: { width: 300 },
-        });
-        const textWidth = Math.max(tempText.width + 60, 200); // Minimum width with padding
-        const textHeight = tempText.height + 35; // Height with padding
-        tempText.destroy();
-
-        // Position the HUD at the bottom center of the screen
-        const hudX = this.scale.width / 2;
-        const hudY = this.scale.height - 80;
-
-        // Add icon (pollen or flower icon)
-        this.factHUD.icon = this.add
-            .sprite(
-                hudX - textWidth / 2 + 25,
-                hudY,
-                "pollen_particle_generated",
-            )
-            .setTint(0x34d399)
-            .setScale(2.5);
-        this.factHUD.container.add(this.factHUD.icon);
-
-        // Create rounded rectangle background with gradient
-        const bgGraphics = this.factHUD.background;
-
-        // Background gradient fill
-        const gradientColors = [0x3a506b, 0x1c2541]; // Dark blue gradient
-        const cornerRadius = 15;
-
-        // Draw the rounded rectangle with gradient
-        bgGraphics.clear();
-        bgGraphics.fillStyle(gradientColors[0], 0.95);
-        bgGraphics.fillRoundedRect(
-            hudX - textWidth / 2,
-            hudY - textHeight / 2,
-            textWidth,
-            textHeight,
-            cornerRadius,
-        );
-
-        // Add highlight/shadow effects
-        bgGraphics.lineStyle(2, 0xffffff, 0.15);
-        bgGraphics.strokeRoundedRect(
-            hudX - textWidth / 2,
-            hudY - textHeight / 2,
-            textWidth,
-            textHeight,
-            cornerRadius,
-        );
-
-        // Add the main text
-        this.factHUD.text = this.add
-            .text(hudX, hudY, text, {
-                fontFamily: "Arial",
-                fontSize: "16px",
-                color: "#ffffff",
-                align: "center",
-                fontStyle: "bold",
-                wordWrap: { width: textWidth - 80 },
-            })
-            .setOrigin(0.5);
-
-        // Add all elements to the container
-        this.factHUD.container.add(bgGraphics);
-        this.factHUD.container.add(this.factHUD.text);
-
-        // Add a subtle glow/pulsing effect
-        this.tweens.add({
-            targets: this.factHUD.icon,
-            scale: { from: 2.5, to: 3 },
-            duration: 800,
-            yoyo: true,
-            repeat: -1,
-            ease: "Sine.easeInOut",
-        });
-
-        // Initial state (off-screen)
-        this.factHUD.container.setAlpha(0);
-        this.factHUD.container.y += 50;
-
-        // Animation sequence
-        this.factHUD.tween = this.tweens.chain({
-            tweens: [
-                {
-                    targets: this.factHUD.container,
-                    alpha: 1,
-                    y: `-=50`,
-                    duration: 500,
-                    ease: "Back.easeOut",
-                },
-                {
-                    targets: this.factHUD.container,
-                    alpha: 0,
-                    y: `-=20`,
-                    duration: 500,
-                    ease: "Power1",
-                    delay: 6000, // Display for 6 seconds
-                    onComplete: () => {
-                        // Clean up after animation
-                        if (this.factHUD.container) {
-                            this.factHUD.container.destroy();
-                            this.factHUD = {
-                                container: null,
-                                background: null,
-                                text: null,
-                                icon: null,
-                                tween: null,
-                            };
-                        }
-                    },
-                },
-            ],
         });
     }
 
