@@ -100,7 +100,7 @@ export class GameOver extends Scene {
                     ? "High Scores"
                     : "Pollination Complete!",
                 {
-                    fontFamily: "var(--font-luckiest-guy)",
+                    fontFamily: "var(--font-luckiest-guy-family)",
                     fontSize: this.showHighScoresOnly ? "60px" : "54px",
                     color: "#ffdd00",
                     stroke: "#8B4513",
@@ -136,7 +136,7 @@ export class GameOver extends Scene {
                     statsPanelY,
                     `Score: ${this.score}\nFlowers: ${this.completedFlowers} | Wave: ${this.currentWave} | Time: ${Math.floor(this.totalTime)}s`,
                     {
-                        fontFamily: "var(--font-poppins)",
+                        fontFamily: "var(--font-poppins-family)",
                         fontSize: "18px",
                         color: "#ffffff",
                         align: "center",
@@ -170,7 +170,7 @@ export class GameOver extends Scene {
         const highScoresTitle = !this.showHighScoresOnly
             ? this.add
                   .text(centerX, highScoresTitleY, "High Scores", {
-                      fontFamily: "var(--font-poppins)",
+                      fontFamily: "var(--font-poppins-family)",
                       fontSize: "26px",
                       color: "#ffdd00",
                       align: "center",
@@ -189,7 +189,7 @@ export class GameOver extends Scene {
                 highScoresListY,
                 this.isLoadingScores ? "Loading scores..." : "",
                 {
-                    fontFamily: "var(--font-poppins)",
+                    fontFamily: "var(--font-poppins-family)",
                     fontSize: this.showHighScoresOnly ? "24px" : "20px",
                     color: "#ffffff",
                     align: "center",
@@ -204,7 +204,7 @@ export class GameOver extends Scene {
             highScoresPanelY + highScoresPanelHeight / 2 + 45; // Position below panel
         const playAgainButton = this.add
             .text(centerX, playAgainButtonY, "Home", {
-                fontFamily: "var(--font-poppins)",
+                fontFamily: "var(--font-poppins-family)",
                 fontSize: "30px",
                 font: "bold",
                 color: "#ffffff",

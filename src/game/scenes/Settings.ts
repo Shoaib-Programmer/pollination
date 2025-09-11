@@ -110,7 +110,7 @@ export class Settings extends Scene {
         // Title
         const title = this.add
             .text(centerX, centerY - 150, "Settings", {
-                fontFamily: "var(--font-luckiest-guy)",
+                fontFamily: "var(--font-luckiest-guy-family)",
                 fontSize: "50px",
                 color: "#ffffff",
                 stroke: "#333333",
@@ -141,7 +141,7 @@ export class Settings extends Scene {
                 centerY - 70,
                 this.getVolumeBarText("Music Volume:", this.musicVolume),
                 {
-                    fontFamily: "var(--font-poppins)",
+                    fontFamily: "var(--font-poppins-family)",
                     fontSize: "24px",
                     color: "#ffffff",
                     align: "center",
@@ -157,7 +157,7 @@ export class Settings extends Scene {
                 centerY - 30,
                 this.getVolumeBarText("Sound Effects:", this.soundVolume),
                 {
-                    fontFamily: "var(--font-poppins)",
+                    fontFamily: "var(--font-poppins-family)",
                     fontSize: "24px",
                     color: "#ffffff",
                     align: "center",
@@ -169,7 +169,7 @@ export class Settings extends Scene {
         // Difficulty setting with toggle
         this.difficultyText = this.add
             .text(centerX, centerY + 10, `Difficulty: ${this.difficulty}`, {
-                fontFamily: "var(--font-poppins)",
+                fontFamily: "var(--font-poppins-family)",
                 fontSize: "24px",
                 color: "#ffffff",
                 align: "center",
@@ -184,7 +184,7 @@ export class Settings extends Scene {
                 centerY + 50,
                 `Knowledge Nectar: ${this.knowledgeNectar ? "On" : "Off"}`,
                 {
-                    fontFamily: "var(--font-poppins)",
+                    fontFamily: "var(--font-poppins-family)",
                     fontSize: "24px",
                     color: "#ffffff",
                     align: "center",
@@ -205,7 +205,7 @@ export class Settings extends Scene {
         // Back button
         const backButton = this.add
             .text(centerX, centerY + 150, "Back to Menu", {
-                fontFamily: "var(--font-poppins)",
+                fontFamily: "var(--font-poppins-family)",
                 fontSize: "28px",
                 color: "#ffffff",
                 backgroundColor: "#4682B4", // Steel Blue

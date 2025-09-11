@@ -38,7 +38,7 @@ export function createStyledButton(
 ): Phaser.GameObjects.Text {
     const defaultConfig = {
         fontSize: "28px",
-        fontFamily: "var(--font-poppins)",
+        fontFamily: "var(--font-poppins-family)",
         padding: { x: 25, y: 12 },
         shadow: {
             offsetX: 2,
@@ -142,7 +142,7 @@ export function createInteractiveButton(
 export const TEXT_STYLES = {
     title: {
         font: "bold",
-        fontFamily: "var(--font-poppins)",
+        fontFamily: "var(--font-poppins-family)",
         fontSize: "48px",
         color: "#ffffff",
         shadow: {
@@ -155,7 +155,7 @@ export const TEXT_STYLES = {
     },
     subtitle: {
         font: "bold",
-        fontFamily: "var(--font-poppins)",
+        fontFamily: "var(--font-poppins-family)",
         fontSize: "24px",
         color: "#ffffff",
         shadow: {
@@ -167,7 +167,7 @@ export const TEXT_STYLES = {
         },
     },
     body: {
-        fontFamily: "var(--font-poppins)",
+        fontFamily: "var(--font-poppins-family)",
         fontSize: "18px",
         color: "#ffffff",
         wordWrap: { width: 400 },

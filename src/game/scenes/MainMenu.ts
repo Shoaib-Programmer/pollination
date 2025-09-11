@@ -9,7 +9,6 @@ import { COMMON_EVENTS } from "../utils/eventUtils"; // Import event constants
 
 export class MainMenu extends Scene {
     private hasHighScores: boolean = false;
-    private isCheckingScores: boolean = false;
     private highScoresButton?: Phaser.GameObjects.Text;
 
     constructor() {
@@ -22,17 +21,14 @@ export class MainMenu extends Scene {
     }
 
     async checkForHighScores() {
-        this.isCheckingScores = true;
         try {
             const highScores = await storageService.getHighScores(1); // Just check if there's at least one
             this.hasHighScores = highScores.length > 0;
-            this.isCheckingScores = false;
 
             // If high scores button exists, update its visibility
             this.updateHighScoresButtonVisibility();
         } catch (error) {
             console.error("Failed to check for high scores:", error);
-            this.isCheckingScores = false;
             this.hasHighScores = false;
         }
     }
@@ -86,7 +82,7 @@ export class MainMenu extends Scene {
         // --- Animate UI Elements In ---
         const title = this.add
             .text(centerX, centerY - 150, "Pollination Fun!", {
-                fontFamily: "var(--font-luckiest-guy)",
+                fontFamily: "var(--font-luckiest-guy-family)",
                 fontSize: "60px",
                 color: "#ffff00",
                 stroke: "#8B4513",
@@ -115,7 +111,7 @@ export class MainMenu extends Scene {
                 centerY - 45,
                 "Use Arrow Keys (or D-Pad on mobile)\nto move the Bee. Collect pollen from a\nglowing flower & deliver it to another\nof the SAME color!",
                 {
-                    fontFamily: "var(--font-poppins)",
+                    fontFamily: "var(--font-poppins-family)",
                     fontSize: "20px",
                     color: "#ffffff",
                     align: "center",
