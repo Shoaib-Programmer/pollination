@@ -41,40 +41,6 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = quizQuestionsData.map((q) =>
     QuizQuestionSchema.parse(q),
 );
 
-// Generate flower-based questions dynamically
-const generateFlowerQuestions = (): QuizQuestion[] => {
-    const flowerQuestions: QuizQuestion[] = [];
-
-    FLOWERS.forEach((flower, index) => {
-        if (index < 10) {
-            // Limit to 10 flower questions to keep quiz manageable
-            flowerQuestions.push({
-                id: `flower_scientific_name_${flower.id}`,
-                type: "multipleChoice",
-                question: `What is the scientific name of the ${flower.name}?`,
-                correctAnswer: flower.scientificName,
-                options: [
-                    flower.scientificName,
-                    FLOWERS[(index + 1) % FLOWERS.length].scientificName,
-                    FLOWERS[(index + 2) % FLOWERS.length].scientificName,
-                    FLOWERS[(index + 3) % FLOWERS.length].scientificName,
-                ].sort(() => Math.random() - 0.5), // Shuffle options
-                explanation: `The ${flower.name}'s scientific name is ${flower.scientificName}.`,
-                difficulty: "hard",
-                category: "flowers",
-            });
-        }
-    });
-
-    return flowerQuestions;
-};
-
-// Combine all questions
-export const ALL_QUIZ_QUESTIONS: QuizQuestion[] = [
-    ...QUIZ_QUESTIONS,
-    ...generateFlowerQuestions(),
-];
-
 // Validate all questions at runtime
 QUIZ_QUESTIONS.forEach((question, index) => {
     try {
@@ -150,9 +116,9 @@ export class QuizService {
      */
     public getRandomQuizQuestions(count: number = 5): QuizQuestion[] {
         // Shuffle the questions array and return requested count
-        return [...ALL_QUIZ_QUESTIONS]
+        return [...QUIZ_QUESTIONS]
             .sort(() => Math.random() - 0.5)
-            .slice(0, Math.min(count, ALL_QUIZ_QUESTIONS.length));
+            .slice(0, Math.min(count, QUIZ_QUESTIONS.length));
     }
 
     /**
@@ -201,7 +167,7 @@ export class QuizService {
      * @returns All quiz questions
      */
     public getAllQuestions(): QuizQuestion[] {
-        return [...ALL_QUIZ_QUESTIONS];
+        return [...QUIZ_QUESTIONS];
     }
 
     /**
@@ -212,7 +178,7 @@ export class QuizService {
     public getQuestionsByCategory(
         category: QuizQuestion["category"],
     ): QuizQuestion[] {
-        return ALL_QUIZ_QUESTIONS.filter((q) => q.category === category);
+        return QUIZ_QUESTIONS.filter((q) => q.category === category);
     }
 
     /**
@@ -223,7 +189,7 @@ export class QuizService {
     public getQuestionsByDifficulty(
         difficulty: QuizQuestion["difficulty"],
     ): QuizQuestion[] {
-        return ALL_QUIZ_QUESTIONS.filter((q) => q.difficulty === difficulty);
+        return QUIZ_QUESTIONS.filter((q) => q.difficulty === difficulty);
     }
 }
 
