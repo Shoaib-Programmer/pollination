@@ -118,14 +118,14 @@ export class BonusChallenge {
         this.challengeContainer = this.scene.add.container(0, 0);
         this.challengeContainer.setDepth(15);
 
-        // Add semi-transparent background overlay
+        // Add darker background overlay to make flowers more prominent
         const overlay = this.scene.add.rectangle(
             0,
             0,
             this.scene.cameras.main.width,
             this.scene.cameras.main.height,
             0x000000,
-            0.5,
+            0.7, // Increased from 0.5 to 0.7 for darker background
         );
         overlay.setOrigin(0);
         this.challengeContainer.add(overlay);
@@ -204,22 +204,34 @@ export class BonusChallenge {
         // Use the non-null assertion operator (!) to assure TypeScript that currentQuestion is defined here.
         const correctAnswer = this.currentQuestion!.correctAnswer as string;
 
-        // Position flowers in a semi-circle at the bottom of the screen
+        // Position flowers based on number of options
         const centerX = this.scene.cameras.main.width / 2;
         const bottomY = this.scene.cameras.main.height - 120;
         const radius = 250;
 
         options.forEach((option, index) => {
-            // Calculate position in semi-circle
-            const angle = (Math.PI / (options.length - 1)) * index;
-            const x = centerX - radius * Math.cos(angle);
-            const y = bottomY - radius * Math.sin(angle);
+            let x: number, y: number;
 
-            // Create flower sprite
+            if (options.length === 2) {
+                // For 2 options, position them like true/false (left and right)
+                x = index === 0 ? centerX - 200 : centerX + 200;
+                y = bottomY;
+            } else {
+                // For 3+ options, use semi-circle positioning
+                const totalAngle = Math.PI; // 180 degrees for semi-circle
+                const startAngle = Math.PI / 2; // Start from top
+                const angleStep = totalAngle / (options.length - 1);
+                const angle = startAngle - (angleStep * index);
+
+                x = centerX + radius * Math.cos(angle);
+                y = bottomY - radius * Math.sin(angle);
+            }
+
+            // Create flower sprite - use existing generated textures
             const flower = this.scene.physics.add.sprite(
                 x,
                 y,
-                "flower_generated",
+                "flower_red_generated", // Use the actual generated texture
             );
             flower.setScale(0.8);
 
@@ -230,9 +242,14 @@ export class BonusChallenge {
             flower.setData("option", option);
             flower.setData("isCorrect", isCorrect);
 
-            // Set color based on index (for visual distinction)
-            const colors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00];
+            // Set visual distinction based on index (more than just color)
+            const colors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00, 0xff00ff, 0x00ffff];
+            const scales = [0.7, 0.8, 0.9, 1.0, 0.75, 0.85]; // Different sizes
+            const rotations = [0, Math.PI/8, Math.PI/4, -Math.PI/8, Math.PI/6, -Math.PI/6]; // Different rotations
+
             flower.setTint(colors[index % colors.length]);
+            flower.setScale(scales[index % scales.length]);
+            flower.setRotation(rotations[index % rotations.length]);
 
             // Add option text above flower
             const optionText = this.scene.add
@@ -285,7 +302,7 @@ export class BonusChallenge {
             const flower = this.scene.physics.add.sprite(
                 x,
                 centerY,
-                "flower_generated",
+                "flower_red_generated", // Use the actual generated texture
             );
             flower.setScale(0.8);
 
@@ -296,9 +313,18 @@ export class BonusChallenge {
             flower.setData("option", option.text);
             flower.setData("isCorrect", isCorrect);
 
-            // Set color based on index (for visual distinction)
-            const colors = [0x00ff00, 0xff0000]; // Green for True, Red for False
-            flower.setTint(colors[index]);
+            // Set color and visual effects based on true/false
+            if (option.value) {
+                // True - green with slight upward tilt
+                flower.setTint(0x00ff00);
+                flower.setRotation(Math.PI/12); // Slight upward tilt
+                flower.setScale(0.9);
+            } else {
+                // False - red with slight downward tilt
+                flower.setTint(0xff0000);
+                flower.setRotation(-Math.PI/12); // Slight downward tilt
+                flower.setScale(0.9);
+            }
 
             // Add option text above flower
             const optionText = this.scene.add
