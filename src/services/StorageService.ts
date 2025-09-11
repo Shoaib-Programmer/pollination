@@ -7,12 +7,6 @@ interface GameScore {
     totalTime: number;
 }
 
-// Define the shape of the saved flower data
-interface SavedFlowerData {
-    id: string;
-    count: number;
-}
-
 interface GameProgress {
     id?: number;
     currentLevel?: number;
@@ -23,8 +17,6 @@ interface GameProgress {
         difficulty?: string;
         knowledgeNectar?: boolean;
     };
-    // Add a field to store flower collection data
-    flowerCollectionData?: SavedFlowerData[];
 }
 
 class StorageService {
@@ -79,7 +71,6 @@ class StorageService {
             // Create/update progress object store
             // NOTE: If you change the structure significantly in the future (e.g., add indexes),
             // you might need to delete and recreate the store or handle migrations more carefully.
-            // Adding an optional field like flowerCollectionData usually doesn't break existing data.
             if (!db.objectStoreNames.contains(this.PROGRESS_STORE)) {
                 db.createObjectStore(this.PROGRESS_STORE, {
                     keyPath: "id",
@@ -245,7 +236,6 @@ class StorageService {
                 id: 1,
                 lastPlayed: new Date(),
                 settings: {},
-                flowerCollectionData: [], // Initialize flower data if creating new progress
             };
 
             progress.settings = {
@@ -265,4 +255,4 @@ class StorageService {
 
 const storageService = new StorageService();
 export default storageService;
-export type { GameScore, GameProgress, SavedFlowerData }; // Export new type if needed elsewhere
+export type { GameScore, GameProgress };

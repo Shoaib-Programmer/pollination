@@ -9,7 +9,6 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
     // Pollen state
     public carryingPollenType: "red" | "blue" | null = null;
     private pollenIndicator: Phaser.GameObjects.Sprite | null = null;
-    private pollenIndicatorTween: Phaser.Tweens.Tween | null = null;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, "bee_generated");
@@ -160,10 +159,8 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
     // Set references to the pollen indicator and its tween
     public setPollenIndicator(
         indicator: Phaser.GameObjects.Sprite | null,
-        tween: Phaser.Tweens.Tween | null,
     ): void {
         this.pollenIndicator = indicator;
-        this.pollenIndicatorTween = tween;
     }
 
     // Update the position of the pollen indicator to follow the bee
@@ -184,7 +181,6 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
 
         // Don't need to destroy the pollenIndicator here as the scene manages it
         this.pollenIndicator = null;
-        this.pollenIndicatorTween = null;
 
         super.destroy(fromScene);
     }

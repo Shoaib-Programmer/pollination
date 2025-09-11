@@ -84,7 +84,7 @@ export class BonusChallenge {
             this.scene.physics.add.overlap(
                 gameScene.bee, // Access bee from the Game scene
                 flower,
-                (bee, flower) => {
+                (_bee, flower) => {
                     this.handleAnswerSelection(
                         flower as Phaser.Physics.Arcade.Sprite,
                     );

@@ -153,20 +153,6 @@ export class MainMenu extends Scene {
         this.highScoresButton.setAlpha(0); // Start invisible
         this.highScoresButton.setScale(0.8); // Start smaller
 
-        // Flower Collection Button - always visible
-        const flowerCollectionButton = createStyledText(
-            this,
-            centerX,
-            centerY + 200,
-            "Flower Collection",
-            "body",
-        );
-        flowerCollectionButton.setFontSize("28px");
-        flowerCollectionButton.setBackgroundColor("#9C27B0"); // Purple color
-        flowerCollectionButton.setPadding(25, 12);
-        flowerCollectionButton.setAlpha(0); // Start invisible
-        flowerCollectionButton.setScale(0.8); // Start smaller
-
         // GSAP Timeline for staggered entrance
         const tl = gsap.timeline({ delay: 0.3 }); // Start after background fade
 
@@ -191,11 +177,6 @@ export class MainMenu extends Scene {
                 { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
                 "-=0.2",
             ) // Button pops in
-            .to(
-                flowerCollectionButton,
-                { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-                "-=0.3",
-            ) // Flower Collection button pops in
             .to(settingsIcon, { alpha: 0.8, duration: 0.4 }, "-=0.3"); // Fade in settings icon
 
         // Update high scores button visibility based on stored state
@@ -306,30 +287,6 @@ export class MainMenu extends Scene {
                 },
             });
         }
-
-        // Flower Collection button interaction
-        addButtonInteractions(flowerCollectionButton, this, {
-            onHover: () => flowerCollectionButton.setBackgroundColor("#B039C8"), // Lighter purple
-            onOut: () => flowerCollectionButton.setBackgroundColor("#9C27B0"), // Original purple
-            onClick: () => {
-                // Transition to Flower Collection scene
-                createTransitionOut(
-                    this,
-                    [
-                        title,
-                        instructionBg,
-                        instructions,
-                        startButton,
-                        this.highScoresButton,
-                        flowerCollectionButton,
-                        settingsIcon,
-                    ],
-                    () => {
-                        this.scene.start("FlowerCollection");
-                    },
-                );
-            },
-        });
 
         // Emit scene readiness for potential future use by PhaserGame bridge
         this.events.emit("scene-ready", this);

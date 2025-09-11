@@ -131,7 +131,7 @@ export class Game extends Phaser.Scene {
         this.pollenIndicator = null;
         this.pollenIndicatorTween?.stop();
         this.pollenIndicatorTween = null;
-        this.bee.setPollenIndicator(null, null); // Tell bee its indicator is gone
+        this.bee.setPollenIndicator(null); // Tell bee its indicator is gone
 
         this.inputEnabled = true;
         this.dpadState = { up: false, down: false, left: false, right: false };
@@ -362,7 +362,6 @@ export class Game extends Phaser.Scene {
             // Pass indicator reference to the Bee so it can update position
             this.bee.setPollenIndicator(
                 this.pollenIndicator,
-                this.pollenIndicatorTween,
             );
 
             // Use utility functions for effects
@@ -405,7 +404,7 @@ export class Game extends Phaser.Scene {
                 // Clear references
                 this.pollenIndicator = null;
                 this.pollenIndicatorTween = null;
-                this.bee.setPollenIndicator(null, null); // Tell Bee indicator is gone
+                this.bee.setPollenIndicator(null); // Tell Bee indicator is gone
             }
 
             this.bee.carryingPollenType = null; // Clear Bee's state
