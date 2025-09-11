@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styles from "@/styles/GameUI.module.css"; // Retain for layout overlay base; gradually replacing with utilities
 import EventBus from "@/game/EventBus";
 import gsap from "gsap";
+import { registerEventHandlers, unregisterEventHandlers, COMMON_EVENTS } from "@/game/utils/eventUtils"; // Import event utilities
 import { useGSAP } from "@gsap/react";
 
 interface GameUIProps {
@@ -217,20 +218,19 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         setRemainingTime(60); // Reset timer display
         setIsGameSceneActive(false); // Reset game scene state
 
-        // Attach Listeners
-        listenTo.on("update-score", handleScoreUpdate);
-        listenTo.on("show-fact", handleShowFactModal);
-        listenTo.on("ui:hide-modal", forceHideModal);
-        listenTo.on("ui:update-timer", handleTimerUpdate); // Attach timer listener
-        EventBus.on("scene:changed", handleSceneActivation); // NEW: Listen for scene changes
+        // Register event handlers using utility
+        const eventHandlers = [
+            { event: COMMON_EVENTS.UPDATE_SCORE, handler: handleScoreUpdate },
+            { event: "show-fact", handler: handleShowFactModal },
+            { event: COMMON_EVENTS.UI_HIDE_MODAL, handler: forceHideModal },
+            { event: COMMON_EVENTS.UI_UPDATE_TIMER, handler: handleTimerUpdate },
+            { event: COMMON_EVENTS.SCENE_CHANGED, handler: handleSceneActivation },
+        ];
+        registerEventHandlers(eventHandlers);
 
         // Cleanup Function
         return () => {
-            listenTo.off("update-score", handleScoreUpdate);
-            listenTo.off("show-fact", handleShowFactModal);
-            listenTo.off("ui:hide-modal", forceHideModal);
-            listenTo.off("ui:update-timer", handleTimerUpdate); // Detach timer listener
-            EventBus.off("scene:changed", handleSceneActivation); // NEW: Clean up scene change listener
+            unregisterEventHandlers(eventHandlers);
 
             // Clear timeout on unmount or dependency change
             if (modalTimeoutIdRef.current) {

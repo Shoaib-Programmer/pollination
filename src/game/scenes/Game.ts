@@ -7,6 +7,8 @@ import { FlowerManager, FlowerData } from "../managers/FlowerManager"; // Import
 import { GameTimer } from "../managers/GameTimer";
 import { BonusChallenge } from "../managers/BonusChallenge"; // Import BonusChallenge from its new location
 import { createParticles, addInteractionPulse } from "../utils/effects"; // Import utils
+import { createFloatingScoreTween } from "../utils/animation"; // Import animation utils
+import { registerEventHandlers, unregisterEventHandlers, COMMON_EVENTS } from "../utils/eventUtils"; // Import event utils
 
 // Keep type alias if needed, or rely on Phaser's types directly
 type ArcadePhysicsCallback = Phaser.Types.Physics.Arcade.ArcadePhysicsCallback;
@@ -18,7 +20,7 @@ export class Game extends Phaser.Scene {
     private flowerManager!: FlowerManager;
     private gameTimer!: GameTimer;
     private bonusChallenge!: BonusChallenge; // New bonus challenge manager
-    private mainPhysicsOverlap?: any; // Track main physics overlap
+    private mainPhysicsOverlap?: { active: boolean }; // Track main physics overlap
 
     // Input
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -32,6 +34,9 @@ export class Game extends Phaser.Scene {
     private pollenIndicatorTween: Phaser.Tweens.Tween | null = null;
     private completedFlowers: number = 0;
     private pollinationCount: number = 0;
+    
+    // Event handlers for cleanup
+    private eventHandlers: Array<{ event: string; handler: (...args: unknown[]) => void; context: unknown }> = [];
 
     // Config
     private readonly gameDuration: number = 60; // Seconds
@@ -67,14 +72,19 @@ export class Game extends Phaser.Scene {
         } else {
             console.error("Keyboard input plugin not found.");
         }
-        EventBus.on("dpad", this.handleDpadInput, this);
-        EventBus.on("game:set-input-active", this.setInputActive, this);
+        
+        // Register event handlers using utility
+        this.eventHandlers = [
+            { event: COMMON_EVENTS.DPAD, handler: this.handleDpadInput, context: this },
+            { event: COMMON_EVENTS.GAME_SET_INPUT_ACTIVE, handler: this.setInputActive, context: this },
+        ];
+        registerEventHandlers(this.eventHandlers);
 
         // --- Timer Setup (using Manager) ---
         this.gameTimer = new GameTimer(
             this,
             this.gameDuration,
-            (time) => this.events.emit("game:update-timer", time), // Update callback
+            (time) => this.events.emit(COMMON_EVENTS.GAME_UPDATE_TIMER, time), // Update callback
             () => this.handleTimeUp(), // Completion callback
         );
 
@@ -85,7 +95,7 @@ export class Game extends Phaser.Scene {
         this.gameTimer.start();
 
         // --- Initial UI Events ---
-        this.events.emit("game:update-score", this.score);
+        this.events.emit(COMMON_EVENTS.GAME_UPDATE_SCORE, this.score);
         // Timer manager handles initial emit via its start()
 
         // --- Schedule first bonus challenge ---
@@ -129,7 +139,7 @@ export class Game extends Phaser.Scene {
     // Add bonus score from challenges
     public addBonusScore(points: number): void {
         this.score += points;
-        this.events.emit("game:update-score", this.score);
+        this.events.emit(COMMON_EVENTS.GAME_UPDATE_SCORE, this.score);
 
         // Show floating score text
         const scoreText = this.add
@@ -147,15 +157,8 @@ export class Game extends Phaser.Scene {
             )
             .setOrigin(0.5);
 
-        // Animate and remove
-        this.tweens.add({
-            targets: scoreText,
-            y: "-=50",
-            alpha: 0,
-            duration: 1500,
-            ease: "Power1",
-            onComplete: () => scoreText.destroy(),
-        });
+        // Animate and remove using utility
+        createFloatingScoreTween(this, scoreText, points);
     }
 
     // Called by GameTimer when time is up
@@ -179,7 +182,8 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private setInputActive(isActive: boolean): void {
+    private setInputActive(...args: unknown[]): void {
+        const isActive = args[0] as boolean;
         if (this.inputEnabled === isActive) return;
         this.inputEnabled = isActive;
 
@@ -211,10 +215,11 @@ export class Game extends Phaser.Scene {
     }
 
     // Handles DPad input events - Remains in Scene
-    private handleDpadInput(data: {
-        direction: "up" | "down" | "left" | "right";
-        active: boolean;
-    }): void {
+    private handleDpadInput(...args: unknown[]): void {
+        const data = args[0] as {
+            direction: "up" | "down" | "left" | "right";
+            active: boolean;
+        };
         if (this.inputEnabled && data.direction in this.dpadState) {
             this.dpadState[data.direction] = data.active;
         }
@@ -360,7 +365,7 @@ export class Game extends Phaser.Scene {
             this.score += 10;
             this.completedFlowers++;
             this.pollinationCount++;
-            this.events.emit("game:update-score", this.score);
+            this.events.emit(COMMON_EVENTS.GAME_UPDATE_SCORE, this.score);
 
             // Destroy pollen indicator visually
             if (this.pollenIndicator) {
@@ -394,18 +399,17 @@ export class Game extends Phaser.Scene {
             addInteractionPulse(this, this.bee, 1.05);
 
             // --- Win Logic ---
-            this.handlePollinationOutcome(data); // Extract complex logic
+            this.handlePollinationOutcome(); // Extract complex logic
         }
     }
 
     // Extracted logic for handling what happens after successful pollination
-    private handlePollinationOutcome(pollinatedFlowerData: FlowerData): void {
-        void this._processPollinationLogic(pollinatedFlowerData);
+    private handlePollinationOutcome(): void {
+        void this._processPollinationLogic();
     }
 
     // Central async function to process the outcome of pollination
     private async _processPollinationLogic(
-        pollinatedFlowerData: FlowerData,
     ): Promise<void> {
         try {
             // Priority 1: Check for Win Condition and handle end game if needed
@@ -518,11 +522,10 @@ export class Game extends Phaser.Scene {
         console.log("Game Scene Shutting Down");
 
         // Signal scene change through EventBus
-        EventBus.emit("scene:changed", "shutdown");
+        EventBus.emit(COMMON_EVENTS.SCENE_CHANGED, "shutdown");
 
-        // Clean up EventBus listeners
-        EventBus.off("dpad", this.handleDpadInput, this);
-        EventBus.off("game:set-input-active", this.setInputActive, this);
+        // Clean up EventBus listeners using utility
+        unregisterEventHandlers(this.eventHandlers);
 
         // Clean up managers and entities THAT ARE NOT AUTOMATICALLY DESTROYED BY PHASER
         // Phaser handles destroying scene-added game objects (like the Bee sprite)

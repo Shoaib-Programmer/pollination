@@ -3,6 +3,7 @@ import { Scene } from "phaser";
 import gsap from "gsap"; // Import GSAP
 import storageService, { GameScore } from "@/services/StorageService";
 import EventBus from "@/game/EventBus";
+import { COMMON_EVENTS } from "../utils/eventUtils"; // Import event constants
 
 export class GameOver extends Scene {
     private score: number = 0;
@@ -79,7 +80,7 @@ export class GameOver extends Scene {
         const centerY = this.cameras.main.height / 2;
 
         // Signal scene change through EventBus
-        EventBus.emit("scene:changed", "GameOver");
+        EventBus.emit(COMMON_EVENTS.SCENE_CHANGED, "GameOver");
 
         // Dimmed Background - Fade in alpha
         const bg = this.add

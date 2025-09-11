@@ -37,7 +37,8 @@
         "start-nolog": "next start -p 3000",
         "prepare": "husky",
         "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
-        "lint": "eslint . --ext .js,.ts,.tsx"
+        "lint": "eslint . --ext .js,.ts,.tsx",
+        "typecheck": "tsc --noEmit && echo TYPECHECK_OK || echo TYPECHECK_FAIL"
     },
     "dependencies": {
         "@gsap/react": "^2.1.2",

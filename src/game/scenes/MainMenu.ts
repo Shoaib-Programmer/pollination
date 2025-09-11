@@ -3,6 +3,9 @@ import { Scene } from "phaser";
 import gsap from "gsap"; // Import GSAP
 import EventBus from "../EventBus"; // Import EventBus if needed for settings icon
 import storageService from "@/services/StorageService"; // Import storage service
+import { createStyledText, addButtonInteractions } from "../utils/ui"; // Import UI utilities
+import { createTransitionOut } from "../utils/animation"; // Import animation utilities
+import { COMMON_EVENTS } from "../utils/eventUtils"; // Import event constants
 
 export class MainMenu extends Scene {
     private hasHighScores: boolean = false;
@@ -64,7 +67,7 @@ export class MainMenu extends Scene {
         const topRightY = 40;
 
         // Signal scene change through EventBus
-        EventBus.emit("scene:changed", "MainMenu");
+        EventBus.emit(COMMON_EVENTS.SCENE_CHANGED, "MainMenu");
 
         // Background - Fade in
         const bg = this.add
@@ -123,72 +126,26 @@ export class MainMenu extends Scene {
             .setOrigin(0.5)
             .setAlpha(0); // Start invisible
 
-        const startButton = this.add.text(centerX, centerY + 65, "Start Game", {
-            font: "bold",
-            fontFamily: "var(--font-poppins)",
-            fontSize: "34px",
-            color: "#ffffff",
-            backgroundColor: "#2E8B57",
-            padding: { x: 30, y: 15 },
-            shadow: {
-                offsetX: 2,
-                offsetY: 2,
-                color: "#111",
-                blur: 2,
-                fill: true,
-            },
-        });
-        startButton.setOrigin(0.5);
+        const startButton = createStyledText(this, centerX, centerY + 65, "Start Game", "subtitle");
+        startButton.setFontSize("34px");
+        startButton.setBackgroundColor("#2E8B57");
+        startButton.setPadding(30, 15);
         startButton.setAlpha(0); // Start invisible
         startButton.setScale(0.8); // Start smaller
 
         // High Scores button - only shown if there are high scores
-        this.highScoresButton = this.add.text(
-            centerX,
-            centerY + 140,
-            "High Scores",
-            {
-                font: "bold",
-                fontFamily: "var(--font-poppins)",
-                fontSize: "28px",
-                color: "#ffffff",
-                backgroundColor: "#4682B4", // Steel blue color
-                padding: { x: 25, y: 12 },
-                shadow: {
-                    offsetX: 2,
-                    offsetY: 2,
-                    color: "#111",
-                    blur: 2,
-                    fill: true,
-                },
-            },
-        );
-        this.highScoresButton.setOrigin(0.5);
+        this.highScoresButton = createStyledText(this, centerX, centerY + 140, "High Scores", "body");
+        this.highScoresButton.setFontSize("28px");
+        this.highScoresButton.setBackgroundColor("#4682B4"); // Steel blue color
+        this.highScoresButton.setPadding(25, 12);
         this.highScoresButton.setAlpha(0); // Start invisible
         this.highScoresButton.setScale(0.8); // Start smaller
 
         // Flower Collection Button - always visible
-        const flowerCollectionButton = this.add.text(
-            centerX,
-            centerY + 200,
-            "Flower Collection",
-            {
-                font: "bold",
-                fontFamily: "var(--font-poppins)",
-                fontSize: "28px",
-                color: "#ffffff",
-                backgroundColor: "#9C27B0", // Purple color
-                padding: { x: 25, y: 12 },
-                shadow: {
-                    offsetX: 2,
-                    offsetY: 2,
-                    color: "#111",
-                    blur: 2,
-                    fill: true,
-                },
-            },
-        );
-        flowerCollectionButton.setOrigin(0.5);
+        const flowerCollectionButton = createStyledText(this, centerX, centerY + 200, "Flower Collection", "body");
+        flowerCollectionButton.setFontSize("28px");
+        flowerCollectionButton.setBackgroundColor("#9C27B0"); // Purple color
+        flowerCollectionButton.setPadding(25, 12);
         flowerCollectionButton.setAlpha(0); // Start invisible
         flowerCollectionButton.setScale(0.8); // Start smaller
 
@@ -278,160 +235,57 @@ export class MainMenu extends Scene {
             );
         });
 
-        // Button Hover/Click (Phaser Tweens are fine here)
-        startButton.setInteractive({ useHandCursor: true }); // Make interactive AFTER initial animation setup potentially
-        const originalScale = 1; // Base scale is 1 after animation
-        startButton.on("pointerover", () => {
-            this.tweens.killTweensOf(startButton);
-            this.tweens.add({
-                targets: startButton,
-                scale: originalScale * 1.08,
-                duration: 150,
-                ease: "Sine.easeInOut",
-            });
-            startButton.setBackgroundColor("#3CB371");
-        });
-        startButton.on("pointerout", () => {
-            this.tweens.killTweensOf(startButton);
-            this.tweens.add({
-                targets: startButton,
-                scale: originalScale,
-                duration: 150,
-                ease: "Sine.easeInOut",
-            });
-            startButton.setBackgroundColor("#2E8B57");
-        });
-        startButton.on("pointerdown", () => {
-            this.tweens.killTweensOf(startButton);
-            this.tweens.add({
-                targets: startButton,
-                scale: originalScale * 0.95,
-                duration: 80,
-                ease: "Sine.easeInOut",
-                yoyo: true,
-            });
-            // Transition Out Animation (Optional)
-            gsap.to(
-                [
+        // Add button interactions using utility
+        addButtonInteractions(startButton, this, {
+            onHover: () => startButton.setBackgroundColor("#3CB371"),
+            onOut: () => startButton.setBackgroundColor("#2E8B57"),
+            onClick: () => {
+                // Transition Out Animation
+                createTransitionOut(this, [
                     title,
                     instructionBg,
                     instructions,
                     startButton,
                     this.highScoresButton,
                     settingsIcon,
-                ],
-                {
-                    alpha: 0,
-                    y: "-=30", // Move up slightly
-                    duration: 0.3,
-                    stagger: 0.1,
-                    ease: "power1.in",
-                    onComplete: () => {
-                        this.scene.start("Game");
-                    },
-                },
-            );
+                ], () => {
+                    this.scene.start("Game");
+                });
+            },
         });
 
         // High Scores button interaction
         if (this.highScoresButton) {
-            this.highScoresButton.setInteractive({ useHandCursor: true });
-
-            this.highScoresButton.on("pointerover", () => {
-                this.tweens.killTweensOf(this.highScoresButton!);
-                this.tweens.add({
-                    targets: this.highScoresButton!,
-                    scale: originalScale * 1.08,
-                    duration: 150,
-                    ease: "Sine.easeInOut",
-                });
-                this.highScoresButton!.setBackgroundColor("#5A9BDC"); // Lighter blue
-            });
-
-            this.highScoresButton.on("pointerout", () => {
-                this.tweens.killTweensOf(this.highScoresButton!);
-                this.tweens.add({
-                    targets: this.highScoresButton!,
-                    scale: originalScale,
-                    duration: 150,
-                    ease: "Sine.easeInOut",
-                });
-                this.highScoresButton!.setBackgroundColor("#4682B4");
-            });
-
-            this.highScoresButton.on("pointerdown", () => {
-                this.tweens.killTweensOf(this.highScoresButton!);
-                this.tweens.add({
-                    targets: this.highScoresButton!,
-                    scale: originalScale * 0.95,
-                    duration: 80,
-                    ease: "Sine.easeInOut",
-                    yoyo: true,
-                });
-
-                // Go directly to the GameOver scene which shows high scores
-                gsap.to(
-                    [
+            addButtonInteractions(this.highScoresButton, this, {
+                onHover: () => this.highScoresButton!.setBackgroundColor("#5A9BDC"), // Lighter blue
+                onOut: () => this.highScoresButton!.setBackgroundColor("#4682B4"),
+                onClick: () => {
+                    // Go directly to the GameOver scene which shows high scores
+                    createTransitionOut(this, [
                         title,
                         instructionBg,
                         instructions,
                         startButton,
                         this.highScoresButton,
                         settingsIcon,
-                    ],
-                    {
-                        alpha: 0,
-                        y: "-=30",
-                        duration: 0.3,
-                        stagger: 0.1,
-                        ease: "power1.in",
-                        onComplete: () => {
-                            // Pass 0 score to just show high scores without current game score emphasis
-                            this.scene.start("GameOver", {
-                                score: 0,
-                                showHighScoresOnly: true,
-                            });
-                        },
-                    },
-                );
+                    ], () => {
+                        // Pass 0 score to just show high scores without current game score emphasis
+                        this.scene.start("GameOver", {
+                            score: 0,
+                            showHighScoresOnly: true,
+                        });
+                    });
+                },
             });
         }
 
         // Flower Collection button interaction
-        flowerCollectionButton.setInteractive({ useHandCursor: true });
-
-        flowerCollectionButton.on("pointerover", () => {
-            this.tweens.add({
-                targets: flowerCollectionButton,
-                scale: originalScale * 1.08,
-                duration: 150,
-                ease: "Sine.easeInOut",
-            });
-            flowerCollectionButton.setBackgroundColor("#B039C8"); // Lighter purple
-        });
-
-        flowerCollectionButton.on("pointerout", () => {
-            this.tweens.add({
-                targets: flowerCollectionButton,
-                scale: originalScale,
-                duration: 150,
-                ease: "Sine.easeInOut",
-            });
-            flowerCollectionButton.setBackgroundColor("#9C27B0"); // Original purple
-        });
-
-        flowerCollectionButton.on("pointerdown", () => {
-            this.tweens.add({
-                targets: flowerCollectionButton,
-                scale: originalScale * 0.95,
-                duration: 80,
-                ease: "Sine.easeInOut",
-                yoyo: true,
-            });
-
-            // Transition to Flower Collection scene
-            gsap.to(
-                [
+        addButtonInteractions(flowerCollectionButton, this, {
+            onHover: () => flowerCollectionButton.setBackgroundColor("#B039C8"), // Lighter purple
+            onOut: () => flowerCollectionButton.setBackgroundColor("#9C27B0"), // Original purple
+            onClick: () => {
+                // Transition to Flower Collection scene
+                createTransitionOut(this, [
                     title,
                     instructionBg,
                     instructions,
@@ -439,18 +293,10 @@ export class MainMenu extends Scene {
                     this.highScoresButton,
                     flowerCollectionButton,
                     settingsIcon,
-                ],
-                {
-                    alpha: 0,
-                    y: "-=30",
-                    duration: 0.3,
-                    stagger: 0.05,
-                    ease: "power1.in",
-                    onComplete: () => {
-                        this.scene.start("FlowerCollection");
-                    },
-                },
-            );
+                ], () => {
+                    this.scene.start("FlowerCollection");
+                });
+            },
         });
 
         // Emit scene readiness for potential future use by PhaserGame bridge

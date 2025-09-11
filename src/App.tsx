@@ -4,11 +4,12 @@ import PhaserGame, { PhaserGameRef } from "@/game/PhaserGame";
 import EventBus from "@/game/EventBus";
 import { GameUI } from "@/components/GameUI";
 import { MobileControls } from "@/components/MobileControls"; // Import MobileControls
+import { registerEventHandlers, unregisterEventHandlers, COMMON_EVENTS } from "@/game/utils/eventUtils"; // Import event utilities
 
 function App() {
     const phaserGameRef = useRef<PhaserGameRef>(null);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
-    const [currentScene, setCurrentScene] = useState<string>("MainMenu");
+    const [, setCurrentScene] = useState<string>("MainMenu");
     const [isGameInputActive, setIsGameInputActive] = useState<boolean>(true);
     const [isGameActive, setIsGameActive] = useState<boolean>(false);
 
@@ -25,15 +26,18 @@ function App() {
         const handleInputActive = (isActive: boolean) => {
             setIsGameInputActive(isActive);
         };
-        EventBus.on("scene:changed", handleSceneChanged);
-        EventBus.on("game:set-input-active", handleInputActive);
-        EventBus.on("ui:game-active", setIsGameActive);
+        
+        // Register event handlers using utility
+        const eventHandlers = [
+            { event: COMMON_EVENTS.SCENE_CHANGED, handler: handleSceneChanged },
+            { event: COMMON_EVENTS.GAME_SET_INPUT_ACTIVE, handler: handleInputActive },
+            { event: COMMON_EVENTS.UI_GAME_ACTIVE, handler: setIsGameActive },
+        ];
+        registerEventHandlers(eventHandlers);
 
         // Clean up event listener
         return () => {
-            EventBus.off("scene:changed", handleSceneChanged);
-            EventBus.off("game:set-input-active", handleInputActive);
-            EventBus.off("ui:game-active", setIsGameActive);
+            unregisterEventHandlers(eventHandlers);
         };
     }, []); // Empty dependency array ensures this runs only once on mount
 

@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import StartGame from "@/game/main";
 import EventBus from "./EventBus";
+import { registerEventHandlers, unregisterEventHandlers, COMMON_EVENTS } from "./utils/eventUtils"; // Import event utilities
 
 // Define the PhaserGameRef interface
 interface PhaserGameRef {
@@ -30,7 +31,7 @@ const handleSceneStart = (
     if (currentSceneRef.current !== sceneName) {
         currentSceneRef.current = sceneName;
         console.log(`Scene changed to: ${sceneName}`);
-        EventBus.emit("scene:changed", sceneName);
+        EventBus.emit(COMMON_EVENTS.SCENE_CHANGED, sceneName);
     }
 };
 
@@ -134,7 +135,12 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                     EventBus.emit("game:set-input-active", true);
                 }
             };
-            EventBus.on("ui:modal-closed", handleModalClosed);
+            
+            // Register event handlers using utility
+            const eventHandlers = [
+                { event: COMMON_EVENTS.UI_MODAL_CLOSED, handler: handleModalClosed },
+            ];
+            registerEventHandlers(eventHandlers);
 
             // Define the ready callback using the extracted function
             const onGameReadyCallback = () =>
@@ -158,7 +164,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
             // Cleanup function for this effect
             return () => {
                 onBeforeDestroy?.();
-                EventBus.off("ui:modal-closed", handleModalClosed);
+                unregisterEventHandlers(eventHandlers);
                 // Remove the 'ready' listener if the game didn't boot before cleanup
                 game.events.off("ready", onGameReadyCallback);
                 // Note: Listeners attached by attachStartListener are managed by Phaser scene lifecycle
@@ -189,7 +195,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                     gameSceneInstance?.scene.isActive("Game");
 
                 // Emit UI signal for scene active state
-                EventBus.emit("ui:game-active", Boolean(isGameSceneActive));
+                EventBus.emit(COMMON_EVENTS.UI_GAME_ACTIVE, Boolean(isGameSceneActive));
 
                 // Attach listeners when Game scene becomes active
                 if (isGameSceneActive && !listenersAttachedRef.current) {
@@ -211,9 +217,9 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                     sceneListenerCleanupRef.current = null;
                     listenersAttachedRef.current = false;
                     // Reset UI state when leaving Game scene
-                    EventBus.emit("ui:hide-modal");
-                    EventBus.emit("update-score", 0);
-                    EventBus.emit("ui:update-timer", 60);
+                    EventBus.emit(COMMON_EVENTS.UI_HIDE_MODAL);
+                    EventBus.emit(COMMON_EVENTS.UPDATE_SCORE, 0);
+                    EventBus.emit(COMMON_EVENTS.UI_UPDATE_TIMER, 60);
                 }
             }, 250); // Polling interval
 
@@ -224,9 +230,9 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                 sceneListenerCleanupRef.current = null;
                 listenersAttachedRef.current = false;
                 // Ensure input enabled and UI reset on unmount/cleanup
-                EventBus.emit("game:set-input-active", true);
-                EventBus.emit("update-score", 0);
-                EventBus.emit("ui:update-timer", 60);
+                EventBus.emit(COMMON_EVENTS.GAME_SET_INPUT_ACTIVE, true);
+                EventBus.emit(COMMON_EVENTS.UPDATE_SCORE, 0);
+                EventBus.emit(COMMON_EVENTS.UI_UPDATE_TIMER, 60);
             };
         }, []); // Empty dependency array: runs once on mount
 
