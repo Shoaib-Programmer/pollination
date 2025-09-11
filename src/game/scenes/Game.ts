@@ -38,6 +38,7 @@ export class Game extends Phaser.Scene {
     private pollenIndicatorTween: Phaser.Tweens.Tween | null = null;
     private completedFlowers: number = 0;
     private pollinationCount: number = 0;
+    private currentWave: number = 1;
 
     // Event handlers for cleanup
     private eventHandlers: Array<{
@@ -136,6 +137,7 @@ export class Game extends Phaser.Scene {
         this.dpadState = { up: false, down: false, left: false, right: false };
         this.completedFlowers = 0;
         this.pollinationCount = 0;
+        this.currentWave = 1;
 
         // Reset visual/physics state of bee if restarting scene
         if (this.bee?.body) {
@@ -193,6 +195,10 @@ export class Game extends Phaser.Scene {
             if (this.scene.isActive()) {
                 this.scene.start("GameOver", {
                     score: this.score,
+                    completedFlowers: this.completedFlowers,
+                    totalTime:
+                        this.gameDuration - this.gameTimer.getRemainingTime(),
+                    currentWave: this.currentWave,
                 });
             }
         });
@@ -426,8 +432,8 @@ export class Game extends Phaser.Scene {
         void this._processPollinationLogic();
     }
 
-    // Central async function to process the outcome of pollination
-    private async _processPollinationLogic(): Promise<void> {
+    // Central function to process the outcome of pollination
+    private _processPollinationLogic(): void {
         try {
             // Priority 1: Check for Win Condition and handle end game if needed
             const winResult = this._checkAndHandleWinCondition();
@@ -447,14 +453,14 @@ export class Game extends Phaser.Scene {
 
     // --- Pollination Outcome Helper Methods ---
 
-    // Checks if all flowers are pollinated and initiates game end if so
+    // Checks if all flowers are pollinated and spawns new wave if so
     private _checkAndHandleWinCondition(): {
         shouldEnd: boolean;
     } {
         if (this.flowerManager.checkAllPollinated()) {
-            this.endGameDueToCompletion(); // Start end sequence immediately
+            this.spawnNewWave(); // Spawn new wave instead of ending
             return {
-                shouldEnd: true,
+                shouldEnd: false,
             };
         }
         return { shouldEnd: false };
@@ -514,6 +520,83 @@ export class Game extends Phaser.Scene {
         }
     }
 
+    // Spawns a new wave of flowers when current wave is completed
+    private spawnNewWave(): void {
+        if (!this.scene.isActive()) return;
+
+        // Increment wave counter
+        this.currentWave++;
+
+        // Clear completed flowers
+        this.flowerManager.clearFlowers();
+
+        // Calculate flower count for this wave (progressive difficulty)
+        const baseFlowerCount = 6;
+        const waveBonus = Math.floor((this.currentWave - 1) / 2); // +1 flower every 2 waves
+        const flowerCount = Math.min(baseFlowerCount + waveBonus, 12); // Cap at 12 flowers
+
+        // Spawn new flowers
+        this.flowerManager.spawnFlowers(flowerCount, "red");
+        this.flowerManager.spawnFlowers(flowerCount, "blue");
+        this.flowerManager.assignInitialPollen();
+
+        // Bonus points for completing a wave
+        const waveBonusPoints = this.currentWave * 50;
+        this.addBonusScore(waveBonusPoints);
+
+        // Show wave complete message
+        this.showWaveCompleteMessage(this.currentWave);
+
+        // Add some visual effects
+        this.time.delayedCall(500, () => {
+            if (this.scene.isActive()) {
+                createParticles(
+                    this,
+                    this.cameras.main.width / 2,
+                    this.cameras.main.height / 2,
+                    "pollen_particle_generated",
+                    0xffd700, // Gold color
+                    20,
+                );
+            }
+        });
+    }
+
+    // Shows a message when a wave is completed
+    private showWaveCompleteMessage(waveNumber: number): void {
+        const message = this.add
+            .text(
+                this.cameras.main.width / 2,
+                this.cameras.main.height / 2 - 100,
+                `Wave ${waveNumber - 1} Complete!\nWave ${waveNumber} Starting...`,
+                {
+                    fontFamily: "Arial",
+                    fontSize: "32px",
+                    color: "#FFD700",
+                    stroke: "#000000",
+                    strokeThickness: 4,
+                    align: "center",
+                },
+            )
+            .setOrigin(0.5);
+
+        // Animate the message
+        this.tweens.add({
+            targets: message,
+            scale: { from: 0.5, to: 1.2 },
+            alpha: { from: 0, to: 1 },
+            duration: 800,
+            ease: "Bounce.easeOut",
+            onComplete: () => {
+                this.time.delayedCall(2000, () => {
+                    if (message && message.scene) {
+                        message.destroy();
+                    }
+                });
+            },
+        });
+    }
+
     // Common logic for ending the game when all flowers are done
     private endGameDueToCompletion(): void {
         if (!this.scene.isActive()) return;
@@ -529,6 +612,7 @@ export class Game extends Phaser.Scene {
                     completedFlowers: this.completedFlowers,
                     totalTime:
                         this.gameDuration - this.gameTimer.getRemainingTime(),
+                    currentWave: this.currentWave,
                 });
             }
         });

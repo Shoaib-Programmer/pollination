@@ -1,6 +1,5 @@
 // src/game/data/quizData.ts
 import { z } from "zod";
-import FLOWERS from "./flowerTypes";
 import quizQuestionsData from "./quizQuestions.json";
 
 // Zod schemas for validation

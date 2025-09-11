@@ -24,11 +24,17 @@ function App() {
         setIsTouchDevice(checkForTouch());
 
         // Track current Phaser scene and whether input is active
-        const handleSceneChanged = (sceneName: string) => {
+        const handleSceneChanged = (...args: unknown[]) => {
+            const sceneName = args[0] as string;
             setCurrentScene(sceneName);
         };
-        const handleInputActive = (isActive: boolean) => {
+        const handleInputActive = (...args: unknown[]) => {
+            const isActive = args[0] as boolean;
             setIsGameInputActive(isActive);
+        };
+        const handleGameActive = (...args: unknown[]) => {
+            const isActive = args[0] as boolean;
+            setIsGameActive(isActive);
         };
 
         // Register event handlers using utility
@@ -38,7 +44,7 @@ function App() {
                 event: COMMON_EVENTS.GAME_SET_INPUT_ACTIVE,
                 handler: handleInputActive,
             },
-            { event: COMMON_EVENTS.UI_GAME_ACTIVE, handler: setIsGameActive },
+            { event: COMMON_EVENTS.UI_GAME_ACTIVE, handler: handleGameActive },
         ];
         registerEventHandlers(eventHandlers);
 

@@ -31,7 +31,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
     // Timer state
     const [remainingTime, setRemainingTime] = useState<number>(60); // Default to 60 seconds
-    // Game scene state - NEW
+    // Game scene state
     const [isGameSceneActive, setIsGameSceneActive] = useState<boolean>(false);
 
     // Refs
@@ -165,13 +165,15 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
             return;
         }
 
-        const handleScoreUpdate = (newScore: number) => {
+        const handleScoreUpdate = (...args: unknown[]) => {
+            const newScore = args[0] as number;
             setTargetScore(newScore);
             // When we get a score update, it indicates game scene is active
             setIsGameSceneActive(true);
         };
 
-        const handleShowFactModal = (fact: string) => {
+        const handleShowFactModal = (...args: unknown[]) => {
+            const fact = args[0] as string;
             setModalFact(fact);
             setIsModalVisible(true); // Show modal & trigger animations
             if (modalTimeoutIdRef.current)
@@ -201,14 +203,16 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         };
 
         // Handler for game timer updates
-        const handleTimerUpdate = (time: number) => {
+        const handleTimerUpdate = (...args: unknown[]) => {
+            const time = args[0] as number;
             setRemainingTime(Math.max(0, time)); // Update state, ensuring non-negative
             // When we get a timer update, it indicates game scene is active
             setIsGameSceneActive(true);
         };
 
         // Handler for scene changes - NEW
-        const handleSceneActivation = (scene: string) => {
+        const handleSceneActivation = (...args: unknown[]) => {
+            const scene = args[0] as string;
             // Only show UI elements during Game scene
             setIsGameSceneActive(scene === "Game");
         };

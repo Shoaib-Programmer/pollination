@@ -9,6 +9,7 @@ export class GameOver extends Scene {
     private score: number = 0;
     private completedFlowers: number = 0;
     private totalTime: number = 60;
+    private currentWave: number = 1;
     private highScores: GameScore[] = [];
     private isLoadingScores: boolean = false;
     private showHighScoresOnly: boolean = false;
@@ -21,11 +22,13 @@ export class GameOver extends Scene {
         score?: number;
         completedFlowers?: number;
         totalTime?: number;
+        currentWave?: number;
         showHighScoresOnly?: boolean;
     }) {
         this.score = data.score ?? 0;
         this.completedFlowers = data.completedFlowers ?? 0;
         this.totalTime = data.totalTime ?? 60;
+        this.currentWave = data.currentWave ?? 1;
 
         // Check if we're just viewing high scores from the main menu
         this.showHighScoresOnly = data.showHighScoresOnly ?? false;
@@ -117,10 +120,37 @@ export class GameOver extends Scene {
             .setAlpha(0)
             .setScale(0.5); // Start hidden/small
 
+        // Game Statistics Panel - Only show if not viewing high scores only
+        let statsPanel = null;
+        let statsText = null;
+        if (!this.showHighScoresOnly) {
+            const statsPanelY = centerY - 120;
+            statsPanel = this.add
+                .rectangle(centerX, statsPanelY, 400, 80, 0x000000, 0.7)
+                .setOrigin(0.5)
+                .setAlpha(0);
+
+            statsText = this.add
+                .text(
+                    centerX,
+                    statsPanelY,
+                    `Score: ${this.score}\nFlowers: ${this.completedFlowers} | Wave: ${this.currentWave} | Time: ${Math.floor(this.totalTime)}s`,
+                    {
+                        fontFamily: "var(--font-poppins)",
+                        fontSize: "18px",
+                        color: "#ffffff",
+                        align: "center",
+                        lineSpacing: 8,
+                    },
+                )
+                .setOrigin(0.5)
+                .setAlpha(0);
+        }
+
         // High Scores Panel - Adjust position based on context
         const highScoresPanelY = this.showHighScoresOnly
             ? centerY + 20
-            : centerY - 50; // Adjusted Y position
+            : centerY - 20; // Moved down to make room for stats
         const highScoresPanelHeight = this.showHighScoresOnly ? 260 : 220; // Adjusted height slightly
         const highScoresPanel = this.add
             .rectangle(
@@ -173,28 +203,23 @@ export class GameOver extends Scene {
         const playAgainButtonY =
             highScoresPanelY + highScoresPanelHeight / 2 + 45; // Position below panel
         const playAgainButton = this.add
-            .text(
-                centerX,
-                playAgainButtonY,
-                this.showHighScoresOnly ? "Back to Menu" : "Play Again?",
-                {
-                    fontFamily: "var(--font-poppins)",
-                    fontSize: "30px",
-                    font: "bold",
-                    color: "#ffffff",
-                    backgroundColor: this.showHighScoresOnly
-                        ? "#4682B4"
-                        : "#2E8B57", // Different color for back button
-                    padding: { x: 25, y: 12 },
-                    shadow: {
-                        offsetX: 2,
-                        offsetY: 2,
-                        color: "#111",
-                        blur: 2,
-                        fill: true,
-                    },
+            .text(centerX, playAgainButtonY, "Home", {
+                fontFamily: "var(--font-poppins)",
+                fontSize: "30px",
+                font: "bold",
+                color: "#ffffff",
+                backgroundColor: this.showHighScoresOnly
+                    ? "#4682B4"
+                    : "#2E8B57", // Different color for back button
+                padding: { x: 25, y: 12 },
+                shadow: {
+                    offsetX: 2,
+                    offsetY: 2,
+                    color: "#111",
+                    blur: 2,
+                    fill: true,
                 },
-            )
+            })
             .setOrigin(0.5)
             .setAlpha(0)
             .setScale(0.8); // Start hidden/smaller
@@ -208,6 +233,19 @@ export class GameOver extends Scene {
             duration: 0.6,
             ease: "back.out(1.7)",
         });
+
+        // Animate stats panel if it exists
+        if (statsPanel && statsText) {
+            tl.to(
+                statsPanel,
+                { alpha: 1, duration: 0.5, ease: "power2.out" },
+                "-=0.4",
+            ).to(
+                statsText,
+                { alpha: 1, duration: 0.5, ease: "power2.out" },
+                "-=0.3",
+            );
+        }
 
         tl.to(
             highScoresPanel,
