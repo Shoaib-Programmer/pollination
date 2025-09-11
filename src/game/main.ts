@@ -23,14 +23,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false,
         },
     },
-    scene: [
-        Boot,
-        Preloader,
-        MainMenu,
-        Game,
-        GameOver,
-        Settings,
-    ],
+    scene: [Boot, Preloader, MainMenu, Game, GameOver, Settings],
 };
 
 // Create a new Phaser game instance via the exported function

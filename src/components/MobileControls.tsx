@@ -36,23 +36,8 @@ export const MobileControls: React.FC = () => {
         }
     };
 
-    // Handle pointer leaving the button area *while pressed*
-    const handlePointerLeave = (
-        direction: DPadDirection,
-    ) => {
-        if (pressedButton === direction) {
-            // Optional: Decide if leaving should cancel the press.
-            // For continuous movement, it's often better *not* to cancel here,
-            // rely on pointerup/pointercancel instead.
-            // setPressedButton(null);
-            // EventBus.emit('dpad', { direction, active: false });
-        }
-    };
-
     // Handle unexpected pointer cancellation (e.g., browser interruption)
-    const handlePointerCancel = (
-        direction: DPadDirection,
-    ) => {
+    const handlePointerCancel = (direction: DPadDirection) => {
         if (pressedButton === direction) {
             setPressedButton(null);
             EventBus.emit("dpad", { direction, active: false });
@@ -65,10 +50,7 @@ export const MobileControls: React.FC = () => {
             handlePointerDown(e, direction),
         onPointerUp: (e: PointerEvent<HTMLButtonElement>) =>
             handlePointerUp(e, direction),
-        onPointerLeave: () =>
-            handlePointerLeave(direction),
-        onPointerCancel: () =>
-            handlePointerCancel(direction),
+        onPointerCancel: () => handlePointerCancel(direction),
         // Prevent context menu on long press
         onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
     });

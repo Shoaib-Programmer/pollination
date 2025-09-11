@@ -74,10 +74,108 @@ export class BonusChallenge {
             this.createTrueFalseFlowers();
         }
 
-        // Re-enable input AFTER answer flowers exist
-        EventBus.emit("game:set-input-active", true);
+        // Add a brief "GET READY" delay to prevent accidental selections
+        this.showGetReadyMessage();
 
-        // Set up physics overlap for answer flowers
+        // Enable physics overlaps after a short delay
+        this.scene.time.delayedCall(1500, () => {
+            if (this.active) {
+                this.setupFlowerPhysics();
+                // Re-enable input AFTER physics are set up
+                EventBus.emit("game:set-input-active", true);
+            }
+        });
+
+        // Set a time limit for the challenge (accounting for the 1.5s setup delay)
+        this.challengeTimeoutTimer = this.scene.time.delayedCall(13500, () => {
+            if (this.active) {
+                console.log("Bonus Challenge: Time ran out!");
+                this.active = false;
+                EventBus.emit("game:set-input-active", false);
+                // Re-enable main game physics overlap on timeout
+                (this.scene as Game).setMainPhysicsOverlapActive(true);
+                this.endChallenge();
+                this.finalizeChallengeReset();
+            }
+        });
+    }
+
+    /**
+     * Show a "GET READY" message to give player time to prepare
+     */
+    private showGetReadyMessage(): void {
+        if (!this.challengeContainer) return;
+
+        // Create "GET READY" text
+        const readyText = this.scene.add
+            .text(
+                this.scene.cameras.main.width / 2,
+                this.scene.cameras.main.height / 2,
+                "GET READY!",
+                {
+                    fontFamily: "Arial",
+                    fontSize: "36px",
+                    color: "#FFD700",
+                    stroke: "#000000",
+                    strokeThickness: 4,
+                    align: "center",
+                },
+            )
+            .setOrigin(0.5);
+
+        // Add countdown number
+        const countdownText = this.scene.add
+            .text(
+                this.scene.cameras.main.width / 2,
+                this.scene.cameras.main.height / 2 + 60,
+                "3",
+                {
+                    fontFamily: "Arial",
+                    fontSize: "48px",
+                    color: "#FFFFFF",
+                    stroke: "#000000",
+                    strokeThickness: 3,
+                    align: "center",
+                },
+            )
+            .setOrigin(0.5);
+
+        this.challengeContainer.add(readyText);
+        this.challengeContainer.add(countdownText);
+
+        // Animate countdown
+        let count = 3;
+        const countdownTimer = this.scene.time.addEvent({
+            delay: 500,
+            callback: () => {
+                count--;
+                if (count > 0) {
+                    countdownText.setText(count.toString());
+                    // Scale animation
+                    this.scene.tweens.add({
+                        targets: countdownText,
+                        scale: 1.5,
+                        duration: 200,
+                        yoyo: true,
+                        ease: "Back.easeOut",
+                    });
+                } else {
+                    // Remove countdown when it reaches 0
+                    readyText.destroy();
+                    countdownText.destroy();
+                    countdownTimer.destroy();
+                }
+            },
+            repeat: 2, // Will run 3 times (3, 2, 1)
+        });
+    }
+
+    /**
+     * Set up physics overlaps for the answer flowers
+     */
+    private setupFlowerPhysics(): void {
+        if (!this.active) return;
+
         // Access the bee instance from the scene
         const gameScene = this.scene as Game;
         this.answerFlowers.forEach((flower) => {
@@ -92,19 +190,6 @@ export class BonusChallenge {
                 undefined,
                 this,
             );
-        });
-
-        // Set a time limit for the challenge and store the timer event
-        this.challengeTimeoutTimer = this.scene.time.delayedCall(15000, () => {
-            if (this.active) {
-                console.log("Bonus Challenge: Time ran out!");
-                this.active = false;
-                EventBus.emit("game:set-input-active", false);
-                // Re-enable main game physics overlap on timeout
-                (this.scene as Game).setMainPhysicsOverlapActive(true);
-                this.endChallenge();
-                this.finalizeChallengeReset();
-            }
         });
     }
 
@@ -221,7 +306,7 @@ export class BonusChallenge {
                 const totalAngle = Math.PI; // 180 degrees for semi-circle
                 const startAngle = Math.PI / 2; // Start from top
                 const angleStep = totalAngle / (options.length - 1);
-                const angle = startAngle - (angleStep * index);
+                const angle = startAngle - angleStep * index;
 
                 x = centerX + radius * Math.cos(angle);
                 y = bottomY - radius * Math.sin(angle);
@@ -243,9 +328,18 @@ export class BonusChallenge {
             flower.setData("isCorrect", isCorrect);
 
             // Set visual distinction based on index (more than just color)
-            const colors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00, 0xff00ff, 0x00ffff];
+            const colors = [
+                0xff0000, 0x0000ff, 0xffff00, 0x00ff00, 0xff00ff, 0x00ffff,
+            ];
             const scales = [0.7, 0.8, 0.9, 1.0, 0.75, 0.85]; // Different sizes
-            const rotations = [0, Math.PI/8, Math.PI/4, -Math.PI/8, Math.PI/6, -Math.PI/6]; // Different rotations
+            const rotations = [
+                0,
+                Math.PI / 8,
+                Math.PI / 4,
+                -Math.PI / 8,
+                Math.PI / 6,
+                -Math.PI / 6,
+            ]; // Different rotations
 
             flower.setTint(colors[index % colors.length]);
             flower.setScale(scales[index % scales.length]);
@@ -317,12 +411,12 @@ export class BonusChallenge {
             if (option.value) {
                 // True - green with slight upward tilt
                 flower.setTint(0x00ff00);
-                flower.setRotation(Math.PI/12); // Slight upward tilt
+                flower.setRotation(Math.PI / 12); // Slight upward tilt
                 flower.setScale(0.9);
             } else {
                 // False - red with slight downward tilt
                 flower.setTint(0xff0000);
-                flower.setRotation(-Math.PI/12); // Slight downward tilt
+                flower.setRotation(-Math.PI / 12); // Slight downward tilt
                 flower.setScale(0.9);
             }
 

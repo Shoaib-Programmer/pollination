@@ -360,9 +360,7 @@ export class Game extends Phaser.Scene {
             });
 
             // Pass indicator reference to the Bee so it can update position
-            this.bee.setPollenIndicator(
-                this.pollenIndicator,
-            );
+            this.bee.setPollenIndicator(this.pollenIndicator);
 
             // Use utility functions for effects
             createParticles(
