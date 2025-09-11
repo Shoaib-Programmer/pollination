@@ -115,9 +115,12 @@ export class QuizService {
      */
     public getRandomQuizQuestions(count: number = 5): QuizQuestion[] {
         // Shuffle the questions array and return requested count
-        return [...QUIZ_QUESTIONS]
-            .sort(() => Math.random() - 0.5)
-            .slice(0, Math.min(count, QUIZ_QUESTIONS.length));
+        const shuffled = [...QUIZ_QUESTIONS];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, Math.min(count, QUIZ_QUESTIONS.length));
     }
 
     /**
