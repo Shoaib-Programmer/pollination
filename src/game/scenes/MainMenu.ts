@@ -126,7 +126,13 @@ export class MainMenu extends Scene {
             .setOrigin(0.5)
             .setAlpha(0); // Start invisible
 
-        const startButton = createStyledText(this, centerX, centerY + 65, "Start Game", "subtitle");
+        const startButton = createStyledText(
+            this,
+            centerX,
+            centerY + 65,
+            "Start Game",
+            "subtitle",
+        );
         startButton.setFontSize("34px");
         startButton.setBackgroundColor("#2E8B57");
         startButton.setPadding(30, 15);
@@ -134,7 +140,13 @@ export class MainMenu extends Scene {
         startButton.setScale(0.8); // Start smaller
 
         // High Scores button - only shown if there are high scores
-        this.highScoresButton = createStyledText(this, centerX, centerY + 140, "High Scores", "body");
+        this.highScoresButton = createStyledText(
+            this,
+            centerX,
+            centerY + 140,
+            "High Scores",
+            "body",
+        );
         this.highScoresButton.setFontSize("28px");
         this.highScoresButton.setBackgroundColor("#4682B4"); // Steel blue color
         this.highScoresButton.setPadding(25, 12);
@@ -142,7 +154,13 @@ export class MainMenu extends Scene {
         this.highScoresButton.setScale(0.8); // Start smaller
 
         // Flower Collection Button - always visible
-        const flowerCollectionButton = createStyledText(this, centerX, centerY + 200, "Flower Collection", "body");
+        const flowerCollectionButton = createStyledText(
+            this,
+            centerX,
+            centerY + 200,
+            "Flower Collection",
+            "body",
+        );
         flowerCollectionButton.setFontSize("28px");
         flowerCollectionButton.setBackgroundColor("#9C27B0"); // Purple color
         flowerCollectionButton.setPadding(25, 12);
@@ -241,40 +259,50 @@ export class MainMenu extends Scene {
             onOut: () => startButton.setBackgroundColor("#2E8B57"),
             onClick: () => {
                 // Transition Out Animation
-                createTransitionOut(this, [
-                    title,
-                    instructionBg,
-                    instructions,
-                    startButton,
-                    this.highScoresButton,
-                    settingsIcon,
-                ], () => {
-                    this.scene.start("Game");
-                });
-            },
-        });
-
-        // High Scores button interaction
-        if (this.highScoresButton) {
-            addButtonInteractions(this.highScoresButton, this, {
-                onHover: () => this.highScoresButton!.setBackgroundColor("#5A9BDC"), // Lighter blue
-                onOut: () => this.highScoresButton!.setBackgroundColor("#4682B4"),
-                onClick: () => {
-                    // Go directly to the GameOver scene which shows high scores
-                    createTransitionOut(this, [
+                createTransitionOut(
+                    this,
+                    [
                         title,
                         instructionBg,
                         instructions,
                         startButton,
                         this.highScoresButton,
                         settingsIcon,
-                    ], () => {
-                        // Pass 0 score to just show high scores without current game score emphasis
-                        this.scene.start("GameOver", {
-                            score: 0,
-                            showHighScoresOnly: true,
-                        });
-                    });
+                    ],
+                    () => {
+                        this.scene.start("Game");
+                    },
+                );
+            },
+        });
+
+        // High Scores button interaction
+        if (this.highScoresButton) {
+            addButtonInteractions(this.highScoresButton, this, {
+                onHover: () =>
+                    this.highScoresButton!.setBackgroundColor("#5A9BDC"), // Lighter blue
+                onOut: () =>
+                    this.highScoresButton!.setBackgroundColor("#4682B4"),
+                onClick: () => {
+                    // Go directly to the GameOver scene which shows high scores
+                    createTransitionOut(
+                        this,
+                        [
+                            title,
+                            instructionBg,
+                            instructions,
+                            startButton,
+                            this.highScoresButton,
+                            settingsIcon,
+                        ],
+                        () => {
+                            // Pass 0 score to just show high scores without current game score emphasis
+                            this.scene.start("GameOver", {
+                                score: 0,
+                                showHighScoresOnly: true,
+                            });
+                        },
+                    );
                 },
             });
         }
@@ -285,17 +313,21 @@ export class MainMenu extends Scene {
             onOut: () => flowerCollectionButton.setBackgroundColor("#9C27B0"), // Original purple
             onClick: () => {
                 // Transition to Flower Collection scene
-                createTransitionOut(this, [
-                    title,
-                    instructionBg,
-                    instructions,
-                    startButton,
-                    this.highScoresButton,
-                    flowerCollectionButton,
-                    settingsIcon,
-                ], () => {
-                    this.scene.start("FlowerCollection");
-                });
+                createTransitionOut(
+                    this,
+                    [
+                        title,
+                        instructionBg,
+                        instructions,
+                        startButton,
+                        this.highScoresButton,
+                        flowerCollectionButton,
+                        settingsIcon,
+                    ],
+                    () => {
+                        this.scene.start("FlowerCollection");
+                    },
+                );
             },
         });
 

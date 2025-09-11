@@ -89,9 +89,17 @@ export const MobileControls: React.FC = () => {
         // Pressed state from game input
         `${pressedButton === direction ? "scale-95 ring-2 ring-accent/60 text-accent" : ""}`;
 
-    const ArrowIcon: React.FC<{ direction: DPadDirection }> = ({ direction }) => {
+    const ArrowIcon: React.FC<{ direction: DPadDirection }> = ({
+        direction,
+    }) => {
         const rotation =
-            direction === "up" ? 0 : direction === "right" ? 90 : direction === "down" ? 180 : 270;
+            direction === "up"
+                ? 0
+                : direction === "right"
+                  ? 90
+                  : direction === "down"
+                    ? 180
+                    : 270;
         return (
             <svg
                 className="w-8 h-8 md:w-9 md:h-9 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]"

@@ -3,7 +3,11 @@ import Phaser from "phaser";
 import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import StartGame from "@/game/main";
 import EventBus from "./EventBus";
-import { registerEventHandlers, unregisterEventHandlers, COMMON_EVENTS } from "./utils/eventUtils"; // Import event utilities
+import {
+    registerEventHandlers,
+    unregisterEventHandlers,
+    COMMON_EVENTS,
+} from "./utils/eventUtils"; // Import event utilities
 
 // Define the PhaserGameRef interface
 interface PhaserGameRef {
@@ -135,10 +139,13 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                     EventBus.emit("game:set-input-active", true);
                 }
             };
-            
+
             // Register event handlers using utility
             const eventHandlers = [
-                { event: COMMON_EVENTS.UI_MODAL_CLOSED, handler: handleModalClosed },
+                {
+                    event: COMMON_EVENTS.UI_MODAL_CLOSED,
+                    handler: handleModalClosed,
+                },
             ];
             registerEventHandlers(eventHandlers);
 
@@ -195,7 +202,10 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                     gameSceneInstance?.scene.isActive("Game");
 
                 // Emit UI signal for scene active state
-                EventBus.emit(COMMON_EVENTS.UI_GAME_ACTIVE, Boolean(isGameSceneActive));
+                EventBus.emit(
+                    COMMON_EVENTS.UI_GAME_ACTIVE,
+                    Boolean(isGameSceneActive),
+                );
 
                 // Attach listeners when Game scene becomes active
                 if (isGameSceneActive && !listenersAttachedRef.current) {

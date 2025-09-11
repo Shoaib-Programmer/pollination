@@ -34,7 +34,7 @@ export interface ButtonInteractionConfig {
  */
 export function createStyledButton(
     scene: Phaser.Scene,
-    config: ButtonConfig
+    config: ButtonConfig,
 ): Phaser.GameObjects.Text {
     const defaultConfig = {
         fontSize: "28px",
@@ -51,15 +51,17 @@ export function createStyledButton(
 
     const finalConfig = { ...defaultConfig, ...config };
 
-    return scene.add.text(config.x, config.y, config.text, {
-        font: "bold",
-        fontFamily: finalConfig.fontFamily,
-        fontSize: finalConfig.fontSize,
-        color: "#ffffff",
-        backgroundColor: config.backgroundColor,
-        padding: finalConfig.padding,
-        shadow: finalConfig.shadow,
-    }).setOrigin(0.5);
+    return scene.add
+        .text(config.x, config.y, config.text, {
+            font: "bold",
+            fontFamily: finalConfig.fontFamily,
+            fontSize: finalConfig.fontSize,
+            color: "#ffffff",
+            backgroundColor: config.backgroundColor,
+            padding: finalConfig.padding,
+            shadow: finalConfig.shadow,
+        })
+        .setOrigin(0.5);
 }
 
 /**
@@ -68,7 +70,7 @@ export function createStyledButton(
 export function addButtonInteractions(
     button: Phaser.GameObjects.Text,
     scene: Phaser.Scene,
-    config: ButtonInteractionConfig
+    config: ButtonInteractionConfig,
 ): void {
     const {
         onHover,
@@ -127,7 +129,7 @@ export function addButtonInteractions(
 export function createInteractiveButton(
     scene: Phaser.Scene,
     buttonConfig: ButtonConfig,
-    interactionConfig: ButtonInteractionConfig
+    interactionConfig: ButtonInteractionConfig,
 ): Phaser.GameObjects.Text {
     const button = createStyledButton(scene, buttonConfig);
     addButtonInteractions(button, scene, interactionConfig);
@@ -180,7 +182,7 @@ export function createStyledText(
     x: number,
     y: number,
     text: string,
-    style: keyof typeof TEXT_STYLES = "body"
+    style: keyof typeof TEXT_STYLES = "body",
 ): Phaser.GameObjects.Text {
     return scene.add.text(x, y, text, TEXT_STYLES[style]).setOrigin(0.5);
 }

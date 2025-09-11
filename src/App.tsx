@@ -4,7 +4,11 @@ import PhaserGame, { PhaserGameRef } from "@/game/PhaserGame";
 import EventBus from "@/game/EventBus";
 import { GameUI } from "@/components/GameUI";
 import { MobileControls } from "@/components/MobileControls"; // Import MobileControls
-import { registerEventHandlers, unregisterEventHandlers, COMMON_EVENTS } from "@/game/utils/eventUtils"; // Import event utilities
+import {
+    registerEventHandlers,
+    unregisterEventHandlers,
+    COMMON_EVENTS,
+} from "@/game/utils/eventUtils"; // Import event utilities
 
 function App() {
     const phaserGameRef = useRef<PhaserGameRef>(null);
@@ -26,11 +30,14 @@ function App() {
         const handleInputActive = (isActive: boolean) => {
             setIsGameInputActive(isActive);
         };
-        
+
         // Register event handlers using utility
         const eventHandlers = [
             { event: COMMON_EVENTS.SCENE_CHANGED, handler: handleSceneChanged },
-            { event: COMMON_EVENTS.GAME_SET_INPUT_ACTIVE, handler: handleInputActive },
+            {
+                event: COMMON_EVENTS.GAME_SET_INPUT_ACTIVE,
+                handler: handleInputActive,
+            },
             { event: COMMON_EVENTS.UI_GAME_ACTIVE, handler: setIsGameActive },
         ];
         registerEventHandlers(eventHandlers);

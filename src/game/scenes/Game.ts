@@ -8,7 +8,11 @@ import { GameTimer } from "../managers/GameTimer";
 import { BonusChallenge } from "../managers/BonusChallenge"; // Import BonusChallenge from its new location
 import { createParticles, addInteractionPulse } from "../utils/effects"; // Import utils
 import { createFloatingScoreTween } from "../utils/animation"; // Import animation utils
-import { registerEventHandlers, unregisterEventHandlers, COMMON_EVENTS } from "../utils/eventUtils"; // Import event utils
+import {
+    registerEventHandlers,
+    unregisterEventHandlers,
+    COMMON_EVENTS,
+} from "../utils/eventUtils"; // Import event utils
 
 // Keep type alias if needed, or rely on Phaser's types directly
 type ArcadePhysicsCallback = Phaser.Types.Physics.Arcade.ArcadePhysicsCallback;
@@ -34,9 +38,13 @@ export class Game extends Phaser.Scene {
     private pollenIndicatorTween: Phaser.Tweens.Tween | null = null;
     private completedFlowers: number = 0;
     private pollinationCount: number = 0;
-    
+
     // Event handlers for cleanup
-    private eventHandlers: Array<{ event: string; handler: (...args: unknown[]) => void; context: unknown }> = [];
+    private eventHandlers: Array<{
+        event: string;
+        handler: (...args: unknown[]) => void;
+        context: unknown;
+    }> = [];
 
     // Config
     private readonly gameDuration: number = 60; // Seconds
@@ -57,14 +65,14 @@ export class Game extends Phaser.Scene {
         this.flowerManager.spawnFlowers(6, "blue");
         this.flowerManager.assignInitialPollen();
 
-            // --- Physics ---
-    this.mainPhysicsOverlap = this.physics.add.overlap(
-        this.bee,
-        this.flowers,
-        this.handleBeeFlowerCollision as ArcadePhysicsCallback, // Keep collision handler here
-        undefined,
-        this,
-    );
+        // --- Physics ---
+        this.mainPhysicsOverlap = this.physics.add.overlap(
+            this.bee,
+            this.flowers,
+            this.handleBeeFlowerCollision as ArcadePhysicsCallback, // Keep collision handler here
+            undefined,
+            this,
+        );
 
         // --- Input ---
         if (this.input.keyboard) {
@@ -72,11 +80,19 @@ export class Game extends Phaser.Scene {
         } else {
             console.error("Keyboard input plugin not found.");
         }
-        
+
         // Register event handlers using utility
         this.eventHandlers = [
-            { event: COMMON_EVENTS.DPAD, handler: this.handleDpadInput, context: this },
-            { event: COMMON_EVENTS.GAME_SET_INPUT_ACTIVE, handler: this.setInputActive, context: this },
+            {
+                event: COMMON_EVENTS.DPAD,
+                handler: this.handleDpadInput,
+                context: this,
+            },
+            {
+                event: COMMON_EVENTS.GAME_SET_INPUT_ACTIVE,
+                handler: this.setInputActive,
+                context: this,
+            },
         ];
         registerEventHandlers(this.eventHandlers);
 
@@ -283,7 +299,9 @@ export class Game extends Phaser.Scene {
         // so this handler should not be called for regular gameplay flowers
         if (this.bonusChallenge.isActive()) {
             // This should not happen since we disable the main physics overlap during challenges
-            console.warn("Main game collision detected during bonus challenge - this should not happen");
+            console.warn(
+                "Main game collision detected during bonus challenge - this should not happen",
+            );
             return;
         }
 
@@ -409,8 +427,7 @@ export class Game extends Phaser.Scene {
     }
 
     // Central async function to process the outcome of pollination
-    private async _processPollinationLogic(
-    ): Promise<void> {
+    private async _processPollinationLogic(): Promise<void> {
         try {
             // Priority 1: Check for Win Condition and handle end game if needed
             const winResult = this._checkAndHandleWinCondition();

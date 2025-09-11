@@ -3,7 +3,11 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styles from "@/styles/GameUI.module.css"; // Retain for layout overlay base; gradually replacing with utilities
 import EventBus from "@/game/EventBus";
 import gsap from "gsap";
-import { registerEventHandlers, unregisterEventHandlers, COMMON_EVENTS } from "@/game/utils/eventUtils"; // Import event utilities
+import {
+    registerEventHandlers,
+    unregisterEventHandlers,
+    COMMON_EVENTS,
+} from "@/game/utils/eventUtils"; // Import event utilities
 import { useGSAP } from "@gsap/react";
 
 interface GameUIProps {
@@ -223,8 +227,14 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
             { event: COMMON_EVENTS.UPDATE_SCORE, handler: handleScoreUpdate },
             { event: "show-fact", handler: handleShowFactModal },
             { event: COMMON_EVENTS.UI_HIDE_MODAL, handler: forceHideModal },
-            { event: COMMON_EVENTS.UI_UPDATE_TIMER, handler: handleTimerUpdate },
-            { event: COMMON_EVENTS.SCENE_CHANGED, handler: handleSceneActivation },
+            {
+                event: COMMON_EVENTS.UI_UPDATE_TIMER,
+                handler: handleTimerUpdate,
+            },
+            {
+                event: COMMON_EVENTS.SCENE_CHANGED,
+                handler: handleSceneActivation,
+            },
         ];
         registerEventHandlers(eventHandlers);
 

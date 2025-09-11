@@ -19,7 +19,7 @@ export function createButtonHoverTween(
     scene: Phaser.Scene,
     targets: unknown,
     scaleMultiplier: number = 1.08,
-    duration: number = 150
+    duration: number = 150,
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets,
@@ -36,7 +36,7 @@ export function createButtonClickTween(
     scene: Phaser.Scene,
     target: unknown,
     scaleMultiplier: number = 0.95,
-    duration: number = 80
+    duration: number = 80,
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
@@ -54,7 +54,7 @@ export function createFadeInTween(
     scene: Phaser.Scene,
     target: unknown,
     duration: number = 400,
-    delay: number = 0
+    delay: number = 0,
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
@@ -72,7 +72,7 @@ export function createFadeOutTween(
     scene: Phaser.Scene,
     target: unknown,
     duration: number = 300,
-    onComplete?: () => void
+    onComplete?: () => void,
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
@@ -92,7 +92,7 @@ export function createScaleTween(
     scale: number,
     duration: number = 400,
     delay: number = 0,
-    ease: string = "back.out(1.7)"
+    ease: string = "back.out(1.7)",
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
@@ -110,7 +110,7 @@ export function createFloatingScoreTween(
     scene: Phaser.Scene,
     scoreText: Phaser.GameObjects.Text,
     points: number,
-    duration: number = 1500
+    duration: number = 1500,
 ): void {
     scene.tweens.add({
         targets: scoreText,
@@ -129,7 +129,7 @@ export function createPulseTween(
     scene: Phaser.Scene,
     target: unknown,
     scaleAmount: number = 1.05,
-    duration: number = 80
+    duration: number = 80,
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
@@ -147,10 +147,10 @@ export function createStaggeredEntrance(
     scene: Phaser.Scene,
     elements: unknown[],
     staggerDelay: number = 0.1,
-    baseDelay: number = 0.3
+    baseDelay: number = 0.3,
 ): void {
     elements.forEach((element, index) => {
-        const delay = baseDelay + (index * staggerDelay);
+        const delay = baseDelay + index * staggerDelay;
         createFadeInTween(scene, element, 400, delay * 1000);
         createScaleTween(scene, element, 1, 400, delay * 1000);
     });
@@ -162,7 +162,7 @@ export function createStaggeredEntrance(
 export function createTransitionOut(
     scene: Phaser.Scene,
     elements: unknown[],
-    onComplete?: () => void
+    onComplete?: () => void,
 ): void {
     elements.forEach((element, index) => {
         const delay = index * 100;
