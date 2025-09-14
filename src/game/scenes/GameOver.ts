@@ -95,7 +95,7 @@ export class GameOver extends Scene {
         const title = this.add
             .text(
                 centerX,
-                this.showHighScoresOnly ? centerY - 160 : centerY - 180,
+                this.showHighScoresOnly ? centerY - 160 : centerY - 260,
                 this.showHighScoresOnly
                     ? "High Scores"
                     : "Pollination Complete!",
@@ -124,7 +124,7 @@ export class GameOver extends Scene {
         let statsPanel = null;
         let statsText = null;
         if (!this.showHighScoresOnly) {
-            const statsPanelY = centerY - 120;
+            const statsPanelY = centerY - 160;
             statsPanel = this.add
                 .rectangle(centerX, statsPanelY, 400, 80, 0x000000, 0.7)
                 .setOrigin(0.5)
@@ -150,7 +150,7 @@ export class GameOver extends Scene {
         // High Scores Panel - Adjust position based on context
         const highScoresPanelY = this.showHighScoresOnly
             ? centerY + 20
-            : centerY - 20; // Moved down to make room for stats
+            : centerY + 40; // Moved down to make room for stats
         const highScoresPanelHeight = this.showHighScoresOnly ? 260 : 220; // Adjusted height slightly
         const highScoresPanel = this.add
             .rectangle(
