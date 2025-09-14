@@ -291,6 +291,7 @@ export class BonusChallenge {
 
         // Position flowers based on number of options
         const centerX = this.scene.cameras.main.width / 2;
+        const centerY = this.scene.cameras.main.height / 2;
         const bottomY = this.scene.cameras.main.height - 120;
         const radius = 250;
 
@@ -301,12 +302,20 @@ export class BonusChallenge {
                 // For 2 options, position them like true/false (left and right)
                 x = index === 0 ? centerX - 200 : centerX + 200;
                 y = bottomY;
+            } else if (options.length === 4) {
+                // For 4 options, use a grid layout
+                const positions = [
+                    { x: centerX - 150, y: centerY - 50 }, // Top-left
+                    { x: centerX + 150, y: centerY - 50 }, // Top-right
+                    { x: centerX - 150, y: centerY + 150 }, // Bottom-left
+                    { x: centerX + 150, y: centerY + 150 }, // Bottom-right
+                ];
+                x = positions[index].x;
+                y = positions[index].y;
             } else {
                 // For 3+ options, use semi-circle positioning
                 const totalAngle = Math.PI; // 180 degrees for semi-circle
-                const startAngle = Math.PI / 2; // Start from top
-                const angleStep = totalAngle / (options.length - 1);
-                const angle = startAngle - angleStep * index;
+                const angle = (index / options.length) * totalAngle - totalAngle / 2;
 
                 x = centerX + radius * Math.cos(angle);
                 y = bottomY - radius * Math.sin(angle);
