@@ -11,11 +11,17 @@
     },
     {
         "id": "pollination_honey_bees_only",
-        "type": "trueFalse",
-        "question": "All bees make honey.",
-        "correctAnswer": false,
-        "explanation": "Not all bees make honey! Many bee species are solitary.",
-        "difficulty": "easy",
+        "type": "multipleChoice",
+        "question": "Which of the following statements about bees is FALSE?",
+        "correctAnswer": "All bees produce honey.",
+        "options": [
+            "Most bee species are solitary.",
+            "All bees produce honey.",
+            "Bumblebees produce small amounts of honey.",
+            "Not all bees live in hives."
+        ],
+        "explanation": "Contrary to popular belief, not all bees make honey. In fact, the vast majority of bee species are solitary and do not produce honey.",
+        "difficulty": "medium",
         "category": "pollination"
     },
     {
@@ -45,10 +51,11 @@
     },
     {
         "id": "pollination_wind_water",
-        "type": "trueFalse",
-        "question": "Plants can only be pollinated by animals.",
-        "correctAnswer": false,
-        "explanation": "Wind and water can also be pollinators for certain plants like grasses and oaks.",
+        "type": "multipleChoice",
+        "question": "Which of the following is NOT a method of pollination?",
+        "correctAnswer": "Geothermal heat",
+        "options": ["Wind", "Water", "Animals", "Geothermal heat"],
+        "explanation": "Pollination can occur via animals (biotic) or abiotic means like wind and water. Geothermal heat is not a pollination vector.",
         "difficulty": "medium",
         "category": "pollination"
     },
@@ -84,11 +91,17 @@
     },
     {
         "id": "pollination_climate_change",
-        "type": "trueFalse",
-        "question": "Climate change can disrupt the timing between flower blooming and pollinator activity.",
-        "correctAnswer": true,
-        "explanation": "Climate change can disrupt the timing between flower blooming and pollinator activity.",
-        "difficulty": "medium",
+        "type": "multipleChoice",
+        "question": "Which statement about climate change's effect on pollination is FALSE?",
+        "correctAnswer": "It only affects pollinators, not plants.",
+        "options": [
+            "It can cause mismatches in timing between flowers and pollinators.",
+            "It only affects pollinators, not plants.",
+            "It can alter the nutritional quality of nectar.",
+            "It can change the geographic ranges of plants and pollinators."
+        ],
+        "explanation": "Climate change disrupts the delicate synchrony between when flowers bloom and when pollinators are active, and it can affect plants, pollinators, and their interactions.",
+        "difficulty": "hard",
         "category": "environment"
     },
     {
@@ -118,19 +131,26 @@
     },
     {
         "id": "pollination_nocturnal_flowers",
-        "type": "trueFalse",
-        "question": "Some flowers only open at night for nocturnal pollinators like moths and bats.",
-        "correctAnswer": true,
-        "explanation": "Some flowers only open at night for nocturnal pollinators like moths and bats.",
+        "type": "multipleChoice",
+        "question": "Which of these pollinators is primarily associated with flowers that open at night?",
+        "correctAnswer": "Bats",
+        "options": ["Bees", "Butterflies", "Bats", "Birds"],
+        "explanation": "Some flowers have evolved to open exclusively at night to attract nocturnal pollinators like moths and bats.",
         "difficulty": "easy",
         "category": "pollination"
     },
     {
         "id": "pollination_honeybee_benefits",
-        "type": "trueFalse",
-        "question": "Honeybees provide between $235 and $577 billion in benefits to global food production.",
-        "correctAnswer": true,
-        "explanation": "Honeybees provide between $235 and $577 billion in benefits to global food production.",
+        "type": "multipleChoice",
+        "question": "The economic benefit of honeybees to global food production is estimated to be in what range?",
+        "correctAnswer": "$235 to $577 billion",
+        "options": [
+            "$10 to $20 million",
+            "$50 to $100 million",
+            "$1 to $5 billion",
+            "$235 to $577 billion"
+        ],
+        "explanation": "The contribution of honeybees to global food production is immense, valued at between $235 and $577 billion.",
         "difficulty": "hard",
         "category": "pollination"
     },
@@ -146,10 +166,16 @@
     },
     {
         "id": "pollination_continent_coverage",
-        "type": "trueFalse",
-        "question": "Pollinators are found on every continent except Antarctica.",
-        "correctAnswer": true,
-        "explanation": "Pollinators are found on every continent except Antarctica.",
+        "type": "multipleChoice",
+        "question": "Which statement about the geographic distribution of pollinators is true?",
+        "correctAnswer": "Pollinators are found on every continent except Antarctica.",
+        "options": [
+            "Pollinators are only found in the Northern Hemisphere.",
+            "Pollinators are exclusive to tropical regions.",
+            "Pollinators are found on every continent except Antarctica.",
+            "Pollinators do not exist in desert environments."
+        ],
+        "explanation": "Pollinators are a diverse group of animals found in almost every terrestrial ecosystem on Earth, with the notable exception of Antarctica.",
         "difficulty": "medium",
         "category": "pollination"
     },
@@ -165,10 +191,16 @@
     },
     {
         "id": "pollination_dinosaur_era",
-        "type": "trueFalse",
-        "question": "Insect pollination dates back to the dinosaur era.",
-        "correctAnswer": true,
-        "explanation": "Insect pollination dates back to the dinosaur era.",
+        "type": "multipleChoice",
+        "question": "The practice of insect pollination dates back to which geological era?",
+        "correctAnswer": "The dinosaur era",
+        "options": [
+            "The Ice Age",
+            "The Victorian era",
+            "The dinosaur era",
+            "The Stone Age"
+        ],
+        "explanation": "Fossil evidence shows that insect pollination is an ancient interaction, dating back to the time of the dinosaurs.",
         "difficulty": "hard",
         "category": "pollination"
     },
@@ -184,10 +216,16 @@
     },
     {
         "id": "pollination_bumblebee_buzz",
-        "type": "trueFalse",
-        "question": "Bumblebees buzz at a middle C tone to release pollen from tomatoes and blueberries.",
-        "correctAnswer": true,
-        "explanation": "Bumblebees buzz at a middle C tone to release pollen from tomatoes and blueberries in under a second.",
+        "type": "multipleChoice",
+        "question": "To release pollen from certain flowers like tomatoes, what unique technique do bumblebees use?",
+        "correctAnswer": "Buzzing at a specific frequency (Middle C)",
+        "options": [
+            "Tapping the flower with their antennae",
+            "Releasing a specific pheromone",
+            "Buzzing at a specific frequency (Middle C)",
+            "Shaking the entire plant"
+        ],
+        "explanation": "Bumblebees can perform 'buzz pollination' by vibrating their flight muscles at a frequency close to Middle C, which efficiently releases pollen from certain types of flowers.",
         "difficulty": "medium",
         "category": "pollination"
     },
@@ -203,10 +241,16 @@
     },
     {
         "id": "pollination_social_bee_hives",
-        "type": "trueFalse",
-        "question": "Social bees build hives with 20,000 to 80,000 bees.",
-        "correctAnswer": true,
-        "explanation": "Social bees build hives with 20,000 to 80,000 bees, while bumble bees often nest underground.",
+        "type": "multipleChoice",
+        "question": "Which of the following is NOT a characteristic of social bees?",
+        "correctAnswer": "All social bees nest underground.",
+        "options": [
+            "They can build hives with 20,000 to 80,000 individuals.",
+            "They live in large, cooperative colonies.",
+            "All social bees nest underground.",
+            "They have a queen who is the primary reproductive female."
+        ],
+        "explanation": "While some social bees, like many bumble bees, nest underground, others, like honeybees, build hives in cavities or trees. Not all social bees are ground-nesters.",
         "difficulty": "medium",
         "category": "pollination"
     },
@@ -222,10 +266,16 @@
     },
     {
         "id": "pollination_nocturnal_bats",
-        "type": "trueFalse",
-        "question": "Nocturnal pollinators like bats are crucial for plants like agave and cactus.",
-        "correctAnswer": true,
-        "explanation": "Nocturnal pollinators like bats are crucial for plants like agave and cactus in arid regions.",
+        "type": "multipleChoice",
+        "question": "For which of the following plants are nocturnal pollinators like bats most crucial?",
+        "correctAnswer": "Agave and cactus",
+        "options": [
+            "Roses and tulips",
+            "Sunflowers and daisies",
+            "Agave and cactus",
+            "Oak and pine trees"
+        ],
+        "explanation": "In arid regions, nocturnal pollinators like bats play a vital role in the life cycle of plants such as agave (the source of tequila) and many species of cactus.",
         "difficulty": "medium",
         "category": "pollination"
     },
@@ -241,10 +291,16 @@
     },
     {
         "id": "pollination_bee_face_recognition",
-        "type": "trueFalse",
-        "question": "Bees can recognize human faces.",
-        "correctAnswer": true,
-        "explanation": "Bees can recognize human faces, suggesting advanced cognitive abilities.",
+        "type": "multipleChoice",
+        "question": "Which surprising cognitive ability have bees been shown to possess?",
+        "correctAnswer": "Recognizing human faces",
+        "options": [
+            "Solving complex mathematical equations",
+            "Recognizing human faces",
+            "Composing music",
+            "Understanding spoken language"
+        ],
+        "explanation": "Studies have shown that bees have advanced cognitive abilities, including the ability to recognize and remember individual human faces.",
         "difficulty": "easy",
         "category": "pollination"
     },
@@ -260,10 +316,16 @@
     },
     {
         "id": "pollination_pesticides_ccd",
-        "type": "trueFalse",
-        "question": "Pesticides like neonicotinoids are linked to bee colony collapse disorder.",
-        "correctAnswer": true,
-        "explanation": "Pesticides like neonicotinoids are linked to bee colony collapse disorder.",
+        "type": "multipleChoice",
+        "question": "Which factor is NOT considered a primary driver of bee colony collapse disorder (CCD)?",
+        "correctAnswer": "Lunar cycles",
+        "options": [
+            "Pesticides like neonicotinoids",
+            "Habitat loss",
+            "Parasites like the Varroa mite",
+            "Lunar cycles"
+        ],
+        "explanation": "Colony Collapse Disorder is a complex issue linked to factors like pesticides, habitat loss, and parasites. There is no scientific evidence to suggest a link with lunar cycles.",
         "difficulty": "medium",
         "category": "environment"
     },
@@ -279,10 +341,16 @@
     },
     {
         "id": "pollination_triggered_pollen",
-        "type": "trueFalse",
-        "question": "Some plants release pollen only when triggered by a pollinator's specific touch.",
-        "correctAnswer": true,
-        "explanation": "Some plants release pollen only when triggered by a pollinator's specific touch.",
+        "type": "multipleChoice",
+        "question": "Some plants have a specialized pollination mechanism where pollen is released only when:",
+        "correctAnswer": "Triggered by a pollinator's specific touch or vibration",
+        "options": [
+            "The sun is at its highest point",
+            "It rains for three consecutive days",
+            "Triggered by a pollinator's specific touch or vibration",
+            "The temperature drops below freezing"
+        ],
+        "explanation": "To ensure effective pollen transfer, some plants have evolved to release their pollen only when they detect the specific touch or vibration of a suitable pollinator.",
         "difficulty": "medium",
         "category": "pollination"
     },
@@ -303,10 +371,16 @@
     },
     {
         "id": "pollination_tropical_forest_bees",
-        "type": "trueFalse",
-        "question": "In tropical forests, bees pollinate canopy trees critical for carbon storage.",
-        "correctAnswer": true,
-        "explanation": "In tropical forests, bees pollinate canopy trees critical for carbon storage.",
+        "type": "multipleChoice",
+        "question": "In tropical forests, what critical role do bees play in the ecosystem?",
+        "correctAnswer": "Pollinating canopy trees essential for carbon storage",
+        "options": [
+            "Decomposing fallen leaves",
+            "Controlling insect populations",
+            "Pollinating canopy trees essential for carbon storage",
+            "Creating new water sources"
+        ],
+        "explanation": "Bees are vital to the health of tropical forests, as they pollinate the large canopy trees that are crucial for biodiversity and for sequestering atmospheric carbon.",
         "difficulty": "medium",
         "category": "pollination"
     },
@@ -322,10 +396,16 @@
     },
     {
         "id": "pollination_monarch_migration",
-        "type": "trueFalse",
-        "question": "The monarch butterfly's migration relies on nectar from pollinated flowers.",
-        "correctAnswer": true,
-        "explanation": "The monarch butterfly's migration relies on nectar from pollinated flowers.",
+        "type": "multipleChoice",
+        "question": "The famous long-distance migration of the monarch butterfly is heavily dependent on what?",
+        "correctAnswer": "Nectar from pollinated flowers for fuel",
+        "options": [
+            "Following major highways",
+            "Navigating by the stars",
+            "Nectar from pollinated flowers for fuel",
+            "Catching thermal updrafts"
+        ],
+        "explanation": "The monarch butterfly's incredible migration over thousands of miles relies on the availability of nectar from flowers along their route, which in turn depend on pollinators.",
         "difficulty": "easy",
         "category": "pollination"
     },
@@ -341,10 +421,16 @@
     },
     {
         "id": "pollination_flower_colors_scents",
-        "type": "trueFalse",
-        "question": "Flowers have specific colors and scents to attract their preferred pollinators.",
-        "correctAnswer": true,
-        "explanation": "Flowers have specific colors and scents to attract their preferred pollinators.",
+        "type": "multipleChoice",
+        "question": "Why do flowers have such a wide variety of colors and scents?",
+        "correctAnswer": "To attract specific types of pollinators",
+        "options": [
+            "For purely aesthetic reasons",
+            "To deter herbivores",
+            "To attract specific types of pollinators",
+            "As a byproduct of photosynthesis"
+        ],
+        "explanation": "The colors, shapes, and scents of flowers are not random; they are evolutionary adaptations designed to attract specific pollinators, such as bees, birds, or moths.",
         "difficulty": "easy",
         "category": "pollination"
     },
@@ -365,10 +451,16 @@
     },
     {
         "id": "pollination_orchid_intoxication",
-        "type": "trueFalse",
-        "question": "Some orchid species intoxicate bees during visits.",
-        "correctAnswer": true,
-        "explanation": "Some orchid species intoxicate bees during visits, lasting up to 90 minutes.",
+        "type": "multipleChoice",
+        "question": "Some orchid species have a bizarre pollination strategy that involves:",
+        "correctAnswer": "Intoxicating visiting bees",
+        "options": [
+            "Mimicking the scent of rotting meat",
+            "Intoxicating visiting bees",
+            "Trapping insects for days",
+            "Shooting pollen like a cannon"
+        ],
+        "explanation": "Certain orchid species produce compounds that intoxicate visiting bees for up to 90 minutes, ensuring the bee thoroughly pollinates the flower during its dazed state.",
         "difficulty": "medium",
         "category": "pollination"
     },
@@ -389,10 +481,16 @@
     },
     {
         "id": "pollination_underwater_crustaceans",
-        "type": "trueFalse",
-        "question": "Underwater crustaceans like Idotea balthica pollinate algae.",
-        "correctAnswer": true,
-        "explanation": "Underwater crustaceans like Idotea balthica pollinate algae like Gracilaria gracilis.",
+        "type": "multipleChoice",
+        "question": "Which of these is an example of pollination occurring in an aquatic environment?",
+        "correctAnswer": "Crustaceans pollinating algae",
+        "options": [
+            "Fish transferring pollen between corals",
+            "Dolphins carrying seeds",
+            "Crustaceans pollinating algae",
+            "Whales migrating with spores"
+        ],
+        "explanation": "Pollination isn't limited to land. The crustacean Idotea balthica has been observed pollinating the red alga Gracilaria gracilis, demonstrating a rare example of underwater pollination.",
         "difficulty": "hard",
         "category": "pollination"
     },
@@ -408,10 +506,16 @@
     },
     {
         "id": "pollination_coevolution",
-        "type": "trueFalse",
-        "question": "Plants have co-evolved with pollinators over millions of years.",
-        "correctAnswer": true,
-        "explanation": "Plants have co-evolved with pollinators over millions of years.",
+        "type": "multipleChoice",
+        "question": "The intricate relationship between plants and their pollinators is a classic example of:",
+        "correctAnswer": "Co-evolution",
+        "options": [
+            "Symbiosis",
+            "Parasitism",
+            "Co-evolution",
+            "Commensalism"
+        ],
+        "explanation": "The lock-and-key fit between many flowers and their pollinators is a result of millions of years of co-evolution, where each has influenced the other's evolutionary path.",
         "difficulty": "medium",
         "category": "pollination"
     },
