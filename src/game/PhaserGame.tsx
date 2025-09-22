@@ -1,13 +1,13 @@
 // src/game/PhaserGame.tsx
-import Phaser from "phaser";
-import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
-import StartGame from "@/game/main";
-import EventBus from "./EventBus";
+import Phaser from 'phaser';
+import React, { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
+import StartGame from '@/game/main';
+import EventBus from './EventBus';
 import {
     registerEventHandlers,
     unregisterEventHandlers,
     COMMON_EVENTS,
-} from "./utils/eventUtils"; // Import event utilities
+} from './utils/eventUtils'; // Import event utilities
 
 // Define the PhaserGameRef interface
 interface PhaserGameRef {
@@ -29,7 +29,7 @@ interface PhaserGameProps {
 // Function to handle scene start event within useLayoutEffect
 const handleSceneStart = (
     scene: Phaser.Scene,
-    currentSceneRef: React.MutableRefObject<string | null>,
+    currentSceneRef: React.MutableRefObject<string | null>
 ) => {
     const sceneName = scene.scene.key;
     if (currentSceneRef.current !== sceneName) {
@@ -42,34 +42,34 @@ const handleSceneStart = (
 // Function to attach the start listener to a single scene
 const attachStartListener = (
     scene: Phaser.Scene,
-    currentSceneRef: React.MutableRefObject<string | null>,
+    currentSceneRef: React.MutableRefObject<string | null>
 ) => {
     // Use an anonymous function to properly scope the scene parameter for handleSceneStart
-    scene.events.on("start", () => handleSceneStart(scene, currentSceneRef));
+    scene.events.on('start', () => handleSceneStart(scene, currentSceneRef));
 };
 
 // Function to setup scene change monitoring
 const setupSceneMonitoring = (
     gameInstance: Phaser.Game,
-    currentSceneRef: React.MutableRefObject<string | null>,
+    currentSceneRef: React.MutableRefObject<string | null>
 ) => {
-    gameInstance.scene.scenes.forEach((scene) =>
-        attachStartListener(scene, currentSceneRef),
+    gameInstance.scene.scenes.forEach(scene =>
+        attachStartListener(scene, currentSceneRef)
     );
 };
 
 // --- Event Handlers for Game Scene (used in useEffect polling) ---
 const createScoreHandler = () => (score: number) => {
-    EventBus.emit("update-score", score);
+    EventBus.emit('update-score', score);
 };
 
 const createFactHandler = () => (fact: string) => {
-    EventBus.emit("game:set-input-active", false);
-    EventBus.emit("show-fact", fact);
+    EventBus.emit('game:set-input-active', false);
+    EventBus.emit('show-fact', fact);
 };
 
 const createTimerHandler = () => (time: number) => {
-    EventBus.emit("ui:update-timer", time);
+    EventBus.emit('ui:update-timer', time);
 };
 
 // Function to attach Game scene listeners and return a cleanup function
@@ -77,29 +77,29 @@ const attachGameSceneListeners = (
     scene: Phaser.Scene,
     scoreHandler: (score: number) => void,
     factHandler: (fact: string) => void,
-    timerHandler: (time: number) => void,
+    timerHandler: (time: number) => void
 ): (() => void) => {
     if (!scene.events) {
         console.error(
-            "[PhaserGame Polling] Game scene active but 'events' missing!",
+            "[PhaserGame Polling] Game scene active but 'events' missing!"
         );
         return () => {}; // Return no-op cleanup
     }
-    scene.events.on("game:update-score", scoreHandler);
-    scene.events.on("game:show-fact", factHandler);
-    scene.events.on("game:update-timer", timerHandler);
+    scene.events.on('game:update-score', scoreHandler);
+    scene.events.on('game:show-fact', factHandler);
+    scene.events.on('game:update-timer', timerHandler);
 
     // Return cleanup function for THESE listeners
     return () => {
         if (scene?.events) {
             try {
-                scene.events.off("game:update-score", scoreHandler);
-                scene.events.off("game:show-fact", factHandler);
-                scene.events.off("game:update-timer", timerHandler);
+                scene.events.off('game:update-score', scoreHandler);
+                scene.events.off('game:show-fact', factHandler);
+                scene.events.off('game:update-timer', timerHandler);
             } catch (e) {
                 console.warn(
-                    "[PhaserGame Cleanup Ref] Error removing listeners.",
-                    e,
+                    '[PhaserGame Cleanup Ref] Error removing listeners.',
+                    e
                 );
             }
         }
@@ -113,12 +113,12 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
         {
             className,
             style,
-            width = "100%",
-            height = "100%",
+            width = '100%',
+            height = '100%',
             onGameReady,
             onBeforeDestroy,
         },
-        ref,
+        ref
     ) {
         const gameRef = useRef<Phaser.Game | null>(null);
         const containerRef = useRef<HTMLDivElement>(null);
@@ -136,7 +136,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
 
             const handleModalClosed = () => {
                 if (gameRef.current) {
-                    EventBus.emit("game:set-input-active", true);
+                    EventBus.emit('game:set-input-active', true);
                 }
             };
 
@@ -157,10 +157,10 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
             if (game.isBooted) {
                 onGameReadyCallback();
             } else {
-                game.events.once("ready", onGameReadyCallback);
+                game.events.once('ready', onGameReadyCallback);
             }
 
-            if (typeof ref === "function") {
+            if (typeof ref === 'function') {
                 ref({ game: game });
             } else if (ref) {
                 ref.current = { game: game };
@@ -173,7 +173,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                 onBeforeDestroy?.();
                 unregisterEventHandlers(eventHandlers);
                 // Remove the 'ready' listener if the game didn't boot before cleanup
-                game.events.off("ready", onGameReadyCallback);
+                game.events.off('ready', onGameReadyCallback);
                 // Note: Listeners attached by attachStartListener are managed by Phaser scene lifecycle
                 sceneListenerCleanupRef.current?.();
                 sceneListenerCleanupRef.current = null;
@@ -197,14 +197,14 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                     return;
                 }
 
-                const gameSceneInstance = game.scene.getScene("Game");
+                const gameSceneInstance = game.scene.getScene('Game');
                 const isGameSceneActive =
-                    gameSceneInstance?.scene.isActive("Game");
+                    gameSceneInstance?.scene.isActive('Game');
 
                 // Emit UI signal for scene active state
                 EventBus.emit(
                     COMMON_EVENTS.UI_GAME_ACTIVE,
-                    Boolean(isGameSceneActive),
+                    Boolean(isGameSceneActive)
                 );
 
                 // Attach listeners when Game scene becomes active
@@ -216,7 +216,7 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                                 gameSceneInstance,
                                 scoreHandler,
                                 factHandler,
-                                timerHandler,
+                                timerHandler
                             );
                         listenersAttachedRef.current = true;
                     }
@@ -255,9 +255,9 @@ export const PhaserGame = forwardRef<PhaserGameRef, PhaserGameProps>(
                 style={{ width, height, ...style }}
             />
         );
-    },
+    }
 );
 
-PhaserGame.displayName = "PhaserGame";
+PhaserGame.displayName = 'PhaserGame';
 export type { PhaserGameRef, PhaserGameProps };
 export default PhaserGame;

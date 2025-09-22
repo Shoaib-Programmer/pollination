@@ -1,5 +1,5 @@
 // src/game/utils/effects.ts
-import * as Phaser from "phaser";
+import * as Phaser from 'phaser';
 
 /**
  * Creates particle effects at a specific location
@@ -16,7 +16,7 @@ export function createParticles(
     y: number,
     texture: string,
     tint: number,
-    count: number = 10,
+    count: number = 10
 ): void {
     if (!scene.textures.exists(texture)) return;
 
@@ -26,7 +26,7 @@ export function createParticles(
         scale: { start: 1.5, end: 0 },
         lifespan: { min: 300, max: 600 },
         gravityY: 80,
-        blendMode: "ADD",
+        blendMode: 'ADD',
         tint: tint,
         emitting: false,
     });
@@ -48,7 +48,7 @@ export function createParticles(
 export function addInteractionPulse(
     scene: Phaser.Scene,
     target: Phaser.GameObjects.Sprite,
-    scaleAmount: number = 1.15,
+    scaleAmount: number = 1.15
 ): void {
     if (!target?.active) return;
 
@@ -62,6 +62,6 @@ export function addInteractionPulse(
         scaleY: startScaleY * scaleAmount,
         duration: 120,
         yoyo: true,
-        ease: "Sine.easeInOut",
+        ease: 'Sine.easeInOut',
     });
 }

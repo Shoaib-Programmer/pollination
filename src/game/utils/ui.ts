@@ -1,5 +1,5 @@
 // src/game/utils/ui.ts
-import * as Phaser from "phaser";
+import * as Phaser from 'phaser';
 
 export interface ButtonConfig {
     text: string;
@@ -34,16 +34,16 @@ export interface ButtonInteractionConfig {
  */
 export function createStyledButton(
     scene: Phaser.Scene,
-    config: ButtonConfig,
+    config: ButtonConfig
 ): Phaser.GameObjects.Text {
     const defaultConfig = {
-        fontSize: "28px",
-        fontFamily: "var(--font-poppins-family)",
+        fontSize: '28px',
+        fontFamily: 'var(--font-poppins-family)',
         padding: { x: 25, y: 12 },
         shadow: {
             offsetX: 2,
             offsetY: 2,
-            color: "#111",
+            color: '#111',
             blur: 2,
             fill: true,
         },
@@ -53,10 +53,10 @@ export function createStyledButton(
 
     return scene.add
         .text(config.x, config.y, config.text, {
-            font: "bold",
+            font: 'bold',
             fontFamily: finalConfig.fontFamily,
             fontSize: finalConfig.fontSize,
-            color: "#ffffff",
+            color: '#ffffff',
             backgroundColor: config.backgroundColor,
             padding: finalConfig.padding,
             shadow: finalConfig.shadow,
@@ -70,7 +70,7 @@ export function createStyledButton(
 export function addButtonInteractions(
     button: Phaser.GameObjects.Text,
     scene: Phaser.Scene,
-    config: ButtonInteractionConfig,
+    config: ButtonInteractionConfig
 ): void {
     const {
         onHover,
@@ -86,37 +86,37 @@ export function addButtonInteractions(
     const originalScale = button.scaleX;
 
     // Hover effect
-    button.on("pointerover", () => {
+    button.on('pointerover', () => {
         scene.tweens.killTweensOf(button);
         scene.tweens.add({
             targets: button,
             scale: originalScale * scaleMultiplier,
             duration: hoverDuration,
-            ease: "Sine.easeInOut",
+            ease: 'Sine.easeInOut',
         });
         onHover?.();
     });
 
     // Hover out effect
-    button.on("pointerout", () => {
+    button.on('pointerout', () => {
         scene.tweens.killTweensOf(button);
         scene.tweens.add({
             targets: button,
             scale: originalScale,
             duration: hoverDuration,
-            ease: "Sine.easeInOut",
+            ease: 'Sine.easeInOut',
         });
         onOut?.();
     });
 
     // Click effect
-    button.on("pointerdown", () => {
+    button.on('pointerdown', () => {
         scene.tweens.killTweensOf(button);
         scene.tweens.add({
             targets: button,
             scale: originalScale * clickScaleMultiplier,
             duration: clickDuration,
-            ease: "Sine.easeInOut",
+            ease: 'Sine.easeInOut',
             yoyo: true,
         });
         onClick();
@@ -129,7 +129,7 @@ export function addButtonInteractions(
 export function createInteractiveButton(
     scene: Phaser.Scene,
     buttonConfig: ButtonConfig,
-    interactionConfig: ButtonInteractionConfig,
+    interactionConfig: ButtonInteractionConfig
 ): Phaser.GameObjects.Text {
     const button = createStyledButton(scene, buttonConfig);
     addButtonInteractions(button, scene, interactionConfig);
@@ -141,35 +141,35 @@ export function createInteractiveButton(
  */
 export const TEXT_STYLES = {
     title: {
-        font: "bold",
-        fontFamily: "var(--font-poppins-family)",
-        fontSize: "48px",
-        color: "#ffffff",
+        font: 'bold',
+        fontFamily: 'var(--font-poppins-family)',
+        fontSize: '48px',
+        color: '#ffffff',
         shadow: {
             offsetX: 3,
             offsetY: 3,
-            color: "#000000",
+            color: '#000000',
             blur: 3,
             fill: true,
         },
     },
     subtitle: {
-        font: "bold",
-        fontFamily: "var(--font-poppins-family)",
-        fontSize: "24px",
-        color: "#ffffff",
+        font: 'bold',
+        fontFamily: 'var(--font-poppins-family)',
+        fontSize: '24px',
+        color: '#ffffff',
         shadow: {
             offsetX: 2,
             offsetY: 2,
-            color: "#000000",
+            color: '#000000',
             blur: 2,
             fill: true,
         },
     },
     body: {
-        fontFamily: "var(--font-poppins-family)",
-        fontSize: "18px",
-        color: "#ffffff",
+        fontFamily: 'var(--font-poppins-family)',
+        fontSize: '18px',
+        color: '#ffffff',
         wordWrap: { width: 400 },
     },
 } as const;
@@ -182,7 +182,7 @@ export function createStyledText(
     x: number,
     y: number,
     text: string,
-    style: keyof typeof TEXT_STYLES = "body",
+    style: keyof typeof TEXT_STYLES = 'body'
 ): Phaser.GameObjects.Text {
     return scene.add.text(x, y, text, TEXT_STYLES[style]).setOrigin(0.5);
 }

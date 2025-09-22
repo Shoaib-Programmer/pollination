@@ -1,6 +1,6 @@
 // src/game/utils/textures/BackgroundGenerator.ts
-import { BaseGenerator } from "./BaseGenerator";
-import * as Phaser from "phaser";
+import { BaseGenerator } from './BaseGenerator';
+import * as Phaser from 'phaser';
 
 export class BackgroundGenerator extends BaseGenerator {
     generate(): void {
@@ -22,9 +22,9 @@ export class BackgroundGenerator extends BaseGenerator {
 
         // Generate the texture
         this.graphics.generateTexture(
-            "background_generated",
+            'background_generated',
             bgWidth,
-            bgHeight,
+            bgHeight
         );
 
         // Clean up

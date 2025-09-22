@@ -1,26 +1,26 @@
 // src/App.tsx
-import React, { useRef, useState, useEffect } from "react"; // Added useEffect
-import PhaserGame, { PhaserGameRef } from "@/game/PhaserGame";
-import EventBus from "@/game/EventBus";
-import { GameUI } from "@/components/GameUI";
-import { MobileControls } from "@/components/MobileControls"; // Import MobileControls
+import React, { useRef, useState, useEffect } from 'react';
+import PhaserGame, { PhaserGameRef } from '@/game/PhaserGame';
+import EventBus from '@/game/EventBus';
+import { GameUI } from '@/components/GameUI';
+import { MobileControls } from '@/components/MobileControls';
 import {
     registerEventHandlers,
     unregisterEventHandlers,
     COMMON_EVENTS,
-} from "@/game/utils/eventUtils"; // Import event utilities
+} from '@/game/utils/eventUtils'; // Import event utilities
 
 function App() {
     const phaserGameRef = useRef<PhaserGameRef>(null);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
-    const [, setCurrentScene] = useState<string>("MainMenu");
+    const [, setCurrentScene] = useState<string>('MainMenu');
     const [isGameInputActive, setIsGameInputActive] = useState<boolean>(true);
     const [isGameActive, setIsGameActive] = useState<boolean>(false);
 
     // Check for touch device on component mount (client-side only)
     useEffect(() => {
         const checkForTouch = () =>
-            "ontouchstart" in window || navigator.maxTouchPoints > 0;
+            'ontouchstart' in window || navigator.maxTouchPoints > 0;
         setIsTouchDevice(checkForTouch());
 
         // Track current Phaser scene and whether input is active

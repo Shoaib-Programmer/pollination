@@ -1,5 +1,5 @@
 // src/game/utils/textures/PollenGenerator.ts
-import { BaseGenerator } from "./BaseGenerator";
+import { BaseGenerator } from './BaseGenerator';
 
 export class PollenGenerator extends BaseGenerator {
     generate(): void {
@@ -10,14 +10,14 @@ export class PollenGenerator extends BaseGenerator {
         this.graphics.fillCircle(
             pollenSize / 2,
             pollenSize / 2,
-            pollenSize * 0.4,
+            pollenSize * 0.4
         );
 
         // Generate the texture
         this.graphics.generateTexture(
-            "pollen_particle_generated",
+            'pollen_particle_generated',
             pollenSize,
-            pollenSize,
+            pollenSize
         );
 
         // Clean up

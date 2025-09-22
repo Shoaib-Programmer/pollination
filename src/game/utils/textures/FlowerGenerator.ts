@@ -1,8 +1,8 @@
 // src/game/utils/textures/FlowerGenerator.ts
-import { BaseGenerator } from "./BaseGenerator";
-import { FlowerType } from "./types";
-import * as Phaser from "phaser";
-import { getFlowerById } from "@/game/data/flowerTypes";
+import { BaseGenerator } from './BaseGenerator';
+import { FlowerType } from './types';
+import * as Phaser from 'phaser';
+import { getFlowerById } from '@/game/data/flowerTypes';
 
 export class FlowerGenerator extends BaseGenerator {
     generate(): void {
@@ -11,14 +11,14 @@ export class FlowerGenerator extends BaseGenerator {
 
     private generateFlowers(): void {
         // Draw flowers with realistic colors based on actual flowers
-        this.drawFlower("flower_red_generated", 0xe63946, "poppy"); // Red poppy
-        this.drawFlower("flower_blue_generated", 0x4361ee, "cornflower"); // Blue cornflower
+        this.drawFlower('flower_red_generated', 0xe63946, 'poppy'); // Red poppy
+        this.drawFlower('flower_blue_generated', 0x4361ee, 'cornflower'); // Blue cornflower
     }
 
     private drawFlower(
         key: string,
         petalColor: number,
-        flowerId: string = "generic",
+        flowerId: string = 'generic'
     ): void {
         const flowerSize = 48;
         const petalRadius = flowerSize * 0.35;
@@ -57,35 +57,35 @@ export class FlowerGenerator extends BaseGenerator {
         } else {
             // Fallback behavior based on flower type category
             if (
-                flowerId === "poppy" ||
-                flowerId === "rose" ||
-                flowerId === "tulip"
+                flowerId === 'poppy' ||
+                flowerId === 'rose' ||
+                flowerId === 'tulip'
             ) {
                 centerColor = 0x4d3319; // Dark brown center for red flowers
                 centerOutlineColor = 0x231709; // Darker outline
             } else if (
-                flowerId === "cornflower" ||
-                flowerId === "bluebell" ||
-                flowerId === "delphinium"
+                flowerId === 'cornflower' ||
+                flowerId === 'bluebell' ||
+                flowerId === 'delphinium'
             ) {
                 centerColor = 0xffde59; // Yellow-gold center for blue flowers
                 centerOutlineColor = 0x8c7800; // Darker yellow outline
             }
 
             // Legacy petal shape adjustments for backward compatibility
-            if (flowerId === "poppy") {
+            if (flowerId === 'poppy') {
                 petalLength = petalRadius * 1.5; // Longer petals for poppies
                 petalWidth = petalRadius * 0.9; // Wider petals
                 currentNumPetals = 4; // Poppies typically have 4 petals
-            } else if (flowerId === "rose") {
+            } else if (flowerId === 'rose') {
                 petalLength = petalRadius * 1.2; // Shorter, more compact petals
                 petalWidth = petalRadius * 1.0; // Wider, rounder petals
                 currentNumPetals = 8; // More petals for roses
-            } else if (flowerId === "cornflower") {
+            } else if (flowerId === 'cornflower') {
                 petalLength = petalRadius * 1.4; // Elongated petals
                 petalWidth = petalRadius * 0.7; // Thinner petals
                 currentNumPetals = 8; // Cornflowers have many petals
-            } else if (flowerId === "bluebell") {
+            } else if (flowerId === 'bluebell') {
                 petalLength = petalRadius * 1.3; // Adjustments for bluebells
                 petalWidth = petalRadius * 0.75; // Narrower petals
                 currentNumPetals = 6; // Bluebells have 6 petals
@@ -100,7 +100,7 @@ export class FlowerGenerator extends BaseGenerator {
         const innerRadius = centerRadius * 0.7;
         this.graphics.fillStyle(
             centerColor === 0xffd700 ? 0xffea00 : 0x59421f,
-            0.6,
+            0.6
         );
         this.graphics.fillCircle(flowerSize / 2, flowerSize / 2, innerRadius);
 
@@ -109,7 +109,7 @@ export class FlowerGenerator extends BaseGenerator {
         this.graphics.strokeCircle(
             flowerSize / 2,
             flowerSize / 2,
-            centerRadius,
+            centerRadius
         );
 
         // Petal main color and outline
@@ -151,11 +151,11 @@ export class FlowerGenerator extends BaseGenerator {
             this.graphics.strokePath();
 
             // Add vein/highlight to petal for more detail and realism
-            if (flowerId !== "generic") {
+            if (flowerId !== 'generic') {
                 this.graphics.lineStyle(
                     1,
-                    flowerId.includes("blue") ? 0x3a86ff : 0xffd6a5,
-                    0.3,
+                    flowerId.includes('blue') ? 0x3a86ff : 0xffd6a5,
+                    0.3
                 );
                 const veinStart = {
                     x: flowerSize / 2 + Math.cos(angle) * (centerRadius * 0.9),

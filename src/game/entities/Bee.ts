@@ -1,17 +1,17 @@
 // src/game/entities/Bee.ts
-import * as Phaser from "phaser";
-import gsap from "gsap";
+import * as Phaser from 'phaser';
+import gsap from 'gsap';
 
 export class Bee extends Phaser.Physics.Arcade.Sprite {
     private wingFlapTween: gsap.core.Tween | null = null;
     private isMoving: boolean = false;
 
     // Pollen state
-    public carryingPollenType: "red" | "blue" | null = null;
+    public carryingPollenType: 'red' | 'blue' | null = null;
     private pollenIndicator: Phaser.GameObjects.Sprite | null = null;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y, "bee_generated");
+        super(scene, x, y, 'bee_generated');
 
         // Add to scene and enable physics
         scene.add.existing(this);
@@ -31,7 +31,7 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
             scale: 1,
             alpha: 1,
             duration: 500,
-            ease: "Power2",
+            ease: 'Power2',
             delay: 200,
             onComplete: () => {
                 if (this.active) {
@@ -54,7 +54,7 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
             duration: flapDuration,
             repeat: -1,
             yoyo: true,
-            ease: "sine.inOut",
+            ease: 'sine.inOut',
             paused: true,
             overwrite: true,
         });
@@ -73,7 +73,7 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
                 gsap.to(this, {
                     scaleY: 1,
                     duration: 0.1,
-                    ease: "power1.out",
+                    ease: 'power1.out',
                     overwrite: true,
                 });
             }
@@ -90,7 +90,7 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
             down: boolean;
             left: boolean;
             right: boolean;
-        },
+        }
     ): void {
         if (!this.body || !(this.body as Phaser.Physics.Arcade.Body).enable)
             return;
@@ -128,7 +128,7 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
             down: boolean;
             left: boolean;
             right: boolean;
-        },
+        }
     ): Phaser.Math.Vector2 {
         const leftPressed = cursors?.left.isDown || dpadState?.left;
         const rightPressed = cursors?.right.isDown || dpadState?.right;
@@ -148,7 +148,7 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
 
         if (this.wingFlapTween) {
             if (startedMoving) {
-                gsap.killTweensOf(this, "scaleY");
+                gsap.killTweensOf(this, 'scaleY');
                 if (this.wingFlapTween.paused()) this.wingFlapTween.play();
             } else if (stoppedMoving) {
                 this.stopFlappingAnimation();
@@ -158,7 +158,7 @@ export class Bee extends Phaser.Physics.Arcade.Sprite {
 
     // Set references to the pollen indicator and its tween
     public setPollenIndicator(
-        indicator: Phaser.GameObjects.Sprite | null,
+        indicator: Phaser.GameObjects.Sprite | null
     ): void {
         this.pollenIndicator = indicator;
     }

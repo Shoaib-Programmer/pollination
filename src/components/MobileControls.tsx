@@ -1,30 +1,30 @@
 // src/components/MobileControls.tsx
-import React, { useState, PointerEvent } from "react";
-import EventBus from "@/game/EventBus"; // Use the global EventBus
+import React, { useState, PointerEvent } from 'react';
+import EventBus from '@/game/EventBus'; // Use the global EventBus
 
-type DPadDirection = "up" | "down" | "left" | "right";
+type DPadDirection = 'up' | 'down' | 'left' | 'right';
 
 export const MobileControls: React.FC = () => {
     // State to track which button is actively pressed for styling
     const [pressedButton, setPressedButton] = useState<DPadDirection | null>(
-        null,
+        null
     );
 
     const handlePointerDown = (
         e: PointerEvent<HTMLButtonElement>,
-        direction: DPadDirection,
+        direction: DPadDirection
     ) => {
         // Prevent default actions like text selection or drag
         e.preventDefault();
         // Capture the pointer to ensure pointerup is received even if cursor moves off
         (e.target as HTMLButtonElement).setPointerCapture(e.pointerId);
         setPressedButton(direction);
-        EventBus.emit("dpad", { direction, active: true });
+        EventBus.emit('dpad', { direction, active: true });
     };
 
     const handlePointerUp = (
         e: PointerEvent<HTMLButtonElement>,
-        direction: DPadDirection,
+        direction: DPadDirection
     ) => {
         e.preventDefault();
         // Release pointer capture
@@ -32,7 +32,7 @@ export const MobileControls: React.FC = () => {
         // Only deactivate if this is the currently pressed button
         if (pressedButton === direction) {
             setPressedButton(null);
-            EventBus.emit("dpad", { direction, active: false });
+            EventBus.emit('dpad', { direction, active: false });
         }
     };
 
@@ -40,7 +40,7 @@ export const MobileControls: React.FC = () => {
     const handlePointerCancel = (direction: DPadDirection) => {
         if (pressedButton === direction) {
             setPressedButton(null);
-            EventBus.emit("dpad", { direction, active: false });
+            EventBus.emit('dpad', { direction, active: false });
         }
     };
 
@@ -67,17 +67,17 @@ export const MobileControls: React.FC = () => {
         `focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ` +
         `active:translate-y-px active:shadow-inner active:shadow-black/60 active:brightness-95 ` +
         // Pressed state from game input
-        `${pressedButton === direction ? "scale-95 ring-2 ring-accent/60 text-accent" : ""}`;
+        `${pressedButton === direction ? 'scale-95 ring-2 ring-accent/60 text-accent' : ''}`;
 
     const ArrowIcon: React.FC<{ direction: DPadDirection }> = ({
         direction,
     }) => {
         const rotation =
-            direction === "up"
+            direction === 'up'
                 ? 0
-                : direction === "right"
+                : direction === 'right'
                   ? 90
-                  : direction === "down"
+                  : direction === 'down'
                     ? 180
                     : 270;
         return (
@@ -96,29 +96,29 @@ export const MobileControls: React.FC = () => {
     return (
         <div className="pointer-events-none select-none absolute bottom-6 left-6 w-40 h-40 grid grid-cols-3 grid-rows-3 gap-1.5 opacity-95 hover:opacity-100 transition-opacity z-20 safe-left safe-bottom">
             <button
-                {...getButtonHandlers("up")}
-                className={`${getButtonClassName("up")} col-start-2 row-start-1`}
+                {...getButtonHandlers('up')}
+                className={`${getButtonClassName('up')} col-start-2 row-start-1`}
                 aria-label="Move Up"
             >
                 <ArrowIcon direction="up" />
             </button>
             <button
-                {...getButtonHandlers("left")}
-                className={`${getButtonClassName("left")} col-start-1 row-start-2`}
+                {...getButtonHandlers('left')}
+                className={`${getButtonClassName('left')} col-start-1 row-start-2`}
                 aria-label="Move Left"
             >
                 <ArrowIcon direction="left" />
             </button>
             <button
-                {...getButtonHandlers("right")}
-                className={`${getButtonClassName("right")} col-start-3 row-start-2`}
+                {...getButtonHandlers('right')}
+                className={`${getButtonClassName('right')} col-start-3 row-start-2`}
                 aria-label="Move Right"
             >
                 <ArrowIcon direction="right" />
             </button>
             <button
-                {...getButtonHandlers("down")}
-                className={`${getButtonClassName("down")} col-start-2 row-start-3`}
+                {...getButtonHandlers('down')}
+                className={`${getButtonClassName('down')} col-start-2 row-start-3`}
                 aria-label="Move Down"
             >
                 <ArrowIcon direction="down" />

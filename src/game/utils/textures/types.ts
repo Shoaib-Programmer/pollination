@@ -1,5 +1,5 @@
 // src/game/utils/textures/types.ts
-import { Scene } from "phaser";
+import { Scene } from 'phaser';
 
 export interface FlowerType {
     id: string;

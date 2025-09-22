@@ -1,9 +1,9 @@
 // src/game/data/quizData.ts
-import { z } from "zod";
-import quizQuestionsData from "./quizQuestions.json";
+import { z } from 'zod';
+import quizQuestionsData from './quizQuestions.json';
 
 // Zod schemas for validation
-export const QuestionTypeSchema = z.enum(["multipleChoice", "trueFalse"]);
+export const QuestionTypeSchema = z.enum(['multipleChoice', 'trueFalse']);
 
 export const QuizQuestionSchema = z.object({
     id: z.string(),
@@ -12,14 +12,14 @@ export const QuizQuestionSchema = z.object({
     correctAnswer: z.union([z.string(), z.boolean()]),
     options: z.array(z.string()).optional(),
     explanation: z.string(),
-    difficulty: z.enum(["easy", "medium", "hard"]),
-    category: z.enum(["pollination", "flowers", "environment"]),
+    difficulty: z.enum(['easy', 'medium', 'hard']),
+    category: z.enum(['pollination', 'flowers', 'environment']),
 });
 
 // Keep enum for backward compatibility
 export enum QuestionType {
-    MultipleChoice = "multipleChoice",
-    TrueFalse = "trueFalse",
+    MultipleChoice = 'multipleChoice',
+    TrueFalse = 'trueFalse',
 }
 
 export const QuizStatsSchema = z.object({
@@ -36,8 +36,8 @@ export type QuizQuestion = z.infer<typeof QuizQuestionSchema>;
 export type QuizStats = z.infer<typeof QuizStatsSchema>;
 
 // Core quiz questions database
-export const QUIZ_QUESTIONS: QuizQuestion[] = quizQuestionsData.map((q) =>
-    QuizQuestionSchema.parse(q),
+export const QUIZ_QUESTIONS: QuizQuestion[] = quizQuestionsData.map(q =>
+    QuizQuestionSchema.parse(q)
 );
 
 // Validate all questions at runtime
@@ -62,7 +62,7 @@ const initialQuizStats: QuizStats = {
 export class QuizService {
     private static instance: QuizService;
     private quizStats: QuizStats = { ...initialQuizStats };
-    private readonly storageKey = "pollination_quiz_stats";
+    private readonly storageKey = 'pollination_quiz_stats';
 
     private constructor() {
         this.loadStats();
@@ -83,7 +83,7 @@ export class QuizService {
                 // Convert lastQuizDate string back to Date object if it exists
                 if (parsedStats.lastQuizDate) {
                     parsedStats.lastQuizDate = new Date(
-                        parsedStats.lastQuizDate,
+                        parsedStats.lastQuizDate
                     );
                 }
                 // Validate the parsed stats
@@ -91,7 +91,7 @@ export class QuizService {
                 this.quizStats = validatedStats;
             }
         } catch (error) {
-            console.error("Error loading quiz stats:", error);
+            console.error('Error loading quiz stats:', error);
             // Reset to initial stats if validation fails
             this.quizStats = { ...initialQuizStats };
         }
@@ -101,10 +101,10 @@ export class QuizService {
         try {
             localStorage.setItem(
                 this.storageKey,
-                JSON.stringify(this.quizStats),
+                JSON.stringify(this.quizStats)
             );
         } catch (error) {
-            console.error("Error saving quiz stats:", error);
+            console.error('Error saving quiz stats:', error);
         }
     }
 
@@ -130,7 +130,7 @@ export class QuizService {
      */
     public recordQuizResults(
         correctAnswers: number,
-        totalQuestions: number,
+        totalQuestions: number
     ): void {
         this.quizStats.totalQuizzesTaken += 1;
         this.quizStats.correctAnswers += correctAnswers;
@@ -178,9 +178,9 @@ export class QuizService {
      * @returns Questions in the specified category
      */
     public getQuestionsByCategory(
-        category: QuizQuestion["category"],
+        category: QuizQuestion['category']
     ): QuizQuestion[] {
-        return QUIZ_QUESTIONS.filter((q) => q.category === category);
+        return QUIZ_QUESTIONS.filter(q => q.category === category);
     }
 
     /**
@@ -189,9 +189,9 @@ export class QuizService {
      * @returns Questions of the specified difficulty
      */
     public getQuestionsByDifficulty(
-        difficulty: QuizQuestion["difficulty"],
+        difficulty: QuizQuestion['difficulty']
     ): QuizQuestion[] {
-        return QUIZ_QUESTIONS.filter((q) => q.difficulty === difficulty);
+        return QUIZ_QUESTIONS.filter(q => q.difficulty === difficulty);
     }
 }
 

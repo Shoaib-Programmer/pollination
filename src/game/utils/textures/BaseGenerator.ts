@@ -1,6 +1,6 @@
 // src/game/utils/textures/BaseGenerator.ts
-import { Scene } from "phaser";
-import { GeneratorOptions } from "./types";
+import { Scene } from 'phaser';
+import { GeneratorOptions } from './types';
 
 export abstract class BaseGenerator {
     protected scene: Scene;

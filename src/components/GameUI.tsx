@@ -1,14 +1,14 @@
 // src/components/GameUI.tsx
-import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
-import styles from "@/styles/GameUI.module.css"; // Retain for layout overlay base; gradually replacing with utilities
-import EventBus from "@/game/EventBus";
-import gsap from "gsap";
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import styles from '@/styles/GameUI.module.css'; // Retain for layout overlay base; gradually replacing with utilities
+import EventBus from '@/game/EventBus';
+import gsap from 'gsap';
 import {
     registerEventHandlers,
     unregisterEventHandlers,
     COMMON_EVENTS,
-} from "@/game/utils/eventUtils"; // Import event utilities
-import { useGSAP } from "@gsap/react";
+} from '@/game/utils/eventUtils'; // Import event utilities
+import { useGSAP } from '@gsap/react';
 
 interface GameUIProps {
     listenTo: Phaser.Events.EventEmitter | null;
@@ -18,7 +18,7 @@ interface GameUIProps {
 const formatTime = (totalSeconds: number): string => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    const paddedSeconds = seconds.toString().padStart(2, "0");
+    const paddedSeconds = seconds.toString().padStart(2, '0');
     return `${minutes}:${paddedSeconds}`;
 };
 
@@ -27,7 +27,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
     const [targetScore, setTargetScore] = useState<number>(0);
     const [displayScore, setDisplayScore] = useState<number>(0);
     // Modal state
-    const [modalFact, setModalFact] = useState<string>("");
+    const [modalFact, setModalFact] = useState<string>('');
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
     // Timer state
     const [remainingTime, setRemainingTime] = useState<number>(60); // Default to 60 seconds
@@ -55,26 +55,26 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         () => {
             const target = modalOverlayRef.current;
             if (!target) return;
-            gsap.set(target, { opacity: 0, visibility: "hidden" }); // Ensure hidden initially
+            gsap.set(target, { opacity: 0, visibility: 'hidden' }); // Ensure hidden initially
             let animation: gsap.core.Tween;
             if (isModalVisible) {
                 // Animate IN
                 animation = gsap.to(target, {
                     opacity: 1,
-                    visibility: "visible",
+                    visibility: 'visible',
                     duration: 0.5,
-                    ease: "power2.out",
+                    ease: 'power2.out',
                 });
             } else {
                 // Animate OUT
                 animation = gsap.to(target, {
                     opacity: 0,
                     duration: 0.4,
-                    ease: "power2.in",
+                    ease: 'power2.in',
                     onComplete: () => {
                         // Ensure visibility is hidden only if state still matches (using ref)
                         if (!isModalVisibleOnCleanup.current && target) {
-                            gsap.set(target, { visibility: "hidden" });
+                            gsap.set(target, { visibility: 'hidden' });
                         }
                     },
                 });
@@ -83,7 +83,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                 animation?.kill();
             }; // Cleanup tween
         },
-        { dependencies: [isModalVisible], scope: containerRef },
+        { dependencies: [isModalVisible], scope: containerRef }
     );
 
     // GSAP Animation for the Modal's Timer Bar Shrink
@@ -97,28 +97,28 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
             if (isModalVisible) {
                 // Reset bar to full width and invisible, then animate
                 gsap.set(bar, {
-                    width: "100%",
+                    width: '100%',
                     opacity: 0,
-                    visibility: "hidden",
+                    visibility: 'hidden',
                 });
                 gsap.to(bar, {
                     delay: 0.3, // Start slightly after modal fade-in
                     opacity: 1,
-                    visibility: "visible",
-                    width: "0%", // Animate to 0 width
+                    visibility: 'visible',
+                    width: '0%', // Animate to 0 width
                     duration: 10, // Exactly 10 seconds
-                    ease: "none", // Linear depletion
+                    ease: 'none', // Linear depletion
                 });
             } else {
                 // Immediately hide and reset bar when modal is not visible
                 gsap.set(bar, {
-                    width: "100%",
+                    width: '100%',
                     opacity: 0,
-                    visibility: "hidden",
+                    visibility: 'hidden',
                 });
             }
         },
-        { dependencies: [isModalVisible], scope: containerRef },
+        { dependencies: [isModalVisible], scope: containerRef }
     );
 
     // GSAP Animation for Score Ticker/Pop
@@ -130,7 +130,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
             const scoreTween = gsap.to(scoreTweenProxy.current, {
                 value: targetScore,
                 duration: 0.6,
-                ease: "power1.out",
+                ease: 'power1.out',
                 onUpdate: () => {
                     setDisplayScore(Math.round(scoreTweenProxy.current.value));
                 },
@@ -144,24 +144,24 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                         duration: 0.15,
                         yoyo: true,
                         repeat: 1,
-                        ease: "power1.inOut",
+                        ease: 'power1.inOut',
                         overwrite: true,
-                    },
+                    }
                 );
             }
             return () => {
                 // Cleanup
                 scoreTween.kill();
-                if (scoreBoxTarget) gsap.killTweensOf(scoreBoxTarget, "scale");
+                if (scoreBoxTarget) gsap.killTweensOf(scoreBoxTarget, 'scale');
             };
         },
-        { dependencies: [targetScore], scope: containerRef },
+        { dependencies: [targetScore], scope: containerRef }
     );
 
     // Event Listeners Setup
     useLayoutEffect(() => {
         if (!listenTo) {
-            console.warn("GameUI: EventBus (listenTo prop) is null.");
+            console.warn('GameUI: EventBus (listenTo prop) is null.');
             return;
         }
 
@@ -182,7 +182,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                 // Set new timer
                 setIsModalVisible(false); // Hide modal & trigger animations after timeout
                 // setModalFact(""); // Clear fact after animation out if needed
-                EventBus.emit("ui:modal-closed"); // Notify game
+                EventBus.emit('ui:modal-closed'); // Notify game
                 modalTimeoutIdRef.current = null;
             }, 10000); // 10 seconds
         };
@@ -195,7 +195,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                 modalTimeoutIdRef.current = null;
                 // Use the REF to check if modal was visible when force hide was called
                 if (isModalVisibleOnCleanup.current) {
-                    EventBus.emit("ui:modal-closed"); // Notify game immediately
+                    EventBus.emit('ui:modal-closed'); // Notify game immediately
                 }
             }
             setIsModalVisible(false); // Trigger animation out
@@ -214,14 +214,14 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         const handleSceneActivation = (...args: unknown[]) => {
             const scene = args[0] as string;
             // Only show UI elements during Game scene
-            setIsGameSceneActive(scene === "Game");
+            setIsGameSceneActive(scene === 'Game');
         };
 
         // Initial State Setup on mount or when listenTo changes
         setTargetScore(0);
         setDisplayScore(0);
         scoreTweenProxy.current.value = 0;
-        setModalFact("");
+        setModalFact('');
         setIsModalVisible(false);
         setRemainingTime(60); // Reset timer display
         setIsGameSceneActive(false); // Reset game scene state
@@ -229,7 +229,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
         // Register event handlers using utility
         const eventHandlers = [
             { event: COMMON_EVENTS.UPDATE_SCORE, handler: handleScoreUpdate },
-            { event: "show-fact", handler: handleShowFactModal },
+            { event: 'show-fact', handler: handleShowFactModal },
             { event: COMMON_EVENTS.UI_HIDE_MODAL, handler: forceHideModal },
             {
                 event: COMMON_EVENTS.UI_UPDATE_TIMER,
@@ -252,7 +252,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                 // Use the REF value captured by THIS cleanup closure
                 // to correctly determine if the modal WAS visible when cleanup runs.
                 if (isModalVisibleOnCleanup.current) {
-                    EventBus.emit("ui:modal-closed"); // Ensure game input is re-enabled
+                    EventBus.emit('ui:modal-closed'); // Ensure game input is re-enabled
                 }
             }
         };
@@ -292,7 +292,7 @@ export const GameUI: React.FC<GameUIProps> = ({ listenTo }) => {
                 role="dialog"
                 aria-modal="true"
                 aria-live="polite"
-                style={{ visibility: "hidden" }}
+                style={{ visibility: 'hidden' }}
             >
                 <div className="max-w-[90%] text-center font-luckiest text-white text-2xl md:text-3xl leading-snug drop-shadow-xl px-8 md:px-12">
                     {modalFact}

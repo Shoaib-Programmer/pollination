@@ -1,5 +1,5 @@
 // src/game/utils/eventUtils.ts
-import EventBus from "../EventBus";
+import EventBus from '../EventBus';
 
 export interface EventHandler {
     event: string;
@@ -29,16 +29,16 @@ export function unregisterEventHandlers(handlers: EventHandler[]): void {
  * Common event patterns used across the application
  */
 export const COMMON_EVENTS = {
-    SCENE_CHANGED: "scene:changed",
-    GAME_SET_INPUT_ACTIVE: "game:set-input-active",
-    UI_GAME_ACTIVE: "ui:game-active",
-    UI_MODAL_CLOSED: "ui:modal-closed",
-    UI_HIDE_MODAL: "ui:hide-modal",
-    UI_UPDATE_TIMER: "ui:update-timer",
-    UPDATE_SCORE: "update-score",
-    DPAD: "dpad",
-    GAME_UPDATE_SCORE: "game:update-score",
-    GAME_UPDATE_TIMER: "game:update-timer",
+    SCENE_CHANGED: 'scene:changed',
+    GAME_SET_INPUT_ACTIVE: 'game:set-input-active',
+    UI_GAME_ACTIVE: 'ui:game-active',
+    UI_MODAL_CLOSED: 'ui:modal-closed',
+    UI_HIDE_MODAL: 'ui:hide-modal',
+    UI_UPDATE_TIMER: 'ui:update-timer',
+    UPDATE_SCORE: 'update-score',
+    DPAD: 'dpad',
+    GAME_UPDATE_SCORE: 'game:update-score',
+    GAME_UPDATE_TIMER: 'game:update-timer',
 } as const;
 
 /**

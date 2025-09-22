@@ -1,9 +1,9 @@
 // src/game/scenes/GameOver.ts
-import { Scene } from "phaser";
-import gsap from "gsap"; // Import GSAP
-import storageService, { GameScore } from "@/services/StorageService";
-import EventBus from "@/game/EventBus";
-import { COMMON_EVENTS } from "../utils/eventUtils"; // Import event constants
+import { Scene } from 'phaser';
+import gsap from 'gsap'; // Import GSAP
+import storageService, { GameScore } from '@/services/StorageService';
+import EventBus from '@/game/EventBus';
+import { COMMON_EVENTS } from '../utils/eventUtils'; // Import event constants
 
 export class GameOver extends Scene {
     private score: number = 0;
@@ -15,7 +15,7 @@ export class GameOver extends Scene {
     private showHighScoresOnly: boolean = false;
 
     constructor() {
-        super("GameOver");
+        super('GameOver');
     }
 
     init(data: {
@@ -35,15 +35,15 @@ export class GameOver extends Scene {
 
         // Only save the score and increment games played if it's from an actual game (not just viewing high scores)
         if (!this.showHighScoresOnly && this.score > 0) {
-            this.saveGameScore().catch((error) => {
+            this.saveGameScore().catch(error => {
                 // Log error, although saveGameScore already does
-                console.error("Error saving score from init context:", error);
+                console.error('Error saving score from init context:', error);
             });
         }
 
         // Always load high scores
-        this.loadHighScores().catch((error) => {
-            console.error("Error initiating high scores load:", error);
+        this.loadHighScores().catch(error => {
+            console.error('Error initiating high scores load:', error);
             // High scores display might show loading or error state
         });
     }
@@ -56,9 +56,9 @@ export class GameOver extends Scene {
                 completedFlowers: this.completedFlowers,
                 totalTime: this.totalTime,
             });
-            console.log("Score saved successfully");
+            console.log('Score saved successfully');
         } catch (error) {
-            console.error("Failed to save score:", error);
+            console.error('Failed to save score:', error);
         }
     }
 
@@ -73,7 +73,7 @@ export class GameOver extends Scene {
                 this.updateHighScoresDisplay();
             }
         } catch (error) {
-            console.error("Failed to load high scores:", error);
+            console.error('Failed to load high scores:', error);
             this.isLoadingScores = false;
         }
     }
@@ -83,13 +83,13 @@ export class GameOver extends Scene {
         const centerY = this.cameras.main.height / 2;
 
         // Signal scene change through EventBus
-        EventBus.emit(COMMON_EVENTS.SCENE_CHANGED, "GameOver");
+        EventBus.emit(COMMON_EVENTS.SCENE_CHANGED, 'GameOver');
 
         // Dimmed Background - Fade in alpha
         const bg = this.add
-            .image(centerX, centerY, "background_generated")
+            .image(centerX, centerY, 'background_generated')
             .setAlpha(0);
-        gsap.to(bg, { alpha: 0.6, duration: 0.7, ease: "power1.inOut" });
+        gsap.to(bg, { alpha: 0.6, duration: 0.7, ease: 'power1.inOut' });
 
         // --- Animate Elements In ---
         const title = this.add
@@ -97,24 +97,24 @@ export class GameOver extends Scene {
                 centerX,
                 this.showHighScoresOnly ? centerY - 160 : centerY - 260,
                 this.showHighScoresOnly
-                    ? "High Scores"
-                    : "Pollination Complete!",
+                    ? 'High Scores'
+                    : 'Pollination Complete!',
                 {
-                    fontFamily: "var(--font-luckiest-guy-family)",
-                    fontSize: this.showHighScoresOnly ? "60px" : "54px",
-                    color: "#ffdd00",
-                    stroke: "#8B4513",
+                    fontFamily: 'var(--font-luckiest-guy-family)',
+                    fontSize: this.showHighScoresOnly ? '60px' : '54px',
+                    color: '#ffdd00',
+                    stroke: '#8B4513',
                     strokeThickness: 9,
-                    align: "center",
+                    align: 'center',
                     shadow: {
                         offsetX: 3,
                         offsetY: 3,
-                        color: "#4d2607",
+                        color: '#4d2607',
                         blur: 5,
                         stroke: true,
                         fill: true,
                     },
-                },
+                }
             )
             .setOrigin(0.5)
             .setAlpha(0)
@@ -136,12 +136,12 @@ export class GameOver extends Scene {
                     statsPanelY,
                     `Score: ${this.score}\nFlowers: ${this.completedFlowers} | Wave: ${this.currentWave} | Time: ${Math.floor(this.totalTime)}s`,
                     {
-                        fontFamily: "var(--font-poppins-family)",
-                        fontSize: "18px",
-                        color: "#ffffff",
-                        align: "center",
+                        fontFamily: 'var(--font-poppins-family)',
+                        fontSize: '18px',
+                        color: '#ffffff',
+                        align: 'center',
                         lineSpacing: 8,
-                    },
+                    }
                 )
                 .setOrigin(0.5)
                 .setAlpha(0);
@@ -159,7 +159,7 @@ export class GameOver extends Scene {
                 500,
                 highScoresPanelHeight, // Use adjusted height
                 0x000000,
-                0.7,
+                0.7
             )
             .setOrigin(0.5)
             .setAlpha(0);
@@ -169,11 +169,11 @@ export class GameOver extends Scene {
             highScoresPanelY - highScoresPanelHeight / 2 + 25; // Position relative to panel top
         const highScoresTitle = !this.showHighScoresOnly
             ? this.add
-                  .text(centerX, highScoresTitleY, "High Scores", {
-                      fontFamily: "var(--font-poppins-family)",
-                      fontSize: "26px",
-                      color: "#ffdd00",
-                      align: "center",
+                  .text(centerX, highScoresTitleY, 'High Scores', {
+                      fontFamily: 'var(--font-poppins-family)',
+                      fontSize: '26px',
+                      color: '#ffdd00',
+                      align: 'center',
                   })
                   .setOrigin(0.5)
                   .setAlpha(0)
@@ -187,14 +187,14 @@ export class GameOver extends Scene {
             .text(
                 centerX,
                 highScoresListY,
-                this.isLoadingScores ? "Loading scores..." : "",
+                this.isLoadingScores ? 'Loading scores...' : '',
                 {
-                    fontFamily: "var(--font-poppins-family)",
-                    fontSize: this.showHighScoresOnly ? "24px" : "20px",
-                    color: "#ffffff",
-                    align: "center",
+                    fontFamily: 'var(--font-poppins-family)',
+                    fontSize: this.showHighScoresOnly ? '24px' : '20px',
+                    color: '#ffffff',
+                    align: 'center',
                     lineSpacing: 12,
-                },
+                }
             )
             .setOrigin(0.5)
             .setAlpha(0);
@@ -203,19 +203,19 @@ export class GameOver extends Scene {
         const playAgainButtonY =
             highScoresPanelY + highScoresPanelHeight / 2 + 45; // Position below panel
         const playAgainButton = this.add
-            .text(centerX, playAgainButtonY, "Home", {
-                fontFamily: "var(--font-poppins-family)",
-                fontSize: "30px",
-                font: "bold",
-                color: "#ffffff",
+            .text(centerX, playAgainButtonY, 'Home', {
+                fontFamily: 'var(--font-poppins-family)',
+                fontSize: '30px',
+                font: 'bold',
+                color: '#ffffff',
                 backgroundColor: this.showHighScoresOnly
-                    ? "#4682B4"
-                    : "#2E8B57", // Different color for back button
+                    ? '#4682B4'
+                    : '#2E8B57', // Different color for back button
                 padding: { x: 25, y: 12 },
                 shadow: {
                     offsetX: 2,
                     offsetY: 2,
-                    color: "#111",
+                    color: '#111',
                     blur: 2,
                     fill: true,
                 },
@@ -231,44 +231,44 @@ export class GameOver extends Scene {
             alpha: 1,
             scale: 1,
             duration: 0.6,
-            ease: "back.out(1.7)",
+            ease: 'back.out(1.7)',
         });
 
         // Animate stats panel if it exists
         if (statsPanel && statsText) {
             tl.to(
                 statsPanel,
-                { alpha: 1, duration: 0.5, ease: "power2.out" },
-                "-=0.4",
+                { alpha: 1, duration: 0.5, ease: 'power2.out' },
+                '-=0.4'
             ).to(
                 statsText,
-                { alpha: 1, duration: 0.5, ease: "power2.out" },
-                "-=0.3",
+                { alpha: 1, duration: 0.5, ease: 'power2.out' },
+                '-=0.3'
             );
         }
 
         tl.to(
             highScoresPanel,
-            { alpha: 1, duration: 0.5, ease: "power2.out" },
-            "-=0.4", // Adjust timing slightly
+            { alpha: 1, duration: 0.5, ease: 'power2.out' },
+            '-=0.4' // Adjust timing slightly
         );
 
         if (highScoresTitle) {
             tl.to(
                 highScoresTitle,
-                { alpha: 1, duration: 0.5, ease: "power2.out" },
-                "-=0.3",
+                { alpha: 1, duration: 0.5, ease: 'power2.out' },
+                '-=0.3'
             );
         }
 
         tl.to(
             highScoresList,
-            { alpha: 1, duration: 0.5, ease: "power2.out" },
-            "-=0.3",
+            { alpha: 1, duration: 0.5, ease: 'power2.out' },
+            '-=0.3'
         ).to(
             playAgainButton,
-            { alpha: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-            "-=0.2",
+            { alpha: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' },
+            '-=0.2'
         );
 
         // Update high scores display if they're already loaded
@@ -279,37 +279,37 @@ export class GameOver extends Scene {
         // Button Interactions (Phaser Tweens remain suitable)
         playAgainButton.setInteractive({ useHandCursor: true });
         const originalScale = 1;
-        playAgainButton.on("pointerover", () => {
+        playAgainButton.on('pointerover', () => {
             this.tweens.killTweensOf(playAgainButton);
             this.tweens.add({
                 targets: playAgainButton,
                 scale: originalScale * 1.08,
                 duration: 100,
-                ease: "Sine.easeInOut",
+                ease: 'Sine.easeInOut',
             });
             playAgainButton.setBackgroundColor(
-                this.showHighScoresOnly ? "#5A9BDC" : "#3CB371",
+                this.showHighScoresOnly ? '#5A9BDC' : '#3CB371'
             );
         });
-        playAgainButton.on("pointerout", () => {
+        playAgainButton.on('pointerout', () => {
             this.tweens.killTweensOf(playAgainButton);
             this.tweens.add({
                 targets: playAgainButton,
                 scale: originalScale,
                 duration: 100,
-                ease: "Sine.easeInOut",
+                ease: 'Sine.easeInOut',
             });
             playAgainButton.setBackgroundColor(
-                this.showHighScoresOnly ? "#4682B4" : "#2E8B57",
+                this.showHighScoresOnly ? '#4682B4' : '#2E8B57'
             );
         });
-        playAgainButton.on("pointerdown", () => {
+        playAgainButton.on('pointerdown', () => {
             this.tweens.killTweensOf(playAgainButton);
             this.tweens.add({
                 targets: playAgainButton,
                 scale: originalScale * 0.95,
                 duration: 80,
-                ease: "Sine.easeInOut",
+                ease: 'Sine.easeInOut',
                 yoyo: true,
             });
 
@@ -325,38 +325,38 @@ export class GameOver extends Scene {
             // Transition Out
             gsap.to(elementsToAnimate, {
                 alpha: 0,
-                y: "-=30",
+                y: '-=30',
                 duration: 0.3,
                 stagger: 0.1,
-                ease: "power1.in",
+                ease: 'power1.in',
                 onComplete: () => {
-                    this.scene.start("MainMenu");
+                    this.scene.start('MainMenu');
                 },
             });
         });
 
         // Store reference to highScoresList for later updates
-        this.registry.set("highScoresList", highScoresList);
+        this.registry.set('highScoresList', highScoresList);
 
         // Emit scene readiness
-        this.events.emit("scene-ready", this);
+        this.events.emit('scene-ready', this);
     }
 
     updateHighScoresDisplay(textObject?: Phaser.GameObjects.Text) {
         // Use provided text object or get from registry
         const highScoresList =
-            textObject || this.registry.get("highScoresList");
+            textObject || this.registry.get('highScoresList');
         if (!highScoresList) return;
 
         if (this.highScores.length === 0) {
             highScoresList.setText(
-                "No scores yet.\nBe the first to set a high score!",
+                'No scores yet.\nBe the first to set a high score!'
             );
             return;
         }
 
         // Format the high scores
-        let scoreText = "";
+        let scoreText = '';
         this.highScores.forEach((score, index) => {
             const date = new Date(score.date).toLocaleDateString();
             scoreText += `${index + 1}. ${score.score} pts - ${date}\n`;

@@ -1,5 +1,5 @@
 // src/game/utils/animation.ts
-import * as Phaser from "phaser";
+import * as Phaser from 'phaser';
 
 export interface TweenConfig {
     targets: unknown;
@@ -19,13 +19,13 @@ export function createButtonHoverTween(
     scene: Phaser.Scene,
     targets: unknown,
     scaleMultiplier: number = 1.08,
-    duration: number = 150,
+    duration: number = 150
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets,
         scale: scaleMultiplier,
         duration,
-        ease: "Sine.easeInOut",
+        ease: 'Sine.easeInOut',
     });
 }
 
@@ -36,13 +36,13 @@ export function createButtonClickTween(
     scene: Phaser.Scene,
     target: unknown,
     scaleMultiplier: number = 0.95,
-    duration: number = 80,
+    duration: number = 80
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
         scale: scaleMultiplier,
         duration,
-        ease: "Sine.easeInOut",
+        ease: 'Sine.easeInOut',
         yoyo: true,
     });
 }
@@ -54,14 +54,14 @@ export function createFadeInTween(
     scene: Phaser.Scene,
     target: unknown,
     duration: number = 400,
-    delay: number = 0,
+    delay: number = 0
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
         alpha: 1,
         duration,
         delay,
-        ease: "Power2.out",
+        ease: 'Power2.out',
     });
 }
 
@@ -72,13 +72,13 @@ export function createFadeOutTween(
     scene: Phaser.Scene,
     target: unknown,
     duration: number = 300,
-    onComplete?: () => void,
+    onComplete?: () => void
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
         alpha: 0,
         duration,
-        ease: "Power1.in",
+        ease: 'Power1.in',
         onComplete,
     });
 }
@@ -92,7 +92,7 @@ export function createScaleTween(
     scale: number,
     duration: number = 400,
     delay: number = 0,
-    ease: string = "back.out(1.7)",
+    ease: string = 'back.out(1.7)'
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
@@ -110,14 +110,14 @@ export function createFloatingScoreTween(
     scene: Phaser.Scene,
     scoreText: Phaser.GameObjects.Text,
     points: number,
-    duration: number = 1500,
+    duration: number = 1500
 ): void {
     scene.tweens.add({
         targets: scoreText,
-        y: "-=50",
+        y: '-=50',
         alpha: 0,
         duration,
-        ease: "Power1",
+        ease: 'Power1',
         onComplete: () => scoreText.destroy(),
     });
 }
@@ -129,14 +129,14 @@ export function createPulseTween(
     scene: Phaser.Scene,
     target: unknown,
     scaleAmount: number = 1.05,
-    duration: number = 80,
+    duration: number = 80
 ): Phaser.Tweens.Tween {
     return scene.tweens.add({
         targets: target,
         scale: scaleAmount,
         duration,
         yoyo: true,
-        ease: "Sine.easeInOut",
+        ease: 'Sine.easeInOut',
     });
 }
 
@@ -147,7 +147,7 @@ export function createStaggeredEntrance(
     scene: Phaser.Scene,
     elements: unknown[],
     staggerDelay: number = 0.1,
-    baseDelay: number = 0.3,
+    baseDelay: number = 0.3
 ): void {
     elements.forEach((element, index) => {
         const delay = baseDelay + index * staggerDelay;
@@ -162,17 +162,17 @@ export function createStaggeredEntrance(
 export function createTransitionOut(
     scene: Phaser.Scene,
     elements: unknown[],
-    onComplete?: () => void,
+    onComplete?: () => void
 ): void {
     elements.forEach((element, index) => {
         const delay = index * 100;
         scene.tweens.add({
             targets: element,
             alpha: 0,
-            y: "-=30",
+            y: '-=30',
             duration: 300,
             delay,
-            ease: "power1.in",
+            ease: 'power1.in',
             onComplete: index === elements.length - 1 ? onComplete : undefined,
         });
     });

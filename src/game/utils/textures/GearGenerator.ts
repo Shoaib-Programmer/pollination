@@ -1,5 +1,5 @@
 // src/game/utils/textures/GearGenerator.ts
-import { BaseGenerator } from "./BaseGenerator";
+import { BaseGenerator } from './BaseGenerator';
 
 export class GearGenerator extends BaseGenerator {
     generate(): void {
@@ -75,9 +75,9 @@ export class GearGenerator extends BaseGenerator {
 
         // Generate the texture
         this.graphics.generateTexture(
-            "gear_icon_generated",
+            'gear_icon_generated',
             gearSize,
-            gearSize,
+            gearSize
         );
 
         // Clean up

@@ -509,12 +509,7 @@
         "type": "multipleChoice",
         "question": "The intricate relationship between plants and their pollinators is a classic example of:",
         "correctAnswer": "Co-evolution",
-        "options": [
-            "Symbiosis",
-            "Parasitism",
-            "Co-evolution",
-            "Commensalism"
-        ],
+        "options": ["Symbiosis", "Parasitism", "Co-evolution", "Commensalism"],
         "explanation": "The lock-and-key fit between many flowers and their pollinators is a result of millions of years of co-evolution, where each has influenced the other's evolutionary path.",
         "difficulty": "medium",
         "category": "pollination"

@@ -1,19 +1,19 @@
 // src/game/scenes/Preloader.ts
-import { Scene } from "phaser";
-import { BackgroundGenerator } from "@/game/utils/textures/BackgroundGenerator";
-import { BeeGenerator } from "@/game/utils/textures/BeeGenerator";
-import { FlowerGenerator } from "@/game/utils/textures/FlowerGenerator";
-import { PollenGenerator } from "@/game/utils/textures/PollenGenerator";
-import { GearGenerator } from "@/game/utils/textures/GearGenerator";
+import { Scene } from 'phaser';
+import { BackgroundGenerator } from '@/game/utils/textures/BackgroundGenerator';
+import { BeeGenerator } from '@/game/utils/textures/BeeGenerator';
+import { FlowerGenerator } from '@/game/utils/textures/FlowerGenerator';
+import { PollenGenerator } from '@/game/utils/textures/PollenGenerator';
+import { GearGenerator } from '@/game/utils/textures/GearGenerator';
 
 // --- Constants ---
-const SCENE_KEY = "Preloader";
-const MAIN_MENU_SCENE_KEY = "MainMenu";
-const LOGO_TEXTURE_KEY = "logo";
+const SCENE_KEY = 'Preloader';
+const MAIN_MENU_SCENE_KEY = 'MainMenu';
+const LOGO_TEXTURE_KEY = 'logo';
 
 const REGISTRY_KEYS = {
-    TOTAL: "generation_progress_total",
-    CURRENT: "generation_progress_current",
+    TOTAL: 'generation_progress_total',
+    CURRENT: 'generation_progress_current',
 };
 
 const LOADER_GEOMETRY = {
@@ -26,9 +26,9 @@ const LOADER_GEOMETRY = {
 const LOADER_STYLE = {
     TRACK_COLOR: 0x555555,
     PROGRESS_COLOR: 0xffffff,
-    FONT_LOADING: "20px Poppins, sans-serif",
-    FONT_PERCENT: "bold 24px Poppins, sans-serif",
-    TEXT_COLOR: "#ffffff",
+    FONT_LOADING: '20px Poppins, sans-serif',
+    FONT_PERCENT: 'bold 24px Poppins, sans-serif',
+    TEXT_COLOR: '#ffffff',
 };
 
 const CLEANUP_DELAY_MS = 200; // Delay before cleaning up UI and changing scene
@@ -95,26 +95,26 @@ export class Preloader extends Scene {
         };
 
         // 1. Instantiate all generators
-        GENERATOR_CONSTRUCTORS.forEach((GeneratorConst) => {
+        GENERATOR_CONSTRUCTORS.forEach(GeneratorConst => {
             generators.push(new GeneratorConst(generatorOptions));
         });
 
         // 2. Run generation process for all generators
         // Assuming generate() calls updateProgress internally and synchronously
-        generators.forEach((generator) => {
+        generators.forEach(generator => {
             try {
                 generator.generate();
             } catch (error) {
                 console.error(
                     `Error during generation for ${generator.constructor.name}:`,
-                    error,
+                    error
                 );
                 // Optionally handle error, e.g., stop loading, show error message
             }
         });
 
         // 3. Destroy all generator instances
-        generators.forEach((generator) => {
+        generators.forEach(generator => {
             generator.destroy();
         });
         console.log(`${SCENE_KEY}: Texture generation complete.`);
@@ -150,12 +150,12 @@ export class Preloader extends Scene {
                     this.centerY +
                         LOADER_GEOMETRY.RADIUS +
                         LOADER_GEOMETRY.LOGO_OFFSET_Y,
-                    LOGO_TEXTURE_KEY,
+                    LOGO_TEXTURE_KEY
                 )
                 .setOrigin(0.5);
         } else {
             console.warn(
-                `${SCENE_KEY}: '${LOGO_TEXTURE_KEY}' texture not found. Skipping logo display.`,
+                `${SCENE_KEY}: '${LOGO_TEXTURE_KEY}' texture not found. Skipping logo display.`
             );
         }
 
@@ -167,7 +167,7 @@ export class Preloader extends Scene {
                     this.centerY +
                     LOADER_GEOMETRY.RADIUS +
                     LOADER_GEOMETRY.TEXT_OFFSET_Y,
-                text: "Generating Assets...",
+                text: 'Generating Assets...',
                 style: {
                     font: LOADER_STYLE.FONT_LOADING,
                     color: LOADER_STYLE.TEXT_COLOR,
@@ -180,12 +180,12 @@ export class Preloader extends Scene {
         this.progressTrack.lineStyle(
             LOADER_GEOMETRY.LINE_WIDTH,
             LOADER_STYLE.TRACK_COLOR,
-            1,
+            1
         );
         this.progressTrack.strokeCircle(
             this.centerX,
             this.centerY,
-            LOADER_GEOMETRY.RADIUS,
+            LOADER_GEOMETRY.RADIUS
         );
 
         // --- Circular Loader Progress Bar (Filled Arc) ---
@@ -197,7 +197,7 @@ export class Preloader extends Scene {
             .text({
                 x: this.centerX,
                 y: this.centerY,
-                text: "0%", // Initial value
+                text: '0%', // Initial value
                 style: {
                     font: LOADER_STYLE.FONT_PERCENT,
                     color: LOADER_STYLE.TEXT_COLOR,
@@ -238,7 +238,7 @@ export class Preloader extends Scene {
             this.progressBar?.lineStyle(
                 LOADER_GEOMETRY.LINE_WIDTH,
                 LOADER_STYLE.PROGRESS_COLOR,
-                1,
+                1
             );
 
             const startAngle = Phaser.Math.DegToRad(-90); // Start at the top
@@ -251,7 +251,7 @@ export class Preloader extends Scene {
                 LOADER_GEOMETRY.RADIUS,
                 startAngle,
                 endAngle,
-                false, // Clockwise
+                false // Clockwise
             );
             this.progressBar?.strokePath();
         }

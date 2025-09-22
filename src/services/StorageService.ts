@@ -20,16 +20,16 @@ interface GameProgress {
 }
 
 class StorageService {
-    private readonly DB_NAME = "pollinationGame";
+    private readonly DB_NAME = 'pollinationGame';
     private readonly DB_VERSION = 1; // Increment if schema changes (though adding optional field might not strictly require it)
-    private readonly SCORES_STORE = "scores";
-    private readonly PROGRESS_STORE = "progress";
+    private readonly SCORES_STORE = 'scores';
+    private readonly PROGRESS_STORE = 'progress';
     private db: IDBDatabase | null = null;
     private dbReady: Promise<boolean>;
     private dbReadyResolver!: (value: boolean) => void;
 
     constructor() {
-        this.dbReady = new Promise<boolean>((resolve) => {
+        this.dbReady = new Promise<boolean>(resolve => {
             this.dbReadyResolver = resolve;
         });
         this.initDB();
@@ -37,35 +37,35 @@ class StorageService {
 
     private initDB(): void {
         if (!window.indexedDB) {
-            console.warn("IndexedDB is not supported in this browser");
+            console.warn('IndexedDB is not supported in this browser');
             this.dbReadyResolver(false);
             return;
         }
 
         const request = window.indexedDB.open(this.DB_NAME, this.DB_VERSION);
 
-        request.onerror = (event) => {
-            console.error("IndexedDB error:", event);
+        request.onerror = event => {
+            console.error('IndexedDB error:', event);
             this.dbReadyResolver(false);
         };
 
-        request.onsuccess = (event) => {
+        request.onsuccess = event => {
             this.db = (event.target as IDBOpenDBRequest).result;
-            console.log("IndexedDB connected successfully");
+            console.log('IndexedDB connected successfully');
             this.dbReadyResolver(true);
         };
 
-        request.onupgradeneeded = (event) => {
+        request.onupgradeneeded = event => {
             const db = (event.target as IDBOpenDBRequest).result;
 
             // Create scores object store
             if (!db.objectStoreNames.contains(this.SCORES_STORE)) {
                 const scoresStore = db.createObjectStore(this.SCORES_STORE, {
-                    keyPath: "id",
+                    keyPath: 'id',
                     autoIncrement: true,
                 });
-                scoresStore.createIndex("score", "score", { unique: false });
-                scoresStore.createIndex("date", "date", { unique: false });
+                scoresStore.createIndex('score', 'score', { unique: false });
+                scoresStore.createIndex('date', 'date', { unique: false });
             }
 
             // Create/update progress object store
@@ -73,7 +73,7 @@ class StorageService {
             // you might need to delete and recreate the store or handle migrations more carefully.
             if (!db.objectStoreNames.contains(this.PROGRESS_STORE)) {
                 db.createObjectStore(this.PROGRESS_STORE, {
-                    keyPath: "id",
+                    keyPath: 'id',
                     autoIncrement: true, // Although we only use id=1
                 });
             }
@@ -88,7 +88,7 @@ class StorageService {
     async saveScore(score: GameScore): Promise<number> {
         const isReady = await this.waitForDB();
         if (!isReady || !this.db) {
-            console.warn("Database not ready, could not save score");
+            console.warn('Database not ready, could not save score');
             return -1;
         }
 
@@ -96,7 +96,7 @@ class StorageService {
             try {
                 const transaction = this.db!.transaction(
                     [this.SCORES_STORE],
-                    "readwrite",
+                    'readwrite'
                 );
                 const store = transaction.objectStore(this.SCORES_STORE);
                 const request = store.add(score);
@@ -105,12 +105,12 @@ class StorageService {
                     resolve(request.result as number);
                 };
 
-                request.onerror = (event) => {
-                    console.error("Error saving score:", event);
+                request.onerror = event => {
+                    console.error('Error saving score:', event);
                     reject(`Failed to save score: ${request.error?.message}`);
                 };
             } catch (error) {
-                console.error("Exception while saving score:", error);
+                console.error('Exception while saving score:', error);
                 reject(error);
             }
         });
@@ -119,7 +119,7 @@ class StorageService {
     async getHighScores(limit = 5): Promise<GameScore[]> {
         const isReady = await this.waitForDB();
         if (!isReady || !this.db) {
-            console.warn("Database not ready, could not retrieve high scores");
+            console.warn('Database not ready, could not retrieve high scores');
             return [];
         }
 
@@ -127,15 +127,15 @@ class StorageService {
             try {
                 const transaction = this.db!.transaction(
                     [this.SCORES_STORE],
-                    "readonly",
+                    'readonly'
                 );
                 const store = transaction.objectStore(this.SCORES_STORE);
-                const index = store.index("score");
-                const request = index.openCursor(null, "prev");
+                const index = store.index('score');
+                const request = index.openCursor(null, 'prev');
 
                 const highScores: GameScore[] = [];
 
-                request.onsuccess = (event) => {
+                request.onsuccess = event => {
                     const cursor = (
                         event.target as IDBRequest<IDBCursorWithValue>
                     ).result;
@@ -147,14 +147,14 @@ class StorageService {
                     }
                 };
 
-                request.onerror = (event) => {
-                    console.error("Error getting high scores:", event);
+                request.onerror = event => {
+                    console.error('Error getting high scores:', event);
                     reject(
-                        `Failed to get high scores: ${request.error?.message}`,
+                        `Failed to get high scores: ${request.error?.message}`
                     );
                 };
             } catch (error) {
-                console.error("Exception while getting high scores:", error);
+                console.error('Exception while getting high scores:', error);
                 reject(error);
             }
         });
@@ -163,7 +163,7 @@ class StorageService {
     async saveProgress(progress: GameProgress): Promise<number> {
         const isReady = await this.waitForDB();
         if (!isReady || !this.db) {
-            console.warn("Database not ready, could not save progress");
+            console.warn('Database not ready, could not save progress');
             return -1;
         }
 
@@ -171,7 +171,7 @@ class StorageService {
             try {
                 const transaction = this.db!.transaction(
                     [this.PROGRESS_STORE],
-                    "readwrite",
+                    'readwrite'
                 );
                 const store = transaction.objectStore(this.PROGRESS_STORE);
 
@@ -183,14 +183,14 @@ class StorageService {
                     resolve(request.result as number);
                 };
 
-                request.onerror = (event) => {
-                    console.error("Error saving progress:", event);
+                request.onerror = event => {
+                    console.error('Error saving progress:', event);
                     reject(
-                        `Failed to save progress: ${request.error?.message}`,
+                        `Failed to save progress: ${request.error?.message}`
                     );
                 };
             } catch (error) {
-                console.error("Exception while saving progress:", error);
+                console.error('Exception while saving progress:', error);
                 reject(error);
             }
         });
@@ -199,7 +199,7 @@ class StorageService {
     async getProgress(): Promise<GameProgress | null> {
         const isReady = await this.waitForDB();
         if (!isReady || !this.db) {
-            console.warn("Database not ready, could not retrieve progress");
+            console.warn('Database not ready, could not retrieve progress');
             return null;
         }
 
@@ -207,7 +207,7 @@ class StorageService {
             try {
                 const transaction = this.db!.transaction(
                     [this.PROGRESS_STORE],
-                    "readonly",
+                    'readonly'
                 );
                 const store = transaction.objectStore(this.PROGRESS_STORE);
                 const request = store.get(1); // Always get ID 1
@@ -218,18 +218,18 @@ class StorageService {
                     resolve(result || null);
                 };
 
-                request.onerror = (event) => {
-                    console.error("Error getting progress:", event);
+                request.onerror = event => {
+                    console.error('Error getting progress:', event);
                     reject(`Failed to get progress: ${request.error?.message}`);
                 };
             } catch (error) {
-                console.error("Exception while getting progress:", error);
+                console.error('Exception while getting progress:', error);
                 reject(error);
             }
         });
     }
 
-    async saveSettings(settings: GameProgress["settings"]): Promise<boolean> {
+    async saveSettings(settings: GameProgress['settings']): Promise<boolean> {
         try {
             const progress = (await this.getProgress()) || {
                 // Provide default structure if no progress exists
@@ -247,7 +247,7 @@ class StorageService {
             await this.saveProgress(progress);
             return true;
         } catch (error) {
-            console.error("Error saving settings:", error);
+            console.error('Error saving settings:', error);
             return false;
         }
     }

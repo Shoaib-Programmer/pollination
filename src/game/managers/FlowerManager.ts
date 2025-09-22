@@ -1,9 +1,9 @@
 // src/game/managers/FlowerManager.ts
-import * as Phaser from "phaser";
+import * as Phaser from 'phaser';
 
 // Define interface for Flower data
 export interface FlowerData {
-    type: "red" | "blue";
+    type: 'red' | 'blue';
     hasPollen: boolean;
     isPollinated: boolean;
     flowerId?: string;
@@ -20,7 +20,7 @@ export class FlowerManager {
 
     constructor(
         scene: Phaser.Scene,
-        flowerGroup: Phaser.Physics.Arcade.StaticGroup,
+        flowerGroup: Phaser.Physics.Arcade.StaticGroup
     ) {
         this.scene = scene;
         this.flowers = flowerGroup;
@@ -32,7 +32,7 @@ export class FlowerManager {
     }
 
     // Spawn flowers of a specific type
-    public spawnFlowers(count: number, type: "red" | "blue"): void {
+    public spawnFlowers(count: number, type: 'red' | 'blue'): void {
         const texture = `flower_${type}_generated`;
         const margin = 60,
             spacing = 80,
@@ -40,19 +40,19 @@ export class FlowerManager {
 
         // Get available flower types for this color category
         const availableFlowerIds: string[] = [];
-        if (type === "red") {
+        if (type === 'red') {
             availableFlowerIds.push(
-                "red_poppy",
-                "red_rose",
-                "red_tulip",
-                "red_dahlia",
+                'red_poppy',
+                'red_rose',
+                'red_tulip',
+                'red_dahlia'
             );
-        } else if (type === "blue") {
+        } else if (type === 'blue') {
             availableFlowerIds.push(
-                "blue_cornflower",
-                "blue_bluebell",
-                "blue_delphinium",
-                "blue_forget_me_not",
+                'blue_cornflower',
+                'blue_bluebell',
+                'blue_delphinium',
+                'blue_forget_me_not'
             );
         }
 
@@ -68,15 +68,15 @@ export class FlowerManager {
                 validPosition = true;
                 x = Phaser.Math.Between(
                     margin,
-                    this.scene.cameras.main.width - margin,
+                    this.scene.cameras.main.width - margin
                 );
                 y = Phaser.Math.Between(
                     margin + 60,
-                    this.scene.cameras.main.height - margin,
+                    this.scene.cameras.main.height - margin
                 );
 
                 // Check against existing flowers
-                this.flowers.children.iterate((existingFlower) => {
+                this.flowers.children.iterate(existingFlower => {
                     if (!existingFlower) return true;
                     const sprite =
                         existingFlower as Phaser.Physics.Arcade.Sprite;
@@ -93,7 +93,7 @@ export class FlowerManager {
                 attempts++;
                 if (attempts > maxAttempts) {
                     console.warn(
-                        `Could not find valid pos for ${type} flower ${i + 1}`,
+                        `Could not find valid pos for ${type} flower ${i + 1}`
                     );
                     break;
                 }
@@ -107,7 +107,7 @@ export class FlowerManager {
                     const flowerId = Phaser.Math.RND.pick(availableFlowerIds);
 
                     // Set data, physics, and appearance
-                    flower.setData("flowerData", {
+                    flower.setData('flowerData', {
                         type: type,
                         hasPollen: false,
                         isPollinated: false,
@@ -120,7 +120,7 @@ export class FlowerManager {
                         .setCircle(bodyRadius)
                         .setOffset(
                             flower.width / 2 - bodyRadius,
-                            flower.height / 2 - bodyRadius,
+                            flower.height / 2 - bodyRadius
                         )
                         .refreshBody();
 
@@ -131,7 +131,7 @@ export class FlowerManager {
                         scale: 1,
                         alpha: 1,
                         duration: 300,
-                        ease: "Back.easeOut",
+                        ease: 'Back.easeOut',
                         delay: i * 50 + 300,
                     });
                 }
@@ -151,7 +151,7 @@ export class FlowerManager {
         for (const flower of flowerChildren) {
             if (pollenCount >= maxPollen) break;
 
-            const data = flower?.getData("flowerData") as
+            const data = flower?.getData('flowerData') as
                 | FlowerData
                 | undefined;
             if (data && !data.isPollinated && !data.hasPollen) {
@@ -170,10 +170,10 @@ export class FlowerManager {
     // Check if all flowers are pollinated
     public checkAllPollinated(): boolean {
         let allDone = true;
-        this.flowers.children.iterate((child) => {
+        this.flowers.children.iterate(child => {
             if (!child) return true;
             const flower = child as Phaser.Physics.Arcade.Sprite;
-            const data = flower.getData("flowerData") as FlowerData | undefined;
+            const data = flower.getData('flowerData') as FlowerData | undefined;
             if (!data || !data.isPollinated) {
                 allDone = false;
                 return false;
@@ -188,10 +188,10 @@ export class FlowerManager {
      */
     public assignMorePollenIfNeededReturnFlower(): Phaser.Physics.Arcade.Sprite | null {
         let pollenAvailable = false;
-        this.flowers.children.iterate((child) => {
+        this.flowers.children.iterate(child => {
             if (!child) return true;
             const flower = child as Phaser.Physics.Arcade.Sprite;
-            const data = flower.getData("flowerData") as FlowerData | undefined;
+            const data = flower.getData('flowerData') as FlowerData | undefined;
             if (data?.hasPollen && !data.isPollinated) {
                 pollenAvailable = true;
                 return false;
@@ -202,13 +202,13 @@ export class FlowerManager {
         if (!pollenAvailable) {
             const unpollinated = (
                 this.flowers.getChildren() as Phaser.Physics.Arcade.Sprite[]
-            ).filter((f) => {
-                const d = f.getData("flowerData") as FlowerData | undefined;
+            ).filter(f => {
+                const d = f.getData('flowerData') as FlowerData | undefined;
                 return d && !d.isPollinated && !d.hasPollen;
             });
             if (unpollinated.length > 0) {
                 const flowerToAdd = Phaser.Math.RND.pick(unpollinated);
-                const d = flowerToAdd.getData("flowerData") as
+                const d = flowerToAdd.getData('flowerData') as
                     | FlowerData
                     | undefined;
                 if (d) {
@@ -226,7 +226,7 @@ export class FlowerManager {
         if (this.dimmed === dim) return;
         this.dimmed = dim;
         const alpha = dim ? 0.25 : 1;
-        this.flowers.children.iterate((child) => {
+        this.flowers.children.iterate(child => {
             if (!child) return true;
             (child as Phaser.GameObjects.Sprite).setAlpha(alpha);
             return true;

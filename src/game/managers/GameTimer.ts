@@ -1,5 +1,5 @@
 // src/game/managers/GameTimer.ts
-import * as Phaser from "phaser";
+import * as Phaser from 'phaser';
 
 export class GameTimer {
     private readonly scene: Phaser.Scene;
@@ -14,7 +14,7 @@ export class GameTimer {
         scene: Phaser.Scene,
         duration: number,
         onUpdate: (time: number) => void,
-        onComplete: () => void,
+        onComplete: () => void
     ) {
         this.scene = scene;
         this.duration = duration;
