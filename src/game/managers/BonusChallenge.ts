@@ -357,13 +357,15 @@ export class BonusChallenge {
 
             // Add option text above flower
             const optionText = this.scene.add
-                .text(x, y - 60, option, {
+                .text(x, y - 70, option, {
                     fontSize: '18px',
                     color: '#FFFFFF',
                     stroke: '#000000',
                     strokeThickness: 3,
                     backgroundColor: '#00000080',
                     padding: { x: 8, y: 4 },
+                    wordWrap: { width: 120 },
+                    align: 'center',
                 })
                 .setOrigin(0.5);
 
@@ -432,13 +434,15 @@ export class BonusChallenge {
 
             // Add option text above flower
             const optionText = this.scene.add
-                .text(x, centerY - 60, option.text, {
+                .text(x, centerY - 70, option.text, {
                     fontSize: '22px',
                     color: '#FFFFFF',
                     stroke: '#000000',
                     strokeThickness: 3,
                     backgroundColor: '#00000080',
                     padding: { x: 10, y: 5 },
+                    wordWrap: { width: 100 },
+                    align: 'center',
                 })
                 .setOrigin(0.5);
 
