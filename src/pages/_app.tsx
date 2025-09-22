@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app';
 
 import { Poppins, Luckiest_Guy } from 'next/font/google'; // Import the font functions
 import type { Metadata } from 'next';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 // Configure Poppins
 const poppins = Poppins({
@@ -35,6 +36,7 @@ export default function App({ Component, pageProps }: AppProps) {
         // Apply the font variables to the html element
         <main className={`${poppins.variable} ${luckiestGuy.variable}`}>
             <Component {...pageProps} />
+            <GoogleAnalytics gaId="G-GE1C2LW2H9" />
         </main>
     );
 }
