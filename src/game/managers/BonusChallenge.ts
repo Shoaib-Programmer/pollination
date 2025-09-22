@@ -644,20 +644,10 @@ export class BonusChallenge {
         });
         this.answerFlowers = [];
 
-        // Start fading out the main challenge UI container
+        // Immediately destroy the main challenge UI container
         if (this.challengeContainer) {
-            const containerToDestroy = this.challengeContainer;
+            this.challengeContainer.destroy();
             this.challengeContainer = undefined; // Clear reference
-            this.scene.tweens.add({
-                targets: containerToDestroy,
-                alpha: 0,
-                duration: 300,
-                onComplete: () => {
-                    if (containerToDestroy?.scene) {
-                        containerToDestroy.destroy();
-                    }
-                },
-            });
         }
         // Note: active flag is managed by handleAnswerSelection and the timeout
     }
