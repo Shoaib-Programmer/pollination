@@ -23,6 +23,10 @@ const luckiestGuy = Luckiest_Guy({
 export const metadata: Metadata = {
     title: 'Pollination Fun!',
     description: 'An educational game about bees, flowers, and pollination.',
+    applicationName: 'Honey Helpers',
+    openGraph: {
+        siteName: 'Honey Helpers',
+    },
     icons: '/favicon.png',
 };
 
