@@ -94,10 +94,10 @@ export const MobileControls: React.FC = () => {
     };
 
     return (
-        <div className="pointer-events-none select-none absolute bottom-6 left-6 w-40 h-40 grid grid-cols-3 grid-rows-3 gap-1.5 opacity-95 hover:opacity-100 transition-opacity z-20 safe-left safe-bottom">
-            <button
+        <div className="pointer-events-none select-none absolute bottom-4 left-4 md:bottom-6 md:left-6 w-44 h-44 md:w-40 md:h-40 grid grid-cols-3 grid-rows-3 gap-2 opacity-95 hover:opacity-100 transition-opacity z-20 safe-left safe-bottom touch-none">
+        <button
                 {...getButtonHandlers('up')}
-                className={`${getButtonClassName('up')} col-start-2 row-start-1`}
+            className={`${getButtonClassName('up')} col-start-2 row-start-1`}
                 aria-label="Move Up"
             >
                 <ArrowIcon direction="up" />

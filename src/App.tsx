@@ -55,8 +55,17 @@ function App() {
     }, []); // Empty dependency array ensures this runs only once on mount
 
     return (
-        // Main container styling ensures proper sizing and context
-        <div className="relative w-[800px] h-[600px] max-w-[100vw] max-h-[100vh] m-auto overflow-hidden bg-black/95 border border-white/10 rounded-xl shadow-soft backdrop-blur-sm">
+        // Main container styling: fixed size on large screens, full-bleed & safe-area aware on small screens
+        <div
+            className={
+                // Base: desktop-styled floating game card
+                "relative w-[800px] h-[600px] max-w-[100vw] max-h-[100vh] m-auto overflow-hidden bg-black/95 border border-white/10 rounded-xl shadow-soft backdrop-blur-sm " +
+                // Small screens: make the game full-bleed and use safe-area; prefix with 'sm:' for larger devices
+                "sm:w-[800px] sm:h-[600px] sm:m-auto w-screen h-screen rounded-none border-none"
+            }
+            aria-label="Pollination game container"
+            role="application"
+        >
             {/* Phaser Game Component */}
             <PhaserGame ref={phaserGameRef} />
 

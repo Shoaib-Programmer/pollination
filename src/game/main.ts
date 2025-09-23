@@ -23,6 +23,13 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false,
         },
     },
+    // Use Phaser's Scale manager to handle responsive resizing on mobile
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        parent: 'game-container',
+        // width/height above remain the game's base resolution; FIT will scale it
+    },
     scene: [Boot, Preloader, MainMenu, Game, GameOver, Settings],
 };
 
