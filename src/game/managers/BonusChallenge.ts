@@ -150,19 +150,22 @@ export class BonusChallenge {
             callback: () => {
                 count--;
                 if (count > 0) {
-                    countdownText.setText(count.toString());
-                    // Scale animation
-                    this.scene.tweens.add({
-                        targets: countdownText,
-                        scale: 1.5,
-                        duration: 200,
-                        yoyo: true,
-                        ease: 'Back.easeOut',
-                    });
+                    if (countdownText.scene) {
+                        // Check if text object is still part of the scene
+                        countdownText.setText(count.toString());
+                        // Scale animation
+                        this.scene.tweens.add({
+                            targets: countdownText,
+                            scale: 1.5,
+                            duration: 200,
+                            yoyo: true,
+                            ease: 'Back.easeOut',
+                        });
+                    }
                 } else {
                     // Remove countdown when it reaches 0
-                    readyText.destroy();
-                    countdownText.destroy();
+                    if (readyText.scene) readyText.destroy();
+                    if (countdownText.scene) countdownText.destroy();
                     countdownTimer.destroy();
                 }
             },
@@ -495,9 +498,6 @@ export class BonusChallenge {
                 this.currentQuestion?.explanation ?? 'Correct!'
             );
 
-            // Add bonus score
-            (this.scene as Game).addBonusScore(this.bonusScoreValue);
-
             // Record correct answer in quiz service
             this.quizService.recordQuizResults(1, 1);
         } else {
@@ -585,6 +585,12 @@ export class BonusChallenge {
                 // Add a delayed call to fade out and destroy the result popup
                 this.scene.time.delayedCall(2500, () => {
                     if (resultContainer?.scene) {
+                        // Add bonus score just before fading out if correct
+                        if (correct) {
+                            (this.scene as Game).addBonusScore(
+                                this.bonusScoreValue
+                            );
+                        }
                         this.scene.tweens.add({
                             targets: resultContainer,
                             alpha: 0,
